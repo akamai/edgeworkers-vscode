@@ -29,6 +29,22 @@
 				"group": "bundle@1"
 			}]
 			
+		},
+		"configuration": {
+			"title": "Akamai Configuration",
+			"type": "object",
+			"properties": {
+				"edgeworkers-vscode.sectionName": {
+					"type": "string",
+					"default": "",
+					"description": "section name lookup in .edgerc file"
+				},
+				"edgeworkers-vscode.accountKey": {
+					"type": "string",
+					"default": "",
+					"description": "Account key only for internal users"
+				}
+			}
 		}
 	},
 	"scripts": {
