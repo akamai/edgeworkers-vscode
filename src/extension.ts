@@ -3,6 +3,11 @@
 'use strict'
 import { Console } from 'console';
 import * as vscode from 'vscode';
+import {
+    ConfigurationTarget,
+    workspace
+  }
+  from 'vscode';
 const { spawn } = require('child_process');
 const cp = require('child_process');
 const edgeworker_download_URI = 'https://github.com/akamai/cli-edgeworkers';
@@ -18,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
                     'Install'
                   );
                   if (resp === 'Install') {
-                    vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(edgeworker_download_URI))
+                    vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(edgeworker_download_URI));
                     // vscode.env.openExternal(vscode.Uri.parse(edgeworker_download_URI));
                   }
             }
@@ -28,7 +33,8 @@ export function activate(context: vscode.ExtensionContext) {
             else{
                 console.log('Stdout: ' + stdout);
                 // check if the bundle.json is present in the workspace
-                if(checkBundle()){
+                let check_File = await checkFile('**/bundle.json');
+                if(check_File === false){
                     const msg = vscode.window.showErrorMessage(
                         'Create edge worker bundle failed! Bundle.json not found in workspace'
                     );
@@ -45,27 +51,55 @@ export function activate(context: vscode.ExtensionContext) {
 
     });
 }
-function checkBundle(): boolean {
-    vscode.workspace.findFiles(`**/bundle.json`).then(files => {
-        if(files.length<1 || files == undefined)
-        {
-            return true;
-        }
-    });
-    return false;
-}
-function createEdgeWorkerBundle(){
+function checkFile(fileName: string){
+    return vscode.workspace.findFiles(`${fileName}`).then(files => { 
+     if(files.length < 1 || files === undefined ){
+         return false;
+     }
+          else
+          {return true;}
+     });
+ }
+async function createEdgeWorkerBundle(){    
     let options : vscode.InputBoxOptions = {};
     options.prompt = "Enter edge worker bundle name";
-    let terminal = vscode.window.createTerminal("Akamai CLI");
-    vscode.window.showInputBox(options).then(value => {
+    const terminal = vscode.window.createTerminal("Akamai CLI");
+    vscode.window.showInputBox(options).then(async value => {
         var work_space_folder:string | undefined;
         if(vscode.workspace.workspaceFolders !== undefined){
-            work_space_folder = vscode.workspace.workspaceFolders[0].uri.path;
-            //create tar 
-            createTar(terminal, value, work_space_folder);
-            //validate tar using akamai CLI
-            validateTar(terminal, value, work_space_folder);
+           const  work_space_folder = vscode.workspace.workspaceFolders[0].uri.path;
+            //check if a tar is already present in the workspace folder
+            console.log("checking the tar file");
+            let tarFileName = `**/${value}.tgz`;
+            console.log(`checking the tar file ${tarFileName}`);
+            let check_Tar = await checkFile(tarFileName);
+            if(check_Tar === true){
+                console.log("tar found");
+                const resp = vscode.window.showErrorMessage(
+                    `${value}.tgz already exists. Dou you want to create another .tgz file?`,
+                    ...['yes','no']
+                  );
+                if(await resp === 'yes'){
+                    let options : vscode.InputBoxOptions = {};
+                    options.prompt = "Enter edge worker bundle name";
+                    vscode.window.showInputBox(options).then(bundle => {
+                        //create tar 
+                     createTar(terminal, bundle, work_space_folder);
+                     //validate tar using akamai CLI
+                     validateTar(terminal, bundle, work_space_folder);
+
+                    });
+                }
+                else{
+                    validateTar(terminal, value, work_space_folder);
+                }
+            }
+            else{
+                //create tar 
+                createTar(terminal, value, work_space_folder);
+                //validate tar using akamai CLI
+                validateTar(terminal, value, work_space_folder);
+            }
         }
         else {
             let message = "YOUR-EXTENSION: Working folder not found, open a folder an try again" ;
@@ -76,7 +110,15 @@ function createEdgeWorkerBundle(){
 function validateTar(terminal:vscode.Terminal, value: string | undefined, work_space_folder: string){
     vscode.workspace.createFileSystemWatcher("**/*.tgz").onDidCreate(file => {
         console.log(`tar file ${value}.tgz is created now at ${file}`);
-        terminal.sendText(`akamai edgeworkers validate ${work_space_folder}/${value}.tgz --accountkey ***REMOVED***`);
+        let accountKey = getAccountKey();
+        let sectionName= getSectionName();
+        if (accountKey !== ''){
+            terminal.sendText(`akamai edgeworkers validate ${work_space_folder}/${value}.tgz --accountkey ${accountKey}`);
+        }
+        else{
+            terminal.sendText(`akamai edgeworkers validate ${work_space_folder}/${value}.tgz `);
+        }
+        console.log(`section name is : ${sectionName} and the account key is ${accountKey}`);
         terminal.show();
         });
 }
@@ -86,34 +128,24 @@ function createTar(terminal:vscode.Terminal,value: string | undefined,work_space
     terminal.sendText(tar);
     terminal.show();
 }
-    // // trigger when the file is changed in workspae.
-    // let disWorkspace = vscode.commands.registerCommand('edgeworkers-vscode.wsEvents', () =>{
-    //     if(vscode.workspace){
-    //         vscode.workspace.onDidChangeTextDocument(editor => {
-    //             console.log("we have a change in workspcae");
-    //         },null,context.subscriptions);
-    //     }
-    // });
+function getAccountKey():string | undefined{
+   let accountKey: string = <string>workspace.getConfiguration('edgeworkers-vscode').get('accountKey');
+   console.log(`account key ${accountKey}`);
+   return(accountKey);
+}
+function getSectionName():string | undefined{
+    let sectionName: string = <string>workspace.getConfiguration('edgeworkers-vscode').get('sectionName');
+    console.log(`section name ${sectionName}`);
+    return(sectionName);
+ }
 
-    // //code for auto complete
-    // context.subscriptions.push(vscode.languages.registerCompletionItemProvider('javascript', {
-    //     provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken):Promise<vscode.CompletionItem[]> 
-    //     { 
-    //         return new Promise((resolve, reject) => { 
-    //             var completionItems:vscode.CompletionItem[] = [];
-    //             var completionItem:vscode.CompletionItem = new vscode.CompletionItem("id");
-    //             completionItem.kind = vscode.CompletionItemKind.Value;
-    //             completionItem.detail = "ttest for EDGEworker code";
-    //             completionItem.documentation = "this is used for testing";
-    //             completionItem.filterText = "test";
-    //             completionItem.insertText = "test";
-    //             completionItem.label = "test";
-    //             completionItems.push(completionItem);
-    //             return resolve(completionItems);
-    //         // return [new vscode.CompletionItem('Hello')];
-    //         });
-    //     }
-    //     }));
+
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
+
+
+
+
+
+
