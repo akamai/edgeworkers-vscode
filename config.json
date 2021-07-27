@@ -1,0 +1,6 @@
+{
+    "settings": {
+        "timeOut": 10000,
+        "bufferSize": 5242880 
+    }
+}
