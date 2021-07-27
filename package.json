@@ -11,18 +11,61 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:edgeworkers-vscode.edgeworkerBundle"
+		"onCommand:edgeworkers-vscode.edgeworkerBundle",
+		"onView:nodeDependencies",
+		"onView:nodeDependencies.refreshEntry",
+		"onCommand:nodeDependencies.refreshEntry"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "package-explorer",
+					"title": "Edge Worker",
+					"icon": "media/dep.svg"
+				}
+			]
+		},
+		"views": {
+			"package-explorer": [
+				{
+					"id": "nodeDependencies",
+					"name": "Node Dependencies",
+					"contextualTitle": "Edge Worker"
+				}
+			],
+			"explorer": [
+				{
+					"id": "jsonOutline",
+					"name": "Json Outline",
+					"when": "jsonOutlineEnabled"
+				}
+			]
+		},
 		"commands": [
 			{
 				"command": "edgeworkers-vscode.edgeworkerBundle",
 				"title": "Create Edge worker Bundle"
+			},
+			{
+				"command": "nodeDependencies.refreshEntry",
+				"title": "Refresh",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
 			}
 			
 		],
 		"menus": {
+			"view/title": [
+				{
+					"command": "nodeDependencies.refreshEntry",
+					"when": "view == nodeDependencies",
+					"group": "navigation"
+				}
+			],
 			"explorer/context": [{
 				"when": "resourceFilename =~ /.*\\.(json)/",
 				"command": "edgeworkers-vscode.edgeworkerBundle",
@@ -43,6 +86,10 @@
 					"type": "string",
 					"default": "",
 					"description": "Account key only for internal users"
+				},
+				"jsonOutline.autorefresh": {
+					"type": "boolean",
+					"default": false
 				}
 			}
 		}

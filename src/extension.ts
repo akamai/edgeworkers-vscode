@@ -1,6 +1,10 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-'use strict'
+'use strict';
+import * as edgeWorkersClientSvc from './openAPI/edgeActions/client-manager';
+import * as edgeWorkersSvc from './openAPI/edgeActions/ew-service';
+import { rejects } from 'assert';
 import { Console } from 'console';
 import * as vscode from 'vscode';
 import {
@@ -8,11 +12,28 @@ import {
     workspace
   }
   from 'vscode';
+import { DepNodeProvider } from './nodeDependencies';
 const { spawn } = require('child_process');
 const cp = require('child_process');
 const edgeworker_download_URI = 'https://github.com/akamai/cli-edgeworkers';
 const akamai_version_cmd = 'akamai --version';
 export function activate(context: vscode.ExtensionContext) {
+    // management UI class initilization
+    const nodeDependenciesProvider = new DepNodeProvider("what");
+    vscode.window.createTreeView('nodeDependencies', {
+         treeDataProvider: nodeDependenciesProvider,
+         showCollapseAll: true
+     });
+     // vscode.window.registerTreeDataProvider('nodeDependencies', nodeDependenciesProvider);
+	 vscode.commands.registerCommand('nodeDependencies.refreshEntry', function() {
+		const nodeDependenciesProviderRefresh = new DepNodeProvider("what");
+        vscode.window.createTreeView('nodeDependencies', {
+            treeDataProvider: nodeDependenciesProviderRefresh,
+            showCollapseAll: true
+        });  
+     });
+
+ // command activation for creating bundle
     let disposable = vscode.commands.registerCommand('edgeworkers-vscode.edgeworkerBundle', function () {
         // run akamai --version command in cmd to check if akami CLI is installed
         cp.exec(akamai_version_cmd, async (err: string, stdout: string, stderr: string) => {            
