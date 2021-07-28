@@ -17,16 +17,21 @@ const { spawn } = require('child_process');
 const cp = require('child_process');
 const edgeworker_download_URI = 'https://github.com/akamai/cli-edgeworkers';
 const akamai_version_cmd = 'akamai --version';
+
 export function activate(context: vscode.ExtensionContext) {
+
     // management UI class initilization
-    const nodeDependenciesProvider = new DepNodeProvider("what");
+    let accountKey = getAccountKey();
+    const nodeDependenciesProvider = new DepNodeProvider(`${accountKey}`);
     vscode.window.createTreeView('nodeDependencies', {
          treeDataProvider: nodeDependenciesProvider,
          showCollapseAll: true
      });
      // vscode.window.registerTreeDataProvider('nodeDependencies', nodeDependenciesProvider);
 	 vscode.commands.registerCommand('nodeDependencies.refreshEntry', function() {
-		const nodeDependenciesProviderRefresh = new DepNodeProvider("what");
+         // get the aqccount key  and otyher configuration vaues
+        let accountKey = getAccountKey();
+		const nodeDependenciesProviderRefresh = new DepNodeProvider(`${accountKey}`);
         vscode.window.createTreeView('nodeDependencies', {
             treeDataProvider: nodeDependenciesProviderRefresh,
             showCollapseAll: true
