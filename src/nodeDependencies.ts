@@ -17,8 +17,7 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 	public  packageJsonArray = {};
 	public listIdsPromise : Promise<string>;
 	public jsonString: Promise<string>;
-	constructor(private workspaceRoot: string) {
-		// TODO: create a better akamai CLI abstraction layer
+	constructor(private accountKey: string) {
 		this.listIdsPromise = this.callAkamaiCli('list-ids');
 		this.jsonString= this.fillDetails();	
 	}
@@ -31,12 +30,6 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 	}
 
 	async getChildren(element?: Dependency): Promise<Dependency[]> {
-		if (!this.workspaceRoot) {
-			
-			vscode.window.showInformationMessage('No dependency in empty workspace');
-			return Promise.resolve([]);
-		}
-
 		if (element) {
 			return Promise.resolve(this.getDepsInPackageJsonDeatils(element.version));
 		} else {
@@ -50,10 +43,10 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 		let packageJsonString : string = await this.listIdsPromise;
 		const packageJson = JSON.parse(packageJsonString);
 		for(var i = 0; i < packageJson.data.length; i++) {	
-			let versions  = await edgeWorkersSvc.getAllVersions(`${packageJson.data[i].edgeWorkerId}`, 'B-P-39WP4OY:1-8BYUX');
+			let versions  = await edgeWorkersSvc.getAllVersions(`${packageJson.data[i].edgeWorkerId}`, `${this.accountKey}`);
 			if(versions.hasOwnProperty("versions")){
 				versions= versions["versions"];
-				console.log(`the versio details are ${versions}`);
+				console.log(`the version details are ${versions}`);
 			}
 			packageJson.data[i].versions= versions;
 			packageJson.data[i].versions.forEach((element: any) => {
@@ -65,15 +58,28 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 	}
 	private async getDepsInPackageJson(packageJsonString: string): Promise<Dependency[]> {
 		const packageJson = JSON.parse(packageJsonString);
-		const toDep = (moduleName: string, version: string): Dependency => {
-				return new Dependency(moduleName,version,vscode.TreeItemCollapsibleState.Collapsed);
+		const toDep = (moduleName: string, version: string, collapsibleState: string): Dependency => {
+				if(collapsibleState !== ''){
+					return new Dependency(moduleName,version,vscode.TreeItemCollapsibleState.None);
+				}
+				else{
+					return new Dependency(moduleName,version,vscode.TreeItemCollapsibleState.Collapsed);
+				}
+				
 		};
 		let edgeworkers: Dependency[]= [];
 		let edgeworker: Dependency; 
-		packageJson.data.forEach(async (element: any) => { 
-			edgeworker = toDep(`${element.name}`, `${element.edgeWorkerId}`);
+		if(Object.keys(packageJson.data).length === 0){
+			edgeworker = toDep(`No edge workers`, '','none');
 			edgeworkers.push(edgeworker);
-		});
+		}
+		else{
+			packageJson.data.forEach(async (element: any) => { 
+				edgeworker = toDep(`${element.name}`, `${element.edgeWorkerId}`, '');
+				edgeworkers.push(edgeworker);
+			});
+		}
+		
 		return edgeworkers;
 	}
 	private async getDepsInPackageJsonDeatils(edgeworkerId : string): Promise<Dependency[]> {
@@ -114,21 +120,22 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 		return true;
 	}
 
-	// TODO: should type be string?
-	// TODO: add account key here from user facing config 
 	private async callAkamaiCli(command : string) : Promise<string> {
-		// TODO: max buffer set to 5mb; idk if this is adequate and this should be pulled from app config file instead
-		// TODO: timeout set to 10s, please pull from an app config file
-		// TODO: /tmp wont work on windows
 		return new Promise((resolve, reject) => { 
-			exec(`akamai edgeworkers ${command} --accountkey B-P-39WP4OY:1-8BYUX --json /tmp/output.json > /dev/null 2>&1 && cat /tmp/output.json && rm /tmp/output.json`, {maxBuffer: config.settings.bufferSize, timeout: config.settings.timeOut}, (error : any, stdout : string, stderr : string) => {
-				if (error) {
-					// TODO: don't surface error to users
-					reject(`call to akamai cli process failed: ${error}`);
-				} else if (stdout) {
-					resolve(stdout);
-				}
-			});
+			if(this.accountKey === '' || this.accountKey === undefined){
+				reject(`Account key undefined. Please check the configuration settings.`);
+			}
+			else{
+				exec(`akamai edgeworkers ${command} --accountkey  ${this.accountKey} --json /tmp/output.json > /dev/null 2>&1 && cat /tmp/output.json && rm /tmp/output.json`, {maxBuffer: config.settings.bufferSize, timeout: config.settings.timeOut}, (error : any, stdout : string, stderr : string) => {
+					if (error) {
+						reject(`In valid account key. Unable to fetch list of edge workers for the account key ${this.accountKey}`);
+						// reject(`call to akamai cli process failed: ${error}`);
+					} else if (stdout) {
+						resolve(stdout);
+					}
+				});
+			}
+			
 		});
 	}
 }
