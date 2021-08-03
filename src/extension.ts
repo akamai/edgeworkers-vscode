@@ -77,7 +77,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     });
 }
-function checkFile(fileName: string){
+export function checkFile(fileName: string){
     return vscode.workspace.findFiles(`${fileName}`).then(files => { 
      if(files.length < 1 || files === undefined ){
          return false;
@@ -86,7 +86,7 @@ function checkFile(fileName: string){
           {return true;}
      });
  }
-async function createEdgeWorkerBundle(){    
+export async function createEdgeWorkerBundle(){    
     let options : vscode.InputBoxOptions = {};
     options.prompt = "Enter edge worker bundle name";
     const terminal = vscode.window.createTerminal("Akamai CLI");
@@ -133,7 +133,7 @@ async function createEdgeWorkerBundle(){
         }
     });
 }
-function validateTar(terminal:vscode.Terminal, value: string | undefined, work_space_folder: string){
+export function validateTar(terminal:vscode.Terminal, value: string | undefined, work_space_folder: string){
     vscode.workspace.createFileSystemWatcher("**/*.tgz").onDidCreate(file => {
         console.log(`tar file ${value}.tgz is created now at ${file}`);
         let accountKey = getAccountKey();
@@ -148,24 +148,26 @@ function validateTar(terminal:vscode.Terminal, value: string | undefined, work_s
         terminal.show();
         });
 }
-function createTar(terminal:vscode.Terminal,value: string | undefined,work_space_folder: string){    
+export function createTar(terminal:vscode.Terminal,value: string | undefined,work_space_folder: string){    
     let tar = `tar --disable-copyfile -czvf ${value}.tgz *`;
     terminal.sendText(`cd ${work_space_folder}`);
     terminal.sendText(tar);
     terminal.show();
 }
-function getAccountKey():string | undefined{
-   let accountKey: string = <string>workspace.getConfiguration('edgeworkers-vscode').get('accountKey');
-   console.log(`account key ${accountKey}`);
-   return(accountKey);
+export function getAccountKey():string{
+    try{
+        let accountKey: string = <string>workspace.getConfiguration('edgeworkers-vscode').get('accountKey');
+        console.log(`account key ${accountKey}`);
+        return(accountKey);
+    }catch(e){
+        return(e);
+    }
 }
-function getSectionName():string | undefined{
+export function getSectionName():string | undefined{
     let sectionName: string = <string>workspace.getConfiguration('edgeworkers-vscode').get('sectionName');
     console.log(`section name ${sectionName}`);
     return(sectionName);
  }
-
-
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
