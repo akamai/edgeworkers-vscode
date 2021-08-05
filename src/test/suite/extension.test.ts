@@ -1,5 +1,9 @@
 import * as assert from 'assert';
+import { Console } from 'console';
 import { after } from 'mocha';
+import * as Sinon from 'sinon';
+import * as chai from 'chai';
+var expect = chai.expect;
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
@@ -12,8 +16,13 @@ suite('Extension Test Suite', () => {
   });
 
   test('Account Key checking', () => {
-    it('should return the account key from ', function(){
-      assert.strictEqual(" ",myExtension.getAccountKey());
-    });
+      assert.strictEqual("B-P-39WP4OY:1-8BYUX",myExtension.getAccountKey());
   });
+  test('call create bundle after cetae tar',function (){
+    // const spy = Sinon.spy(myExtension.getAccountKey);
+    // assert.called(myExtension.activate);
+    // // Sinon.assert.called(spy);
+    const spy = Sinon.spy(myExtension.getAccountKey);
+    
+});
 });
