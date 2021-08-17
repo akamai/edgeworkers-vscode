@@ -1,0 +1,36 @@
+{
+    "cliStatus": 0,
+    "msg": "sample json",
+    "data": [
+      {
+        "edgeWorkerId": 1111,
+        "name": "abc",
+        "groupId": 1111,
+        "resourceTierId": 111
+      },
+      {
+        "edgeWorkerId": 2222,
+        "name": "efg",
+        "groupId": 2222,
+        "resourceTierId": 200
+      },
+      {
+        "edgeWorkerId": 3333,
+        "name": "hij",
+        "groupId": 3333,
+        "resourceTierId": 200
+      },
+      {
+        "edgeWorkerId": 5555,
+        "name": "lmn",
+        "groupId": 5555,
+        "resourceTierId": 200
+      },
+      {
+        "edgeWorkerId": 6666,
+        "name": "khn",
+        "groupId": 6666,
+        "resourceTierId": 100
+      }
+    ]
+  }
