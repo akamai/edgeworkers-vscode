@@ -1,3 +1,4 @@
+/* file from cli-edgeworkers repo*/
 export const promiseTimeout = function (ms: number, promise: Promise<any>) {
   let timeoutHandle: any;
    // Create a promise that rejects in <ms> milliseconds
