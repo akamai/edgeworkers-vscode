@@ -1,62 +1,67 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { runInThisContext } from 'vm';
-import { resolve } from 'path';
-import { defaultMaxListeners } from 'events';
 import { Config } from './config';
 const config: Config = require('../config.json');
-import * as edgeWorkersSvc from './openAPI/edgeActions/ew-service';
 const exec = require('child_process').exec;
+import * as edgeWorkerCommands from './edgeWorkerCommands';
+import * as edgeWorkersSvc from './openAPI/edgeActions/ew-service';
 
-export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 
 
+export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<Dependency> {
 	private _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
 	public  packageJsonArray = {};
 	public listIdsPromise : Promise<string>;
 	public jsonString: Promise<string>;
+	public commandForEdgeWorkerIDs: string[];
 	constructor(private accountKey: string) {
+		const command = 
+		this.commandForEdgeWorkerIDs = ["akamai","edgeworkers","list-ids","--accountkey",`${this.accountKey}`,
+										"--json /tmp/output.json > /dev/null 2>&1 && cat /tmp/output.json && rm /tmp/output.json"];
 		this.listIdsPromise = this.callAkamaiCli('list-ids');
 		this.jsonString= this.fillDetails();	
 	}
-
 	refresh(): void {
 		this._onDidChangeTreeData.fire();
 	}
 	getTreeItem(element: Dependency): vscode.TreeItem {
 		return element;
 	}
-
 	async getChildren(element?: Dependency): Promise<Dependency[]> {
 		if (element) {
-			return Promise.resolve(this.getDepsInPackageJsonDeatils(element.version));
+			return Promise.resolve(this.getEdgeWorkersDetails(element.version));
 		} else {
 			// TODO: may need to handle failure of command to get json
 			let packageJsonString : string = await this.listIdsPromise;
-			return Promise.resolve(this.getDepsInPackageJson(packageJsonString));
+			return Promise.resolve(this.getEdgeWorkers(packageJsonString));
 		}
-
 	}
 	private async fillDetails():Promise<string>{
-		let packageJsonString : string = await this.listIdsPromise;
-		const packageJson = JSON.parse(packageJsonString);
-		for(var i = 0; i < packageJson.data.length; i++) {	
-			let versions  = await edgeWorkersSvc.getAllVersions(`${packageJson.data[i].edgeWorkerId}`, `${this.accountKey}`);
-			if(versions.hasOwnProperty("versions")){
-				versions= versions["versions"];
-				console.log(`the version details are ${versions}`);
+		return new Promise(async (resolve, reject) => {
+			let packageJsonString : string = await this.listIdsPromise;
+			try{
+				const packageJson = JSON.parse(packageJsonString);
+				for(var i = 0; i < packageJson.data.length; i++) {	
+				let versions  = await edgeWorkersSvc.getAllVersions(`${packageJson.data[i].edgeWorkerId}`, `${this.accountKey}`);
+				if(versions.hasOwnProperty("versions")){
+					versions= versions["versions"];
+					console.log(`the version details are ${versions}`);
+				}
+				packageJson.data[i].versions= versions;
+				packageJson.data[i].versions.forEach((element: any) => {
+				console.log(element);
+				});
 			}
-			packageJson.data[i].versions= versions;
-			packageJson.data[i].versions.forEach((element: any) => {
-			console.log(element);
-			});
-		}
-		this.packageJsonArray  = packageJson;
-		return(JSON.stringify(packageJson));
+				this.packageJsonArray  = packageJson;
+				resolve(JSON.stringify(packageJson));
+			}catch(e){
+				reject(e);
+			}
+		});
 	}
-	private async getDepsInPackageJson(packageJsonString: string): Promise<Dependency[]> {
+	public async getEdgeWorkers(packageJsonString: string): Promise<Dependency[]> {
 		const packageJson = JSON.parse(packageJsonString);
 		const toDep = (moduleName: string, version: string, collapsibleState: string): Dependency => {
 				if(collapsibleState !== ''){
@@ -65,7 +70,6 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 				else{
 					return new Dependency(moduleName,version,vscode.TreeItemCollapsibleState.Collapsed);
 				}
-				
 		};
 		let edgeworkers: Dependency[]= [];
 		let edgeworker: Dependency; 
@@ -79,10 +83,9 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 				edgeworkers.push(edgeworker);
 			});
 		}
-		
 		return edgeworkers;
 	}
-	private async getDepsInPackageJsonDeatils(edgeworkerId : string): Promise<Dependency[]> {
+	public async getEdgeWorkersDetails(edgeworkerId : string): Promise<Dependency[]> {
 		const packageJsonDeatilsString: string= await this.jsonString;
 		const packageJsonDeatils = JSON.parse(packageJsonDeatilsString);
 		const toDep = (moduleName: string, version: string): Dependency => {
@@ -104,22 +107,11 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 						edgeworkersDetail = toDep(`${packageJsonDeatils.data[i].versions[j].version}`, `${packageJsonDeatils.data[i].versions[j].version.edgeWorkerId}`);
 						edgeworkersDetails.push(edgeworkersDetail);
 				}
-
 			}
 			}	
 		}
 		return edgeworkersDetails;
 	}
-
-	private pathExists(p: string): boolean {
-		try {
-			fs.accessSync(p);
-		} catch (err) {
-			return false;
-		}
-		return true;
-	}
-
 	private async callAkamaiCli(command : string) : Promise<string> {
 		return new Promise((resolve, reject) => { 
 			if(this.accountKey === '' || this.accountKey === undefined){
@@ -141,7 +133,6 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
 }
 
 export class Dependency extends vscode.TreeItem {
-
 	constructor(
 		public readonly label: string,
 		public readonly version: string,
@@ -149,15 +140,11 @@ export class Dependency extends vscode.TreeItem {
 		public readonly command?: vscode.Command
 	) {
 		super(label, collapsibleState);
-
 		this.tooltip = `${this.label}-${this.version}`;
-		// this.description = this.version;
 	}
-
 	iconPath = {
 		light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
 		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
 	};
-
 	contextValue = 'dependency';
 }
