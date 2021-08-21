@@ -12,9 +12,9 @@
 	],
 	"activationEvents": [
 		"onCommand:edgeworkers-vscode.edgeworkerBundle",
-		"onView:nodeDependencies",
-		"onView:nodeDependencies.refreshEntry",
-		"onCommand:nodeDependencies.refreshEntry"
+		"onCommand:edgeworkers-vscode.refreshEntry",
+		"onCommand:edgeworkers-vscode.downloadEdgeWorker",
+		"onView:edgeWorkerDetails"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -30,9 +30,9 @@
 		"views": {
 			"package-explorer": [
 				{
-					"id": "nodeDependencies",
-					"name": "Node Dependencies",
-					"contextualTitle": "Edge Worker"
+					"id": "edgeWorkerDetails",
+					"name": "EdgeWorkers Details",
+					"contextualTitle": "EdgeWorkers Details"
 				}
 			],
 			"explorer": [
@@ -49,21 +49,36 @@
 				"title": "Create Edge worker Bundle"
 			},
 			{
-				"command": "nodeDependencies.refreshEntry",
+				"command": "edgeworkers-vscode.refreshEntry",
 				"title": "Refresh",
 				"icon": {
 					"light": "resources/light/refresh.svg",
 					"dark": "resources/dark/refresh.svg"
+				}
+			},
+			{
+				"command": "edgeworkers-vscode.downloadEdgeWorker",
+				"title": "Download",
+				"icon": {
+					"light": "resources/light/download.svg",
+					"dark": "resources/dark/download.svg"
 				}
 			}
 		],
 		"menus": {
 			"view/title": [
 				{
-					"command": "nodeDependencies.refreshEntry",
-					"when": "view == nodeDependencies",
+					"command": "edgeworkers-vscode.refreshEntry",
+					"when": "view == edgeWorkerDetails",
 					"group": "navigation"
 				}
+			],
+			"view/item/context":[
+				{
+					"command": "edgeworkers-vscode.downloadEdgeWorker",
+					"when": "viewItem == EdgeWorkerDetails",
+					"group": "inline"
+				  }
 			],
 			"explorer/context": [
 				{
