@@ -5,106 +5,122 @@ import { Config } from './config';
 const config: Config = require('../config.json');
 const exec = require('child_process').exec;
 import * as edgeWorkerCommands from './edgeWorkerCommands';
+import * as akamiCLICalls from './akamiCLICalls';
 import * as edgeWorkersSvc from './openAPI/edgeActions/ew-service';
+import { ErrorMessageExt } from './textForCLIAndError';
+import { resolveCname } from 'dns';
+import { errorMonitor } from 'stream';
 
-
-
-export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<Dependency> {
-	private _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>();
-	readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
-	public  packageJsonArray = {};
-	public listIdsPromise : Promise<string>;
-	public jsonString: Promise<string>;
-	public commandForEdgeWorkerIDs: string[];
-	constructor(private accountKey: string) {
-		const command = 
-		this.commandForEdgeWorkerIDs = ["akamai","edgeworkers","list-ids","--accountkey",`${this.accountKey}`,
-										"--json /tmp/output.json > /dev/null 2>&1 && cat /tmp/output.json && rm /tmp/output.json"];
-		this.listIdsPromise = this.callAkamaiCli('list-ids');
-		this.jsonString= this.fillDetails();	
+export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWorkers> {
+	private _onDidChangeTreeData: vscode.EventEmitter<EdgeWorkers | undefined | void> = new vscode.EventEmitter<EdgeWorkers | undefined | void>();
+	readonly onDidChangeTreeData: vscode.Event<EdgeWorkers | undefined | void> = this._onDidChangeTreeData.event;
+	public  edgeWorkerJsonArray = {};
+	public accountKey:string= '';
+	public listIds:string ='';
+	public edgeWorkerdetails: string= '';
+	constructor() {
+		this.accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
 	}
 	refresh(): void {
 		this._onDidChangeTreeData.fire();
 	}
-	getTreeItem(element: Dependency): vscode.TreeItem {
+	getTreeItem(element: EdgeWorkers): vscode.TreeItem {
 		return element;
 	}
-	async getChildren(element?: Dependency): Promise<Dependency[]> {
+	async getChildren(element?: EdgeWorkers): Promise<EdgeWorkers[]> {
 		if (element) {
 			return Promise.resolve(this.getEdgeWorkersDetails(element.version));
 		} else {
-			// TODO: may need to handle failure of command to get json
-			let packageJsonString : string = await this.listIdsPromise;
-			return Promise.resolve(this.getEdgeWorkers(packageJsonString));
+			await akamiCLICalls.callAkamaiCLIFOrEdgeWorkerIDs(this.accountKey).then(async ids =>{
+				this.listIds=ids;
+				await this.fillDetails().then(details=>{
+					this.edgeWorkerdetails= details;
+				}).catch(err=>{
+					vscode.window.showErrorMessage(ErrorMessageExt.edgworkerDetails_fail+ErrorMessageExt.display_original_error+err);
+				});
+			}).catch(err =>{
+				this.listIds= '';
+				vscode.window.showErrorMessage(ErrorMessageExt.edgworkerid_fail+ErrorMessageExt.display_original_error+err);
+			});
+			return Promise.resolve(this.getEdgeWorkers(this.listIds));
 		}
 	}
-	private async fillDetails():Promise<string>{
+	private async fillDetails( ):Promise<string>{
 		return new Promise(async (resolve, reject) => {
-			let packageJsonString : string = await this.listIdsPromise;
+			let edgeWorkerJsonString: string = this.listIds;
+			const edgeWorkerJson = JSON.parse(edgeWorkerJsonString);
 			try{
-				const packageJson = JSON.parse(packageJsonString);
-				for(var i = 0; i < packageJson.data.length; i++) {	
-				let versions  = await edgeWorkersSvc.getAllVersions(`${packageJson.data[i].edgeWorkerId}`, `${this.accountKey}`);
-				if(versions.hasOwnProperty("versions")){
-					versions= versions["versions"];
-					console.log(`the version details are ${versions}`);
+				if(edgeWorkerJson.data !== undefined || edgeWorkerJson.data.length !== 0){
+					for(var i = 0; i < edgeWorkerJson.data.length; i++) {	
+						let versions  = await edgeWorkersSvc.getAllVersions(`${edgeWorkerJson.data[i].edgeWorkerId}`, `${this.accountKey}`);
+						if(versions.hasOwnProperty("versions")){
+							versions= versions["versions"];
+							console.log(`the version details are ${versions}`);
+						}
+						edgeWorkerJson.data[i].versions= versions;
+						edgeWorkerJson.data[i].versions.forEach((element: any) => {
+							console.log(element);
+						});
+					}
+					resolve(JSON.stringify(edgeWorkerJson));
 				}
-				packageJson.data[i].versions= versions;
-				packageJson.data[i].versions.forEach((element: any) => {
-				console.log(element);
-				});
-			}
-				this.packageJsonArray  = packageJson;
-				resolve(JSON.stringify(packageJson));
 			}catch(e){
 				reject(e);
 			}
 		});
 	}
-	public async getEdgeWorkers(packageJsonString: string): Promise<Dependency[]> {
-		const packageJson = JSON.parse(packageJsonString);
-		const toDep = (moduleName: string, version: string, collapsibleState: string): Dependency => {
-				if(collapsibleState !== ''){
-					return new Dependency(moduleName,version,vscode.TreeItemCollapsibleState.None);
-				}
-				else{
-					return new Dependency(moduleName,version,vscode.TreeItemCollapsibleState.Collapsed);
-				}
+	public async getEdgeWorkers(edgeWorkerJsonString: string): Promise<EdgeWorkers[]> {
+		let edgeworkers: EdgeWorkers[]= [];
+		let edgeworker: EdgeWorkers;
+		const toDep = (moduleName: string, version: string, collapsibleState: string): EdgeWorkers => {
+			if(collapsibleState !== ''){
+				return new EdgeWorkers(moduleName,version,vscode.TreeItemCollapsibleState.None);
+			}
+			else{
+				return new EdgeWorkers(moduleName,version,vscode.TreeItemCollapsibleState.Collapsed);
+			}
 		};
-		let edgeworkers: Dependency[]= [];
-		let edgeworker: Dependency; 
-		if(Object.keys(packageJson.data).length === 0){
-			edgeworker = toDep(`No edge workers`, '','none');
-			edgeworkers.push(edgeworker);
+
+		if(edgeWorkerJsonString !== ''){
+			const edgeWorkerJson = JSON.parse(edgeWorkerJsonString);
+			if(Object.keys(edgeWorkerJson.data).length === 0){
+				edgeworker = toDep(`No edge workers details`, '','none');
+				edgeworkers.push(edgeworker);
+			}
+			else{
+				edgeWorkerJson.data.forEach(async (element: any) => { 
+					edgeworker = toDep(`${element.name}`, `${element.edgeWorkerId}`, '');
+					edgeworkers.push(edgeworker);
+				});
+			}
+			return edgeworkers; 
 		}
 		else{
-			packageJson.data.forEach(async (element: any) => { 
-				edgeworker = toDep(`${element.name}`, `${element.edgeWorkerId}`, '');
-				edgeworkers.push(edgeworker);
-			});
+			edgeworker = toDep(`cannot find edgeworkers`, '','none');
+			edgeworkers.push(edgeworker);
+			return edgeworkers; 
 		}
-		return edgeworkers;
 	}
-	public async getEdgeWorkersDetails(edgeworkerId : string): Promise<Dependency[]> {
-		const packageJsonDeatilsString: string= await this.jsonString;
-		const packageJsonDeatils = JSON.parse(packageJsonDeatilsString);
-		const toDep = (moduleName: string, version: string): Dependency => {
-				return new Dependency(moduleName,version,vscode.TreeItemCollapsibleState.None);
+	public async getEdgeWorkersDetails(edgeworkerId : string): Promise<EdgeWorkers[]> {
+		const edgeWorkerJsonDeatilsString: string= await this.edgeWorkerdetails;
+		const edgeWorkerJsonDeatils = JSON.parse(edgeWorkerJsonDeatilsString);
+		const toDep = (moduleName: string, version: string): EdgeWorkers => {
+				return new EdgeWorkerDetails(moduleName,version,vscode.TreeItemCollapsibleState.None);
 		};
 		let element = `${edgeworkerId}`;
-		let edgeworkersDetails: Dependency[]= [];
-		let edgeworkersDetail: Dependency; 
+		let edgeworkersDetails: EdgeWorkerDetails[]= [];
+		let edgeworkersDetail: EdgeWorkerDetails; 
 		let edgeWorkerid:string;
-		for(var i = 0; i < packageJsonDeatils.data.length; i++) {
-			edgeWorkerid = `${packageJsonDeatils.data[i].edgeWorkerId}`;
+		for(var i = 0; i < edgeWorkerJsonDeatils.data.length; i++) {
+			edgeWorkerid = `${edgeWorkerJsonDeatils.data[i].edgeWorkerId}`;
 			if( edgeWorkerid === element){
-				if(packageJsonDeatils.data[i].versions.length === 0){
+				if(edgeWorkerJsonDeatils.data[i].versions.length === 0){
 					edgeworkersDetail = toDep(`No Versions`, '');
 					edgeworkersDetails.push(edgeworkersDetail);
 				}
 				else{
-					for(var j = 0; j < packageJsonDeatils.data[i].versions.length; j++){
-						edgeworkersDetail = toDep(`${packageJsonDeatils.data[i].versions[j].version}`, `${packageJsonDeatils.data[i].versions[j].version.edgeWorkerId}`);
+					for(var j = 0; j < edgeWorkerJsonDeatils.data[i].versions.length; j++){
+						edgeworkersDetail = toDep(`${edgeWorkerJsonDeatils.data[i].versions[j].version}`,`${edgeworkerId}`);
 						edgeworkersDetails.push(edgeworkersDetail);
 				}
 			}
@@ -112,27 +128,9 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<Depend
 		}
 		return edgeworkersDetails;
 	}
-	private async callAkamaiCli(command : string) : Promise<string> {
-		return new Promise((resolve, reject) => { 
-			if(this.accountKey === '' || this.accountKey === undefined){
-				reject(`Account key undefined. Please check the configuration settings.`);
-			}
-			else{
-				exec(`akamai edgeworkers ${command} --accountkey  ${this.accountKey} --json /tmp/output.json > /dev/null 2>&1 && cat /tmp/output.json && rm /tmp/output.json`, {maxBuffer: config.settings.bufferSize, timeout: config.settings.timeOut}, (error : any, stdout : string, stderr : string) => {
-					if (error) {
-						reject(`In valid account key. Unable to fetch list of edge workers for the account key ${this.accountKey}`);
-						// reject(`call to akamai cli process failed: ${error}`);
-					} else if (stdout) {
-						resolve(stdout);
-					}
-				});
-			}
-			
-		});
-	}
 }
 
-export class Dependency extends vscode.TreeItem {
+export class  EdgeWorkers extends vscode.TreeItem {
 	constructor(
 		public readonly label: string,
 		public readonly version: string,
@@ -140,11 +138,28 @@ export class Dependency extends vscode.TreeItem {
 		public readonly command?: vscode.Command
 	) {
 		super(label, collapsibleState);
-		this.tooltip = `${this.label}-${this.version}`;
+		this.tooltip = '';
 	}
 	iconPath = {
-		light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
-		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
+		light: path.join(__filename, '..', '..', 'resources', 'light', 'EdgeWorkers.svg'),
+		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'EdgeWorkers.svg')
 	};
-	contextValue = 'dependency';
+	contextValue = 'EdgeWorkers';
+}
+
+export class EdgeWorkerDetails extends vscode.TreeItem {
+	constructor(
+		public readonly label: string,
+		public readonly version: string,
+		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+		public readonly command?: vscode.Command,
+	) {
+		super(label, collapsibleState);
+		this.tooltip = '';
+	}
+	iconPath = {
+		light: path.join(__filename, '..', '..', 'resources', 'light', 'EdgeWorkers.svg'),
+		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'EdgeWorkers.svg')
+	};
+	contextValue = 'EdgeWorkerDetails';
 }
