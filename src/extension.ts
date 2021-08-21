@@ -8,6 +8,7 @@ const cp = require('child_process');
 const exec = require('child_process').exec;
 const edgeworker_download_URI = 'https://github.com/akamai/cli-edgeworkers';
 const akamai_version_cmd = 'akamai --version';
+import * as downloadEdgeWorker from './downloadEdgeWorker';
 import { EdgeWorkerDetails, EdgeWorkerDetailsProvider } from './managementUI';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import console from 'console';
@@ -38,6 +39,12 @@ export const activate = function(context: vscode.ExtensionContext) {
             vscode.window.showErrorMessage(message);
         }
     });
+
+    let download = vscode.commands.registerCommand('edgeworkers-vscode.downloadEdgeWorker',  async (edgeWorkerdetails: EdgeWorkerDetails) => {
+        console.log("the id id :"+ edgeWorkerdetails.version +"and version is "+ edgeWorkerdetails.label);
+        await downloadEdgeWorker.downloadEdgeWorker(edgeWorkerdetails.version,edgeWorkerdetails.label);
+     });
+
 };
 // this method is called when your extension is deactivated
 export function deactivate() {}
