@@ -32,7 +32,7 @@ export const  callAkamaiCLIFOrEdgeWorkerIDs = async function(accountKey?: string
             } else if (stderr){
                 reject(stderr);
             }
-            deleteOutput();
+            deleteOutput("rm  /tmp/output.json");
         });    
     });
 };
@@ -114,6 +114,6 @@ export const generateCLICommand = function(cmdArgs: string[]):string{
     return command;
 };
 
-export const deleteOutput = function(){
-    exec("rm  /tmp/output.json");
+export const deleteOutput = function(command:string){
+    exec(command);
 };
