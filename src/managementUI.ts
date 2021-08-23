@@ -93,7 +93,7 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 				edgeworkers.push(edgeworker);
 			}
 			else{
-				edgeWorkerJson.data.forEach(async (element: any) => { 
+				edgeWorkerJson.data.forEach(async (element: any) => {
 					edgeworker = toDep(`${element.name}`, `${element.edgeWorkerId}`, '');
 					edgeworkers.push(edgeworker);
 				});
