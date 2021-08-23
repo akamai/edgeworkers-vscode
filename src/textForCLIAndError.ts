@@ -17,6 +17,7 @@ export enum ErrorMessageExt {
     edgworkerid_fail= "Failed to fetch the Edgeworker ids ",
     edgworkerDetails_fail= "Failed to fetch the Edgeworker details ",
     bundle_download_fail= "Failed to download the Edgeworker Bundle",
+    bundle_files_fail = "Failed to fetch files",
 }
 
 export enum textForInfoMsg{

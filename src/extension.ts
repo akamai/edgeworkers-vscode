@@ -39,7 +39,7 @@ export const activate = function(context: vscode.ExtensionContext) {
             vscode.window.showErrorMessage(message);
         }
     });
-
+    // command activation for downloading edgeworker
     let download = vscode.commands.registerCommand('edgeworkers-vscode.downloadEdgeWorker',  async (edgeWorkerdetails: EdgeWorkerDetails) => {
         console.log("the id id :"+ edgeWorkerdetails.version +"and version is "+ edgeWorkerdetails.label);
         await downloadEdgeWorker.downloadEdgeWorker(edgeWorkerdetails.version,edgeWorkerdetails.label);
