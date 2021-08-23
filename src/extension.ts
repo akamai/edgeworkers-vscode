@@ -34,7 +34,7 @@ export const activate = function(context: vscode.ExtensionContext) {
             await edgeWorkerCommands.createAndValidateEdgeWorker(work_space_folder);
         }
         else{
-            let message = "YOUR-EXTENSION: Working folder not found, open a folder an try again" ;
+            let message = "EdgeWorkers Extension: Working folder not found, open a folder an try again" ;
             vscode.window.showErrorMessage(message);
         }
     });
