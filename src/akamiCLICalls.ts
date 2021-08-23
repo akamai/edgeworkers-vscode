@@ -74,7 +74,7 @@ export const executeCLICommandExceptTarCmd = function(cmd : string) : Promise<st
 
 export const executeCLIOnlyForTarCmd = function(work_space_folder:string,tarfilename : string) : Promise<string> {
     return new Promise(async (resolve, reject) => {
-        let status:string = "successfull";
+        let status:string = "successful";
         const cmd:string[]= ["cd",`${work_space_folder}`, "&&","tar","--disable-copyfile","-czvf",`${tarfilename}.tgz`, '--exclude="*.tgz"', "*"];
         const process= await exec(generateCLICommand(cmd),(error:any,stdout:string, stderr:string)=>{
             if (error) {
@@ -82,7 +82,7 @@ export const executeCLIOnlyForTarCmd = function(work_space_folder:string,tarfile
                 reject(ErrorMessageExt.create_bundle_fail+`${tarfilename}.tgz`+ " --due to -- "+status);
             }
         });
-        if(status=== "sucessfull"){
+        if(status=== "successful"){
             const check = await edgeWorkerCommands.checkFile(`**/${tarfilename}.tgz`);
             if(check=== true){
                 resolve("Successfully created the EdgeWorker bundle - " + `${tarfilename}.tgz`);
