@@ -139,52 +139,65 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 		return edgeworkersDetails;
 	}
 	public async getBundleFiles(edgeWorkerID:string,edgeWorkerVersion:string):Promise<EdgeWorkers[]> {
-		const filenames = await this.downloadBundle(edgeWorkerID,edgeWorkerVersion);
 		let bundleFiles: EdgeWorkers[]= [];
-		let bundleFile: EdgeWorkers;
-		const toDep = (moduleName: string): EdgeWorkers => {
+			let bundleFile: EdgeWorkers;
+			const toDep = (moduleName: string): EdgeWorkers => {
 				return new EdgeWorkers(moduleName,'',vscode.TreeItemCollapsibleState.None,'');
 		};
-		if(filenames.length <1 || filenames === undefined){
-			bundleFile = toDep(`no files found`);
-			bundleFiles.push(bundleFile);
-			return bundleFiles; 
-		}
-		else{
-			filenames.forEach(function(name){
-				bundleFile = toDep(name);
+		try{
+			const filenames = await this.downloadBundle(edgeWorkerID,edgeWorkerVersion);
+			if(filenames.length <1 || filenames === undefined){
+				bundleFile = toDep(`no files found`);
 				bundleFiles.push(bundleFile);
-			});
+				return bundleFiles; 
+			}
+			else{
+				filenames.forEach(function(name){
+					bundleFile = toDep(name);
+					bundleFiles.push(bundleFile);
+					});
+				return bundleFiles; 
+			}
+		}catch(e){
+			bundleFile = toDep(`error in fetching files`);
+			bundleFiles.push(bundleFile);
+			vscode.window.showErrorMessage(ErrorMessageExt.bundle_files_fail+ErrorMessageExt.display_original_error+e);
 			return bundleFiles; 
 		}	
 	}
 	public async downloadBundle(edgeworkerID: string, edgeworkerVersion:string):Promise<string[]>{
-		let tarFilePath = '/tmp';
-		const cmd:string[]= ["akamai","edgeworkers","download",`${edgeworkerID}`, `${edgeworkerVersion}`,"--downloadPath", `${tarFilePath}`];
-            if (this.accountKey !== ''|| typeof this.accountKey !== undefined){
-                const accountKeyParams:string[]= ["--accountkey",`${this.accountKey}`];
-                cmd.push(...accountKeyParams);
-            }
-            const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(cmd));
-			console.log(status);
-			const tarFile = await status.substring(status.indexOf('@') + 1);
-			const tarFileName = path.parse(tarFile).base;
-			const cmdViewTar:string[]= ["cd", `${tarFilePath}`,"&&","tar","-tvf",`${tarFileName}`];
-			const status1 = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(cmdViewTar));
-			console.log(status1);
+		return new Promise(async (resolve, reject) => {
+			let tarFilePath = '/tmp';
 			let files = new Array();
 			let fileNames = new Array();
-			files = status1.split("\n");
-			files.forEach(function(element){
-				if(element !== ''){
-					const edgeworkerBundleName =  element.substr(element.lastIndexOf(' ')+1);
-					console.log(edgeworkerBundleName);
-					fileNames.push(edgeworkerBundleName);
+			try{
+				const cmd:string[]= ["akamai","edgeworkers","download",`${edgeworkerID}`, `${edgeworkerVersion}`,"--downloadPath", `${tarFilePath}`];
+				if (this.accountKey !== ''|| typeof this.accountKey !== undefined){
+					const accountKeyParams:string[]= ["--accountkey",`${this.accountKey}`];
+					cmd.push(...accountKeyParams);
 				}
-			});
-			const delCmd:string=`rm ${tarFile}`;
-			akamiCLICalls.deleteOutput(delCmd);
-			return fileNames;
+				const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(cmd));
+				console.log(status);
+				const tarFile = await status.substring(status.indexOf('@') + 1);
+				const tarFileName = path.parse(tarFile).base;
+				const cmdViewTar:string[]= ["cd", `${tarFilePath}`,"&&","tar","-tvf",`${tarFileName}`];
+				const status1 = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(cmdViewTar));
+				console.log(status1);
+				files = status1.split("\n");
+				files.forEach(function(element){
+					if(element !== ''){
+						const edgeworkerBundleName =  element.substr(element.lastIndexOf(' ')+1);
+						console.log(edgeworkerBundleName);
+						fileNames.push(edgeworkerBundleName);
+					}
+				});
+				const delCmd:string=`rm ${tarFile}`;
+				akamiCLICalls.deleteOutput(delCmd);
+				resolve(fileNames);
+			}catch(e){
+				reject(e);
+			}
+		});
 	}
 }
 
