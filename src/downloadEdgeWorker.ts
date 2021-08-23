@@ -14,7 +14,18 @@ import * as akamiCLICalls from './akamiCLICalls';
 export const downloadEdgeWorker = async function(edgeworkerID: string, edgeworkerVersion:string):Promise<boolean>{
         try{
             let accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
-            const tarFilePath:string|undefined = await askUserForTarFilePath(textForInfoMsg.tar_file_path);
+            // const tarFilePath:string|undefined = await askUserForTarFilePath(textForInfoMsg.tar_file_path);
+            const tarFileFSPath = await vscode.window.showOpenDialog({
+                canSelectFolders: true,
+                canSelectFiles: false,
+            });
+            let tarFilePath= tarFileFSPath?.toString();
+            if( tarFilePath === '' || tarFilePath === undefined){
+                tarFilePath = '/tmp';
+            }
+            else{
+                tarFilePath = tarFilePath.replace('file://','');
+            }
             const cmd:string[]= ["akamai","edgeworkers","download",`${edgeworkerID}`, `${edgeworkerVersion}`,"--downloadPath", `${tarFilePath}`];
             if (accountKey !== ''|| typeof accountKey !== undefined){
                 const accountKeyParams:string[]= ["--accountkey",`${accountKey}`];
