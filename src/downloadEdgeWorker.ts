@@ -12,36 +12,31 @@ import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
 
 export const downloadEdgeWorker = async function(edgeworkerID: string, edgeworkerVersion:string):Promise<boolean>{
-        try{
-            let accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
-            // const tarFilePath:string|undefined = await askUserForTarFilePath(textForInfoMsg.tar_file_path);
-            const tarFileFSPath = await vscode.window.showOpenDialog({
-                canSelectFolders: true,
-                canSelectFiles: false,
-            });
-            let tarFilePath= tarFileFSPath?.toString();
-            if( tarFilePath === '' || tarFilePath === undefined){
-                tarFilePath = '/tmp';
-            }
-            else{
-                tarFilePath = tarFilePath.replace('file://','');
-            }
-            const cmd:string[]= ["akamai","edgeworkers","download",`${edgeworkerID}`, `${edgeworkerVersion}`,"--downloadPath", `${tarFilePath}`];
-            if (accountKey !== ''|| typeof accountKey !== undefined){
-                const accountKeyParams:string[]= ["--accountkey",`${accountKey}`];
-                cmd.push(...accountKeyParams);
-            }
-            const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(cmd));
-            const tarFile = await status.substring(status.indexOf('@') + 1);
-            const tarFileName = path.parse(tarFile).base;
-            const edgeworkerBundle =  tarFileName.substr(0,tarFileName.lastIndexOf('.'));
-            const statusUntar = await akamiCLICalls.executeCLICommandExceptTarCmd(`cd  ${tarFilePath} && mkdir ${edgeworkerBundle} && cd  ${tarFilePath}/${edgeworkerBundle}  && tar --extract --file ${tarFile}`);
-            vscode.window.showInformationMessage(`${textForInfoMsg.tar_download_success} id: ${edgeworkerID} version: ${edgeworkerVersion} at: ${tarFilePath}/${edgeworkerBundle}`);
-            return(true);
-        }catch(e){
-            vscode.window.showErrorMessage(ErrorMessageExt.bundle_download_fail+' '+ `${edgeworkerID}`+' '+ `${edgeworkerVersion}`+" "+ErrorMessageExt.display_original_error+e);
-            return(false);
+    try{
+        let accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
+        const tarFileFSPath = await vscode.window.showOpenDialog({
+            canSelectFolders: true,
+            canSelectFiles: false,
+        });
+        let tarFilePath= tarFileFSPath?.toString();
+        if( tarFilePath === '' || tarFilePath === undefined){
+            tarFilePath = '/tmp';
         }
+        else{
+            tarFilePath = tarFilePath.replace('file://','');
+        }
+        const cmd = await akamiCLICalls.getEdgeWorkerDownloadCmd(edgeworkerID,edgeworkerVersion,tarFilePath,accountKey);
+        const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(cmd));
+        const tarFile = await status.substring(status.indexOf('@') + 1);
+        const tarFileName = path.parse(tarFile).base;
+        const edgeworkerBundle =  tarFileName.substr(0,tarFileName.lastIndexOf('.'));
+        const statusUntar = await akamiCLICalls.executeCLICommandExceptTarCmd(`cd  ${tarFilePath} && mkdir ${edgeworkerBundle} && cd  ${tarFilePath}/${edgeworkerBundle}  && tar --extract --file ${tarFile}`);
+        vscode.window.showInformationMessage(`${textForInfoMsg.tar_download_success} id: ${edgeworkerID} version: ${edgeworkerVersion} at: ${tarFilePath}/${edgeworkerBundle}`);
+        return(true);
+    }catch(e){
+        vscode.window.showErrorMessage(ErrorMessageExt.bundle_download_fail+' '+ `${edgeworkerID}`+' '+ `${edgeworkerVersion}`+" "+ErrorMessageExt.display_original_error+e);
+        return(false);
+    }
 };
 
 export const askUserForTarFilePath = async function(promptName: string):Promise<string|undefined>{
