@@ -21,7 +21,7 @@ export const activate = function(context: vscode.ExtensionContext) {
          showCollapseAll: true
      });
      //refresh the tree view in management UI
-	 vscode.commands.registerCommand('edgeworkers-vscode.refreshEntry', function() {
+	const refresh= vscode.commands.registerCommand('edgeworkers-vscode.refreshEntry', function() {
 		const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider();
         vscode.window.createTreeView('edgeWorkerDetails', {
             treeDataProvider: edgeWorkerDetailsProvider,
@@ -44,6 +44,7 @@ export const activate = function(context: vscode.ExtensionContext) {
         console.log("the id id :"+ edgeWorkerdetails.version +"and version is "+ edgeWorkerdetails.label);
         await downloadEdgeWorker.downloadEdgeWorker(edgeWorkerdetails.version,edgeWorkerdetails.label);
      });
+
 
 };
 // this method is called when your extension is deactivated
