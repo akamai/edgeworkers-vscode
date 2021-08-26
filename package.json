@@ -14,6 +14,8 @@
 		"onCommand:edgeworkers-vscode.edgeworkerBundle",
 		"onCommand:edgeworkers-vscode.refreshEntry",
 		"onCommand:edgeworkers-vscode.downloadEdgeWorker",
+		"onCommand:edgeworkers-vscode.uploadEdgeWorker",
+		"onCommand:edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
 		"onView:edgeWorkerDetails"
 	],
 	"main": "./out/extension.js",
@@ -32,7 +34,7 @@
 				{
 					"id": "edgeWorkerDetails",
 					"name": "EdgeWorkers Details",
-					"contextualTitle": "EdgeWorkers Details"
+					"contextualTitle": "Details"
 				}
 			],
 			"explorer": [
@@ -46,7 +48,7 @@
 		"commands": [
 			{
 				"command": "edgeworkers-vscode.edgeworkerBundle",
-				"title": "Create Edge worker Bundle"
+				"title": "Create and Validate Bundle"
 			},
 			{
 				"command": "edgeworkers-vscode.refreshEntry",
@@ -54,6 +56,22 @@
 				"icon": {
 					"light": "resources/light/refresh.svg",
 					"dark": "resources/dark/refresh.svg"
+				}
+			},
+			{
+				"command": "edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
+				"title": "Upload Version",
+				"icon": {
+					"light": "resources/light/add.svg",
+					"dark": "resources/dark/add.svg"
+				}
+			},
+			{
+				"command": "edgeworkers-vscode.uploadEdgeWorker",
+				"title": "Upload Edge Worker Version",
+				"icon": {
+					"light": "resources/light/add.svg",
+					"dark": "resources/dark/add.svg"
 				}
 			},
 			{
@@ -73,17 +91,27 @@
 					"group": "navigation"
 				}
 			],
-			"view/item/context":[
+			"view/item/context": [
 				{
 					"command": "edgeworkers-vscode.downloadEdgeWorker",
 					"when": "viewItem == EdgeWorkerDetails",
 					"group": "inline"
-				  }
+				},
+				{
+					"command": "edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
+					"when": "viewItem == EdgeWorkers",
+					"group": "inline"
+				}
 			],
 			"explorer/context": [
 				{
 					"when": "resourceFilename =~ /.*\\.(json)/",
 					"command": "edgeworkers-vscode.edgeworkerBundle",
+					"group": "bundle@1"
+				},
+				{
+					"when": "resourceFilename =~ /.*\\.(tgz)/",
+					"command": "edgeworkers-vscode.uploadEdgeWorker",
 					"group": "bundle@1"
 				}
 			]
@@ -147,6 +175,7 @@
 		"sha256-file": "^1.0.0",
 		"sinon": "^11.1.2",
 		"tar": "^6.1.3",
-		"untildify": "^4.0.0"
+		"untildify": "^4.0.0",
+		"vscode": "^1.1.37"
 	}
 }

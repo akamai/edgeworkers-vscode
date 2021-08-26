@@ -8,8 +8,6 @@ import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
 import * as edgeWorkersSvc from './openAPI/edgeActions/ew-service';
 import { ErrorMessageExt } from './textForCLIAndError';
-import { resolveCname } from 'dns';
-import { errorMonitor } from 'stream';
 
 export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWorkers> {
 	private _onDidChangeTreeData: vscode.EventEmitter<EdgeWorkers | undefined | void> = new vscode.EventEmitter<EdgeWorkers | undefined | void>();
@@ -29,6 +27,7 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 	}
 	async getChildren(element?: EdgeWorkers): Promise<EdgeWorkers[]> {
 		if (element) {
+			console.log("the id id :"+ element.version +"and version is "+ element.label);
 			if(element.type !== ''){
 				return Promise.resolve(this.getBundleFiles(element.version,element.label));
 			}
@@ -140,9 +139,9 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 	}
 	public async getBundleFiles(edgeWorkerID:string,edgeWorkerVersion:string):Promise<EdgeWorkers[]> {
 		let bundleFiles: EdgeWorkers[]= [];
-			let bundleFile: EdgeWorkers;
-			const toDep = (moduleName: string): EdgeWorkers => {
-				return new EdgeWorkers(moduleName,'',vscode.TreeItemCollapsibleState.None,'');
+		let bundleFile: EdgeWorkers;
+		const toDep = (moduleName: string): EdgeWorkers => {
+			return new EdgeWorkers(moduleName,'',vscode.TreeItemCollapsibleState.None,'');
 		};
 		try{
 			const filenames = await this.downloadBundle(edgeWorkerID,edgeWorkerVersion);
@@ -171,11 +170,7 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 			let files = new Array();
 			let fileNames = new Array();
 			try{
-				const cmd:string[]= ["akamai","edgeworkers","download",`${edgeworkerID}`, `${edgeworkerVersion}`,"--downloadPath", `${tarFilePath}`];
-				if (this.accountKey !== ''|| typeof this.accountKey !== undefined){
-					const accountKeyParams:string[]= ["--accountkey",`${this.accountKey}`];
-					cmd.push(...accountKeyParams);
-				}
+				const cmd = await akamiCLICalls.getEdgeWorkerDownloadCmd(edgeworkerID,edgeworkerVersion,tarFilePath,this.accountKey);
 				const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(cmd));
 				console.log(status);
 				const tarFile = await status.substring(status.indexOf('@') + 1);
@@ -191,8 +186,7 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 						fileNames.push(edgeworkerBundleName);
 					}
 				});
-				const delCmd:string=`rm ${tarFile}`;
-				akamiCLICalls.deleteOutput(delCmd);
+				akamiCLICalls.deleteOutput(`${tarFile}`);
 				resolve(fileNames);
 			}catch(e){
 				reject(e);
