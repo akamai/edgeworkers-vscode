@@ -25,7 +25,8 @@ export const createAndValidateEdgeWorker = async function(work_space_folder:stri
 };
 export const createEdgeWorkerBundle = async function( work_space_folder:string):Promise<string>{
     return new Promise(async (resolve, reject) => {
-        const tarFile:string|undefined = await askUserForFileName(textForInfoMsg.bundle_name);
+        const defaultFilename:string = 'edge_Worker_Bundle';
+        const tarFile:string|undefined = await askUserForUserInput(textForInfoMsg.bundle_name,defaultFilename);
         try{
             const checkTar = await checkFile(`**/${tarFile}.tgz`);
             const resp = await vscode.window.showErrorMessage(
@@ -64,11 +65,12 @@ export const validateEdgeWorkerBundle = async function( work_space_folder:string
     return new Promise(async (resolve, reject) => {
         const accountKey = getAccountKeyFromUserConfig();
         try{
-            let cmd:string[]= ["akamai","edgeworkers","validate",`${work_space_folder}/${tarfile}.tgz`];
-            if (accountKey !== ''|| typeof accountKey !== undefined){
-                const accountKeyParams:string[]= ["--accountkey",`${accountKey}`];
-                cmd.push(...accountKeyParams);
-            }
+            const cmd = akamiCLICalls.getEdgeWorkerValidateCmd(work_space_folder,tarfile,accountKey);
+            // let cmd:string[]= ["akamai","edgeworkers","validate",`${work_space_folder}/${tarfile}.tgz`];
+            // if (accountKey !== ''|| typeof accountKey !== undefined){
+            //     const accountKeyParams:string[]= ["--accountkey",`${accountKey}`];
+            //     cmd.push(...accountKeyParams);
+            // }
             const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(cmd));
             resolve(textForInfoMsg.validate_bundle_success+`${tarfile}.tgz`);
         }catch(e){
@@ -88,18 +90,16 @@ export const createBundlecmdStatus = async function( work_space_folder:string,ta
         }
     });
 };
-
-export const askUserForFileName = async function(promptName: string):Promise<string|undefined>{
+export const askUserForUserInput = async function(promptName: string,defaultValue:string):Promise<string|undefined>{
     return new Promise(async (resolve, reject) => {
         let options : vscode.InputBoxOptions = {};
-        let filename:string = 'edge_Worker_Bundle';
         options.prompt = promptName;
-        await vscode.window.showInputBox(options).then(value=> {
-            if(value === '' || value === undefined){
-                resolve(filename);
+        await vscode.window.showInputBox(options).then(userInput=> {
+            if(userInput === '' || userInput === undefined){
+                resolve(defaultValue);
             }
             else{
-                resolve(value);
+                resolve(userInput);
             }
         });
     });
@@ -107,7 +107,12 @@ export const askUserForFileName = async function(promptName: string):Promise<str
 export const getAccountKeyFromUserConfig= function():string{
     let accountKey: string = <string>workspace.getConfiguration('edgeworkers-vscode').get('accountKey');
     console.log(`account key ${accountKey}`);
-    return(accountKey);
+    if(accountKey === '' || accountKey === undefined){
+        return '';
+    }
+    else{
+        return(accountKey);
+    }
 };
 export const getSectionNameFromUserConfig= function():string{
     let sectionName: string = <string>workspace.getConfiguration('edgeworkers-vscode').get('sectionName');

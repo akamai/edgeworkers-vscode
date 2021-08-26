@@ -32,7 +32,7 @@ export const  callAkamaiCLIFOrEdgeWorkerIDs = async function(accountKey?: string
             } else if (stderr){
                 reject(stderr);
             }
-            deleteOutput("rm  /tmp/output.json");
+            deleteOutput("/tmp/output.json");
         });    
     });
 };
@@ -53,7 +53,7 @@ export const checkAkamaiCLI = async function(work_space_folder:string):Promise<b
         }
     });
 };
-export const executeCLICommandExceptTarCmd = function(cmd : string) : Promise<string> {
+export const executeCLICommandExceptTarCmd = function(cmd : string, jsonFile?:string) : Promise<string> {
     return new Promise(async (resolve, reject) => {
         const process = exec(cmd, (error : any, stdout : string, stderr : string) => {
             if (error) {
@@ -106,6 +106,29 @@ export const executeDeleteFileCmd = function(work_space_folder:string,tarfilenam
         }
     });
 };
+export const getEdgeWorkerDownloadCmd = function(edgeworkerID:string,edgeworkerVersion:string,tarFilePath:string, accountKey:string):string[]{
+    let downloadCmd:string[]= ["akamai","edgeworkers","download",`${edgeworkerID}`, `${edgeworkerVersion}`,"--downloadPath", `${tarFilePath}`];
+    downloadCmd = addAccountKeyParams(downloadCmd,accountKey);
+    return downloadCmd;
+};
+export const getEdgeWorkerValidateCmd = function(work_space_folder:string,tarfile:string,accountKey:string):string[]{
+    let validateCmd:string[]= ["akamai","edgeworkers","validate",`${work_space_folder}/${tarfile}.tgz`];
+    validateCmd = addAccountKeyParams(validateCmd,accountKey);
+    return validateCmd;
+};
+
+export const getUploadEdgeWorkerCmd = function(bundlePath:string,edgeWorkerID:string,accountKey:string,edgeWorkerVersionID?:string):string[]{
+    let uploadCmd:string[]= ["akamai","edgeworkers","upload","--bundle",`${bundlePath}`, `${edgeWorkerID}`, `${edgeWorkerVersionID}`];
+    uploadCmd = addAccountKeyParams(uploadCmd,accountKey);
+    return uploadCmd;
+};
+export const addAccountKeyParams = function(cmd:string[],accountKey:string):string[]{
+    if (accountKey !== ''|| typeof accountKey !== undefined){
+        const accountKeyParams:string[]= ["--accountkey",`${accountKey}`];
+        cmd.push(...accountKeyParams);
+    }
+    return cmd;
+};
 export const generateCLICommand = function(cmdArgs: string[]):string{
     let command:string = '';
     if (typeof cmdArgs !== 'undefined' && cmdArgs.length > 0) {
@@ -113,7 +136,6 @@ export const generateCLICommand = function(cmdArgs: string[]):string{
     }
     return command;
 };
-
-export const deleteOutput = function(command:string){
-    exec(command);
+export const deleteOutput = function(path:string){
+    exec(`rm ${path}`);
 };
