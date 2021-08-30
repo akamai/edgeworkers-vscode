@@ -9,6 +9,7 @@ const exec = require('child_process').exec;
 const edgeworker_download_URI = 'https://github.com/akamai/cli-edgeworkers';
 const akamai_version_cmd = 'akamai --version';
 import * as downloadEdgeWorker from './downloadEdgeWorker';
+import * as uploadEdgeWorker from './uploadEdgeWorker';
 import { EdgeWorkerDetails, EdgeWorkerDetailsProvider } from './managementUI';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import console from 'console';
@@ -45,7 +46,24 @@ export const activate = function(context: vscode.ExtensionContext) {
         await downloadEdgeWorker.downloadEdgeWorker(edgeWorkerdetails.version,edgeWorkerdetails.label);
      });
 
-
+    //command for the upload EdgWorker Tar ball
+    let uploadWithTarPath = vscode.commands.registerCommand('edgeworkers-vscode.uploadEdgeWorker',  async (tarFilepath:string)=>{
+        await uploadEdgeWorker.uploadEdgeWorker(tarFilepath.toString());
+     });
+    //command for the upload EdgWorker Tar ball
+    let uploadWithoutTarPath = vscode.commands.registerCommand('edgeworkers-vscode.uploadEdgeWorkerFromMangementUI',  async (tarFilepath:string)=>{
+        const tarFileFSPath = await vscode.window.showOpenDialog({
+            canSelectFolders: true,
+            canSelectFiles: true,
+        });
+        if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
+                const tarFilePath= tarFileFSPath.toString();
+                await uploadEdgeWorker.uploadEdgeWorker(tarFilePath.toString());
+        }
+        else{
+            vscode.window.showErrorMessage("Tar file is not provided");
+        }
+     });
 };
 // this method is called when your extension is deactivated
 export function deactivate() {}
