@@ -23,9 +23,11 @@ suite('testing edgeworker vscode extension', () => {
         sinon.restore();
     });
     it('check if the edgeWorker is present under the user account', async function(){
-        //EdgeWorker ID : 3654 is present under the user account
+        //EdgeWorker ID : 3333 is present in sample.json
 		this.timeout(100000);
-		const status:any = await uploadEdgeWorkerVersion.validateEgdeWorkerID('3654',accountKey).then((success)=>{
+        const ListIds = JSON.stringify(jsonSample);
+        sinon.stub(akamiCLICalls, 'callAkamaiCLIFOrEdgeWorkerIDs').resolves(ListIds);
+		const status:any = await uploadEdgeWorkerVersion.validateEgdeWorkerID('3333',accountKey).then((success)=>{
             assert.strictEqual(success,true);
         });
 	});
@@ -38,8 +40,8 @@ suite('testing edgeworker vscode extension', () => {
         assert.strictEqual(status.toString(),'false');
         });
     it('check if upload bundle is successfull', async function(){
-        //EdgeWorker ID: which is present in  6539 version 0.3 account of B-M-28QYF3M
-        //should return the error
+        //EdgeWorker ID: which is present in  6539 version 0.4 account of B-M-28QYF3M
+        //should return the true since it is done
 		this.timeout(100000);
         sinon.stub(edgeWorkerCommands, 'getAccountKeyFromUserConfig').returns('B-M-28QYF3M');
         let tarFilePath= path.resolve(__dirname,'../../../src/test/testSpace/bundle.tgz');
