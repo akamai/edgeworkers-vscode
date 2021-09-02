@@ -49,11 +49,11 @@ export const validateEgdeWorkerID = async function(edgeWorkerID: string, account
             const edgeWorkerIDsString= await akamiCLICalls.callAkamaiCLIFOrEdgeWorkerIDs(accountKey);
             const edgeWorkerIDsJson = JSON.parse(edgeWorkerIDsString);
             if(edgeWorkerIDsJson.data !== undefined || edgeWorkerIDsJson.data.length !== 0){
-                for(var i = 0; i < edgeWorkerIDsJson.data.length; i++) {
-                    if(edgeWorkerID === edgeWorkerIDsJson.data[i].edgeWorkerId.toString()){
+                edgeWorkerIDsJson.data.find((element:any) => {
+                    if(edgeWorkerID === element.edgeWorkerId.toString()){
                         found = true;
                     }
-                }
+                });
             }
             resolve(found);
         }catch(e){
