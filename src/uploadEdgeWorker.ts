@@ -48,13 +48,11 @@ export const validateEgdeWorkerID = async function(edgeWorkerID: string, account
             let found:boolean=false;
             const edgeWorkerIDsString= await akamiCLICalls.callAkamaiCLIFOrEdgeWorkerIDs(accountKey);
             const edgeWorkerIDsJson = JSON.parse(edgeWorkerIDsString);
-            if(edgeWorkerIDsJson.data !== undefined || edgeWorkerIDsJson.data.length !== 0){
-                edgeWorkerIDsJson.data.find((element:any) => {
-                    if(edgeWorkerID === element.edgeWorkerId.toString()){
-                        found = true;
-                    }
-                });
-            }
+            edgeWorkerIDsJson.data.find((element:any) => {
+                if(edgeWorkerID === element.edgeWorkerId.toString()){
+                    found = true;
+                } 
+            });
             resolve(found);
         }catch(e){
             reject(e);
