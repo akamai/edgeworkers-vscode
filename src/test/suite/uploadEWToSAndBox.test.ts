@@ -35,14 +35,23 @@ suite('testing edgeworker vscode extension', () => {
         let bundleFilePath= path.resolve(__dirname,'../../../src/test/testSpace');
         let version = await uploadTarBallToSandbox.getVersionIdFromBundleJSON(bundleFilePath);
         version = version.toString();
-        assert.strictEqual(version,"0.4");
+        assert.strictEqual(version,"0.2");
     });
-    it('getVersionIdFromBundleJSON()  has no version it shoud throw error', async function(){
+    it('check if the uploadEdgeWorkerTarballToSandbox returns false when executeCLICommandExceptTarCmd() return a error', async function(){
         this.timeout(100000);
-        let bundleFilePath= path.resolve(__dirname,'../../../src/test/testSpace');
-        sinon.stub(uploadTarBallToSandbox, 'getVersionIdFromBundleJSON').resolves("error");
-        let version = await uploadTarBallToSandbox.getVersionIdFromBundleJSON(bundleFilePath);
-        version = version.toString();
-        assert.strictEqual(version,"0.4");
+        let tarFilePath= path.resolve(__dirname,'../../../src/test/testSpace/bundle.tgz');
+        sinon.stub(akamiCLICalls, 'executeCLICommandExceptTarCmd').rejects("error");
+        const status = await uploadTarBallToSandbox.uploadEdgeWorkerTarballToSandbox(tarFilePath);
+        assert.strictEqual(status,false);
     });
+
+    it('check if the uploadEdgeWorkerTarballToSandbox() returns true when akamai sandbox is present and executeCLICommandExceptTarCmd() is resolved with output ', async function(){
+        //test this case for the account key B-M-28QYF3M configured sandbox.
+        this.timeout(100000);
+        let tarFilePath= path.resolve(__dirname,'../../../src/test/testSpace/bundle.tgz');
+        sinon.stub(edgeWorkerCommands, 'getAccountKeyFromUserConfig').returns("B-M-28QYF3M");
+        const status = await uploadTarBallToSandbox.uploadEdgeWorkerTarballToSandbox(tarFilePath);
+        assert.strictEqual(status,true);
+    });
+
 });

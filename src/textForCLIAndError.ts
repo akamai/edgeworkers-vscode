@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 export enum textForCmd{
     akamai_version = "akamai --version",
-    akamai_sandbox_version = "aws --version",
+    akamai_sandbox_version = "akamai --version",
     
 }
 
@@ -27,6 +27,7 @@ export enum ErrorMessageExt {
     Fail_to_upload_EW_sandbox= 'Error: Filed to upload ',
     akamai_sandbox_not_installed = 'Error: Akamai sandbox is not installed.',
     upload_EW_fail_by_no_sandbox = "To upload EdgeWorker to sandbox finish the installation of akamai sandbox",
+    if_sandbox_not_started = "For your Account we could not find any sandbox to upload the Edgeworker. Please make sure your sandbox is started before uploding edgeworker to sandbox",
     
 }
 
