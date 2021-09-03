@@ -55,7 +55,7 @@ export const checkAkamaiCLI = async function(work_space_folder:string):Promise<b
 };
 export const executeCLICommandExceptTarCmd = function(cmd : string, jsonFile?:string) : Promise<string> {
     return new Promise(async (resolve, reject) => {
-        const process = exec(cmd, (error : any, stdout : string, stderr : string) => {
+        const process = exec(cmd, (error : string, stdout : string, stderr : string) => {
             if (error) {
                 reject(error);
             }
@@ -162,11 +162,10 @@ export const updateEdgeWorkerToSandboxCmd = function(bundlePath:string,edgeWorke
     return uploadCmd;
 };
 
-export const checkAkamaiSandbox = async function():Promise<boolean|string>{
+export const checkAkamaiSandbox = async function(akamaiSandboxCmd: string):Promise<boolean|string>{
     return new Promise(async (resolve, reject) => {
         try{
-            const cmd:string[]= [];
-            const process= await executeCLICommandExceptTarCmd(textForCmd.akamai_sandbox_version);
+            const process= await executeCLICommandExceptTarCmd(akamaiSandboxCmd);
             resolve(true);
         }catch(e){
             const resp = await vscode.window.showErrorMessage(
