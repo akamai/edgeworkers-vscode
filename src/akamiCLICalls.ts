@@ -55,7 +55,7 @@ export const checkAkamaiCLI = async function(work_space_folder:string):Promise<b
 };
 export const executeCLICommandExceptTarCmd = function(cmd : string, jsonFile?:string) : Promise<string> {
     return new Promise(async (resolve, reject) => {
-        const process = exec(cmd, (error : any, stdout : string, stderr : string) => {
+        const process = exec(cmd, (error : string, stdout : string, stderr : string) => {
             if (error) {
                 reject(error);
             }
@@ -138,4 +138,44 @@ export const generateCLICommand = function(cmdArgs: string[]):string{
 };
 export const deleteOutput = function(path:string){
     exec(`rm ${path}`);
+};
+
+export const untarTarballToTempDir = async function (tarFilePath:string, edgeworkerBundle:string):Promise<string>{
+    return new Promise(async (resolve, reject) => {
+        try{
+            const tarFileDir = '/tmp';
+            deleteOutputFolder(`${tarFileDir}/${edgeworkerBundle}`);
+            const statusUntar = await executeCLICommandExceptTarCmd(`mkdir ${tarFileDir}/${edgeworkerBundle} && tar -xf ${tarFilePath} -C  ${tarFileDir}/${edgeworkerBundle}`);
+            resolve(`${tarFileDir}/${edgeworkerBundle}`);
+        }catch(e){
+            reject("failed to untar the file: "+`${edgeworkerBundle}`+ErrorMessageExt.display_original_error+e);
+        }
+    });
+};
+export const deleteOutputFolder = function(path:string){
+    exec(`rm -rf ${path}`);
+};
+
+export const updateEdgeWorkerToSandboxCmd = function(bundlePath:string,edgeWorkerID:string,accountKey:string):string[]{
+    let uploadCmd:string[]= ["akamai","sandbox","update-edgeworker", `${edgeWorkerID}`,`${bundlePath}` ];
+    uploadCmd = addAccountKeyParams(uploadCmd,accountKey);
+    return uploadCmd;
+};
+
+export const checkAkamaiSandbox = async function(akamaiSandboxCmd: string):Promise<boolean|string>{
+    return new Promise(async (resolve, reject) => {
+        try{
+            const process= await executeCLICommandExceptTarCmd(akamaiSandboxCmd);
+            resolve(true);
+        }catch(e){
+            const resp = await vscode.window.showErrorMessage(
+                ErrorMessageExt.akamai_sandbox_not_installed,
+                'Install'
+                );
+                if (resp === 'Install') {
+                    vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(ErrorMessageExt.akamai_sanbox_download));
+                }
+            reject(ErrorMessageExt.upload_EW_fail_by_no_sandbox+ ' at ' + vscode.Uri.parse(ErrorMessageExt.akamai_sanbox_download));
+        }
+    });
 };
