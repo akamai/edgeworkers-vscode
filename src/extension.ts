@@ -12,6 +12,7 @@ import * as downloadEdgeWorker from './downloadEdgeWorker';
 import * as uploadEdgeWorker from './uploadEdgeWorker';
 import { EdgeWorkerDetails, EdgeWorkerDetailsProvider } from './managementUI';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
+import * as uploadTarBallToSandbox from './uploadTarBallToSandbox';
 import console from 'console';
 
 export const activate = function(context: vscode.ExtensionContext) {
@@ -63,6 +64,9 @@ export const activate = function(context: vscode.ExtensionContext) {
         else{
             vscode.window.showErrorMessage("Tar file is not provided");
         }
+    });
+    let uploadTarballToSandbox = vscode.commands.registerCommand('edgeworkers-vscode.uploadTarBallToSandBox',  async (tarFilepath:string)=>{
+        await uploadTarBallToSandbox.uploadEdgeWorkerTarballToSandbox(tarFilepath.toString());
      });
 };
 // this method is called when your extension is deactivated

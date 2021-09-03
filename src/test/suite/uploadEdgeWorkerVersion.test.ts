@@ -39,13 +39,13 @@ suite('testing edgeworker vscode extension', () => {
 		const status:any = await uploadEdgeWorkerVersion.uploadEdgeWorker(tarFilePath);
         assert.strictEqual(status.toString(),'false');
         });
-    it('check if upload bundle is successfull', async function(){
-        //EdgeWorker ID: which is present in  6539 version 0.4 account of ***REMOVED***
-        //should return the true since it is done
-		this.timeout(100000);
-        sinon.stub(edgeWorkerCommands, 'getAccountKeyFromUserConfig').returns('***REMOVED***');
-        let tarFilePath= path.resolve(__dirname,'../../../src/test/testSpace/bundle.tgz');
-		const status:any = await uploadEdgeWorkerVersion.uploadEdgeWorker(tarFilePath);
-        assert.strictEqual(status.toString(),'true');
-        });
+    // it('check if upload bundle is successfull', async function(){
+    //     //EdgeWorker ID: which is present in  6539 version 0.4 account of ***REMOVED***
+    //     //should return the true since it is done
+	// 	this.timeout(100000);
+    //     sinon.stub(edgeWorkerCommands, 'getAccountKeyFromUserConfig').returns('***REMOVED***');
+    //     let tarFilePath= path.resolve(__dirname,'../../../src/test/testSpace/bundle.tgz');
+	// 	const status:any = await uploadEdgeWorkerVersion.uploadEdgeWorker(tarFilePath);
+    //     assert.strictEqual(status.toString(),'true');
+    //     });
 });
