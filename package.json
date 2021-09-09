@@ -16,6 +16,7 @@
 		"onCommand:edgeworkers-vscode.downloadEdgeWorker",
 		"onCommand:edgeworkers-vscode.uploadEdgeWorker",
 		"onCommand:edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
+		"onCommand:edgeworkers-vscode.uploadTarBallToSandBox",
 		"onView:edgeWorkerDetails"
 	],
 	"main": "./out/extension.js",
@@ -81,6 +82,10 @@
 					"light": "resources/light/download.svg",
 					"dark": "resources/dark/download.svg"
 				}
+			},
+			{
+				"command": "edgeworkers-vscode.uploadTarBallToSandBox",
+				"title": "Test EdgeWorker in Sandbox"
 			}
 		],
 		"menus": {
@@ -113,6 +118,11 @@
 					"when": "resourceFilename =~ /.*\\.(tgz)/",
 					"command": "edgeworkers-vscode.uploadEdgeWorker",
 					"group": "bundle@1"
+				},
+				{
+					"when": "resourceFilename =~ /.*\\.(tgz)/",
+					"command": "edgeworkers-vscode.uploadTarBallToSandBox",
+					"group": "edgeworkerCommands"
 				}
 			]
 		},
