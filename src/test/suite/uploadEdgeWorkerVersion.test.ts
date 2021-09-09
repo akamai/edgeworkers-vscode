@@ -41,10 +41,9 @@ suite('testing edgeworker vscode extension', () => {
         assert.strictEqual(status.toString(),'false');
         });
     it('check if upload bundle is successfull', async function(){
-        //EdgeWorker ID: which is present in  6539 version 0.4 account of ***REMOVED***
         //should return the true since it is done
 		this.timeout(100000);
-        sinon.stub(edgeWorkerCommands, 'getAccountKeyFromUserConfig').returns('***REMOVED***');
+        sinon.stub(akamiCLICalls, 'executeCLICommandExceptTarCmd').resolves('done');
         let tarFilePath= path.resolve(__dirname,'../../../src/test/testSpace/bundle.tgz');
         let edgeworkerID:string = "";
 		const status:any = await uploadEdgeWorkerVersion.uploadEdgeWorker(tarFilePath,edgeworkerID);
