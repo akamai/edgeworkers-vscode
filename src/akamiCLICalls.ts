@@ -36,10 +36,10 @@ export const  callAkamaiCLIFOrEdgeWorkerIDs = async function(accountKey?: string
         });    
     });
 };
-export const checkAkamaiCLI = async function(work_space_folder:string):Promise<boolean>{
+export const checkAkamaiCLI = async function(work_space_folder:string,akamaiCliCmd:string):Promise<boolean>{
     return new Promise(async (resolve, reject) => {
         try{
-            const cmd:string[]= ["cd",`${work_space_folder}`, "&&",textForCmd.akamai_version];
+            const cmd:string[]= ["cd",`${work_space_folder}`, "&&",`${akamaiCliCmd}`];
             const process= await executeCLICommandExceptTarCmd(generateCLICommand(cmd));
             resolve(true);
         }catch(e){

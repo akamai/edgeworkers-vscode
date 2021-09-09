@@ -36,7 +36,7 @@ export const activate = async function(context: vscode.ExtensionContext) {
         //check if Akami cli is installed or not on user system
         if(vscode.workspace.workspaceFolders !== undefined && vscode.workspace.workspaceFolders !== null){
             const work_space_folder = vscode.workspace.workspaceFolders[0].uri.path;
-            const statusCLI = await akamiCLICalls.checkAkamaiCLI(work_space_folder);
+            const statusCLI = await akamiCLICalls.checkAkamaiCLI(work_space_folder,textForCmd.akamai_version);
             // command activation for creating bundle
             let disposable = vscode.commands.registerCommand('edgeworkers-vscode.edgeworkerBundle', async function () {
                 await edgeWorkerCommands.createAndValidateEdgeWorker(work_space_folder);
