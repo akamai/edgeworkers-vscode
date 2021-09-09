@@ -43,13 +43,7 @@ export const checkAkamaiCLI = async function(work_space_folder:string):Promise<b
             const process= await executeCLICommandExceptTarCmd(generateCLICommand(cmd));
             resolve(true);
         }catch(e){
-            const resp = await vscode.window.showErrorMessage(
-                ErrorMessageExt.akamai_cli_not_installed,
-                'Install'
-                );
-                if (resp === 'Install') {
-                    vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(ErrorMessageExt.edgeworker_download_URI));
-                }
+           reject(e);
         }
     });
 };
@@ -117,8 +111,8 @@ export const getEdgeWorkerValidateCmd = function(work_space_folder:string,tarfil
     return validateCmd;
 };
 
-export const getUploadEdgeWorkerCmd = function(bundlePath:string,edgeWorkerID:string,accountKey:string,edgeWorkerVersionID?:string):string[]{
-    let uploadCmd:string[]= ["akamai","edgeworkers","upload","--bundle",`${bundlePath}`, `${edgeWorkerID}`, `${edgeWorkerVersionID}`];
+export const getUploadEdgeWorkerCmd = function(bundlePath:string,edgeWorkerID:string,accountKey:string):string[]{
+    let uploadCmd:string[]= ["akamai","edgeworkers","upload","--bundle",`${bundlePath}`, `${edgeWorkerID}`];
     uploadCmd = addAccountKeyParams(uploadCmd,accountKey);
     return uploadCmd;
 };

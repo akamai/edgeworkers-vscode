@@ -11,28 +11,27 @@ import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
 
-export const uploadEdgeWorker = async function(tarFilePath: string):Promise<boolean>{
+export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:string):Promise<boolean>{
     let bundlePath = tarFilePath.replace('file://','');
+    let userEdgeWorkerID :string = edgeworkerID as string;
     const tarFileName = path.parse(bundlePath).base;
     let accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
     try{
-        const edgeWorkerID = await edgeWorkerCommands.askUserForUserInput(textForInfoMsg.get_edgeWorker_id_User,'');
-        if(edgeWorkerID === '' || edgeWorkerID === undefined){
-            throw new Error(ErrorMessageExt.empty_edgeWorkerID);
-        }
-        const validate = await validateEgdeWorkerID(edgeWorkerID,accountKey);
-        if(validate === true){
-            let edgeWorkerVersionID = await edgeWorkerCommands.askUserForUserInput(textForInfoMsg.get_edgeWorker_versionId,'');
-            if(edgeWorkerVersionID === '' || edgeWorkerVersionID === undefined){
-                edgeWorkerVersionID = '';
+        if(userEdgeWorkerID === '' || userEdgeWorkerID === undefined){
+            userEdgeWorkerID = await edgeWorkerCommands.askUserForUserInput(textForInfoMsg.get_edgeWorker_id_User,'') as string;
+            if(userEdgeWorkerID === '' || userEdgeWorkerID === undefined){
+                throw new Error(ErrorMessageExt.empty_edgeWorkerID);
             }
-            const uploadCmd = await akamiCLICalls.getUploadEdgeWorkerCmd(bundlePath,edgeWorkerID,accountKey,edgeWorkerVersionID);
+        }
+        const validate = await validateEgdeWorkerID(userEdgeWorkerID,accountKey);
+        if(validate === true){
+            const uploadCmd = await akamiCLICalls.getUploadEdgeWorkerCmd(bundlePath,userEdgeWorkerID,accountKey);
             const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(uploadCmd));
-            const msg = textForInfoMsg.upload_edgeWorker_success+`${tarFileName}`+" to Edge Worker ID: "+`${edgeWorkerID}`+" and version: "+`${edgeWorkerVersionID}`;
+            const msg = textForInfoMsg.upload_edgeWorker_success+`${tarFileName}`+" to Edge Worker ID: "+`${userEdgeWorkerID}`;
             vscode.window.showInformationMessage(msg);
         }
         else{
-            const msg =`${edgeWorkerID}`+ErrorMessageExt.id_not_found+ErrorMessageExt.edgeWorkerId_notFound;
+            const msg =`${edgeworkerID} `+ErrorMessageExt.id_not_found+ErrorMessageExt.edgeWorkerId_notFound;
             throw new Error(msg);
         }
         return true;
