@@ -12,7 +12,7 @@ import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
 
 export const uploadEdgeWorker = async function(tarFilePath: string):Promise<boolean>{
-    let bundlePath = tarFilePath.replace('file://','');
+    let bundlePath = tarFilePath.replace('file://',''); // this seems unreliable and shouldn't be needed
     const tarFileName = path.parse(bundlePath).base;
     let accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
     try{
