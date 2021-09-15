@@ -77,7 +77,7 @@ export const executeCLIOnlyForTarCmd = async function(bundleFolder:string, tarba
     const fullTarballPath = `${tarballFolder}/${tarfilename}.tgz`;
     const cmd:string[]= ["cd",`${bundleFolder}`, "&&","tar","--disable-copyfile","-czvf",fullTarballPath, '--exclude="*.tgz"', "*"];
      
-    const processDone = await new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
         exec(generateCLICommand(cmd),{}, (error:any,stdout:string, stderr:string)=>{
             if (error) {
                 const status = stderr.toString();
@@ -88,9 +88,8 @@ export const executeCLIOnlyForTarCmd = async function(bundleFolder:string, tarba
         });
     });
 
-    if (processDone) {
-        return `Successfully created the EdgeWorker bundle - ${tarfilename}.tgz`;
-    }
+    // if the process above is done, we should assume the file is created
+    return `Successfully created the EdgeWorker bundle - ${tarfilename}.tgz`;
 };
 export const executeDeleteFileCmd = async function(fullTarballPath: string):Promise<void>{
     const cmd:string[]= ["rm",fullTarballPath];
