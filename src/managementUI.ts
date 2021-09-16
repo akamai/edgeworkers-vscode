@@ -137,11 +137,11 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 		}
 		return edgeworkersDetails;
 	}
-	public async getBundleFiles(edgeWorkerID:string,edgeWorkerVersion:string):Promise<EdgeWorkers[]> {
-		let bundleFiles: EdgeWorkers[]= [];
-		let bundleFile: EdgeWorkers;
-		const toDep = (moduleName: string): EdgeWorkers => {
-			return new EdgeWorkers(moduleName,'',vscode.TreeItemCollapsibleState.None,'');
+	public async getBundleFiles(edgeWorkerID:string,edgeWorkerVersion:string):Promise<EdgeWorkerFiles[]> {
+		let bundleFiles: EdgeWorkerFiles[]= [];
+		let bundleFile: EdgeWorkerFiles;
+		const toDep = (moduleName: string): EdgeWorkerFiles => {
+			return new EdgeWorkerFiles(moduleName,'',vscode.TreeItemCollapsibleState.None,'');
 		};
 		try{
 			const filenames = await this.downloadBundle(edgeWorkerID,edgeWorkerVersion);
@@ -229,4 +229,21 @@ export class EdgeWorkerDetails extends vscode.TreeItem {
 		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'EdgeWorkers.svg')
 	};
 	contextValue = 'EdgeWorkerDetails';
+}
+export class  EdgeWorkerFiles extends vscode.TreeItem {
+	constructor(
+		public readonly label: string,
+		public readonly version: string,
+		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+		public readonly type:string,
+		public readonly command?: vscode.Command
+	) {
+		super(label, collapsibleState);
+		this.tooltip = '';
+	}
+	iconPath = {
+		light: path.join(__filename, '..', '..', 'resources', 'light', 'EdgeWorkers.svg'),
+		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'EdgeWorkers.svg')
+	};
+	contextValue = 'EdgeWorkerFiles';
 }
