@@ -8,13 +8,14 @@ const exec = require('child_process').exec;
 const path = require('path');
 import * as akamiCLICalls from './akamiCLICalls';
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
+const fs = require("fs");
 
 export const createAndValidateEdgeWorker = async function(folder:string){
     try{
         //check if Akami cli is installed or not on user system
         await akamiCLICalls.checkAkamaiCLI(folder);
         //check bundle.json as its mandatory file for edgeworker bundle; will throw an error if not found
-        await searchBundle('bundle.json');
+        await searchBundle(folder,'bundle.json');
         //create edgeWorker Bundle
         const bundleValidateName = await createEdgeWorkerBundle(folder);
 
@@ -22,7 +23,7 @@ export const createAndValidateEdgeWorker = async function(folder:string){
         const parentFolder = path.dirname(folder);
 
         //validate edge worker bundle
-        const bundleValidateCmd = await validateEdgeWorkerBundle(parentFolder, bundleValidateName);
+        const bundleValidateCmd = await validateEdgeWorkerBundle(folder, bundleValidateName);
         vscode.window.showInformationMessage(bundleValidateCmd);
     }catch(e:any){
         vscode.window.showErrorMessage(e);
@@ -30,13 +31,9 @@ export const createAndValidateEdgeWorker = async function(folder:string){
 };
 export const createEdgeWorkerBundle = async function(bundleFolder:string):Promise<string>{
     const defaultFilename:string = 'edgeworkerBundle';
-    const tarFileName:string|undefined = await askUserForUserInput(textForInfoMsg.bundle_name,defaultFilename);
-    const parentFolder = path.dirname(bundleFolder);
-    
-    const fullTarballPath = `${parentFolder}/${tarFileName}.tgz`;
-    // check if a tarball with that name already exists in the parent folder
-    const tarballExists = await checkFile(fullTarballPath);
-
+    const tarFileName:string = await askUserForUserInput(textForInfoMsg.bundle_name,defaultFilename);
+    const bundlepath = path.resolve(bundleFolder,`${tarFileName}.tgz`);
+    const tarballExists = await checkFile(bundlepath);
     if (tarballExists) {
         const resp = await vscode.window.showErrorMessage(
             `${ErrorMessageExt.bundle_already_exists} + ${tarFileName}.tgz`,
@@ -45,17 +42,17 @@ export const createEdgeWorkerBundle = async function(bundleFolder:string):Promis
 
         if(resp === 'yes'){
             // there might be an exception thrown below but if so it will bubble out to the calling function
-            await akamiCLICalls.executeDeleteFileCmd(fullTarballPath);
-            const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(bundleFolder, parentFolder,`${tarFileName}`);
+            await akamiCLICalls.executeDeleteFileCmd(bundlepath);
+            const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(bundleFolder, bundlepath,`${tarFileName}`);
             vscode.window.showInformationMessage(createBundleCmd);
             return (`${tarFileName}`);
         }
         else{
-            return `${tarFileName}`
+            return `${tarFileName}`;
         }
     } else {
         // again there might be an exception thrown below but if so it will bubble out to the calling function
-        const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(bundleFolder, parentFolder,`${tarFileName}`);
+        const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(bundleFolder, bundlepath,`${tarFileName}`);
         vscode.window.showInformationMessage(createBundleCmd);
         return (`${tarFileName}`);
     }
@@ -65,11 +62,6 @@ export const validateEdgeWorkerBundle = async function( work_space_folder:string
         const accountKey = getAccountKeyFromUserConfig();
         try{
             const cmd = akamiCLICalls.getEdgeWorkerValidateCmd(work_space_folder,tarfile,accountKey);
-            // let cmd:string[]= ["akamai","edgeworkers","validate",`${work_space_folder}/${tarfile}.tgz`];
-            // if (accountKey !== ''|| typeof accountKey !== undefined){
-            //     const accountKeyParams:string[]= ["--accountkey",`${accountKey}`];
-            //     cmd.push(...accountKeyParams);
-            // }
             const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(cmd));
             resolve(textForInfoMsg.validate_bundle_success+`${tarfile}.tgz`);
         }catch(e){
@@ -77,7 +69,7 @@ export const validateEdgeWorkerBundle = async function( work_space_folder:string
     }
     });
 };
-export const askUserForUserInput = async function(promptName: string,defaultValue:string):Promise<string|undefined>{
+export const askUserForUserInput = async function(promptName: string,defaultValue:string):Promise<string>{
     return new Promise(async (resolve, reject) => {
         let options : vscode.InputBoxOptions = {};
         options.prompt = promptName;
@@ -107,18 +99,22 @@ export const getSectionNameFromUserConfig= function():string{
     return(sectionName);
 };
 
-export const checkFile = async function(fileName: string): Promise<boolean> {
-    const files = await workspace.findFiles(`${fileName}`);
-    if(files === undefined || files.length == 0){
+export const checkFile = async function(filePath: string): Promise<boolean> {
+    try{
+        if(fs.existsSync(filePath)) {
+            return true;
+        }
+        else{
+            return false;
+        }
+    }catch(e){
         return false;
     }
-    else {
-        return true;
-    }
 };
-export const searchBundle = async function(fileName: string):Promise<string>{
+export const searchBundle = async function(bundleFolder:string,fileName: string):Promise<string>{
     return new Promise(async (resolve, reject) => {
-        if (await checkFile(`**/${fileName}`)) {
+        const bundleJsonPath = path.resolve(bundleFolder,fileName);
+        if (await checkFile(bundleJsonPath)) {
             resolve(textForInfoMsg.file_found+`${fileName}`);
         } else {
             reject(ErrorMessageExt.bundle_JSON_not_found+`${fileName}`);
