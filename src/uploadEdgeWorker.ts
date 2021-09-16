@@ -11,8 +11,8 @@ import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
 
-export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:string):Promise<boolean>{
-    let bundlePath = tarFilePath.replace('file://','');
+export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:string = ''):Promise<boolean>{
+    let bundlePath = tarFilePath.replace('file://',''); // this seems unreliable and shouldn't be needed
     let userEdgeWorkerID :string = edgeworkerID as string;
     const tarFileName = path.parse(bundlePath).base;
     let accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
@@ -35,7 +35,7 @@ export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:
             throw new Error(msg);
         }
         return true;
-    }catch(e){
+    }catch(e:any){
         vscode.window.showErrorMessage(e.toString());
         return false;
     }

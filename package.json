@@ -110,7 +110,7 @@
 			],
 			"explorer/context": [
 				{
-					"when": "resourceFilename =~ /.*\\.(json)/",
+					"when": "resourceFilename =~ /bundle\\.(json)/",
 					"command": "edgeworkers-vscode.edgeworkerBundle",
 					"group": "bundle@1"
 				},
