@@ -73,15 +73,14 @@ export const executeCLICommandExceptTarCmd = function(cmd : string, jsonFile?:st
     });
 };
 
-export const executeCLIOnlyForTarCmd = async function(bundleFolder:string, tarballFolder:string,tarfilename : string) : Promise<string> {
-    const fullTarballPath = `${tarballFolder}/${tarfilename}.tgz`;
-    const cmd:string[]= ["cd",`${bundleFolder}`, "&&","tar","--disable-copyfile","-czvf",fullTarballPath, '--exclude="*.tgz"', "*"];
+export const executeCLIOnlyForTarCmd = async function(bundleFolder:string, bundlepath:string,tarFileName:string) : Promise<string> {
+    const cmd:string[]= ["cd",`${bundleFolder}`, "&&","tar","--disable-copyfile","-czvf",bundlepath, '--exclude="*.tgz"', "*"];
      
     await new Promise((resolve, reject) => {
         exec(generateCLICommand(cmd),{}, (error:any,stdout:string, stderr:string)=>{
             if (error) {
                 const status = stderr.toString();
-                reject(`${ErrorMessageExt.create_bundle_fail} ${tarfilename}.tgz ${ErrorMessageExt.display_original_error} ${status}`);
+                reject(`${ErrorMessageExt.create_bundle_fail} ${tarFileName}.tgz ${ErrorMessageExt.display_original_error} ${status}`);
             } else {
                 resolve(true);
             }
@@ -89,7 +88,7 @@ export const executeCLIOnlyForTarCmd = async function(bundleFolder:string, tarba
     });
 
     // if the process above is done, we should assume the file is created
-    return `Successfully created the EdgeWorker bundle - ${tarfilename}.tgz`;
+    return `Successfully created the EdgeWorker bundle - ${tarFileName}.tgz`;
 };
 export const executeDeleteFileCmd = async function(fullTarballPath: string):Promise<void>{
     const cmd:string[]= ["rm",fullTarballPath];
@@ -97,7 +96,7 @@ export const executeDeleteFileCmd = async function(fullTarballPath: string):Prom
     const process= await executeCLICommandExceptTarCmd(deleteCmd);
     const fileExists = await edgeWorkerCommands.checkFile(fullTarballPath);
     if (fileExists) {
-        throw (ErrorMessageExt.file_replace_error + path.basename(fullTarballPath)); 
+        throw new Error(ErrorMessageExt.file_replace_error + path.basename(fullTarballPath)); 
     }
 };
 export const getEdgeWorkerDownloadCmd = function(edgeworkerID:string,edgeworkerVersion:string,tarFilePath:string, accountKey:string):string[]{
