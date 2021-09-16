@@ -5,6 +5,7 @@ const exec = require('child_process').exec;
 import { Config } from './config';
 const os = require('os');
 const fs = require('fs');
+const path = require('path');
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 const config: Config = require('../config.json');
@@ -36,69 +37,63 @@ export const  callAkamaiCLIFOrEdgeWorkerIDs = async function(accountKey?: string
         });    
     });
 };
-export const checkAkamaiCLI = async function(work_space_folder:string,akamaiCliCmd:string):Promise<boolean>{
-    return new Promise(async (resolve, reject) => {
-        try{
-            const cmd:string[]= ["cd",`${work_space_folder}`, "&&",`${akamaiCliCmd}`];
-            const process= await executeCLICommandExceptTarCmd(generateCLICommand(cmd));
-            resolve(true);
-        }catch(e){
-           reject(e);
-        }
-    });
+export const isAkamaiCLIInstalled = async function():Promise<boolean>{
+    try{
+        const cmd:string[]= [`${textForCmd.akamai_version}`];
+        const process = await executeCLICommandExceptTarCmd(generateCLICommand(cmd));
+        
+        return true;
+    } catch(e){
+        return false;
+    }
 };
 export const executeCLICommandExceptTarCmd = function(cmd : string, jsonFile?:string) : Promise<string> {
+    // wrap exec in a promise
     return new Promise(async (resolve, reject) => {
-        const process = exec(cmd, (error : string, stdout : string, stderr : string) => {
+        exec(cmd, (error : Error, stdout : string, stderr : string) => {
             if (error) {
-                reject(error);
-            }
-            else if (stdout){
-                resolve(stdout);
-            }
-            else if(stderr){
-                reject(stderr);
-            }
-            else{
-                resolve('done');
+                if (stderr) {
+                    reject(stderr);
+                } else {
+                    reject('failure');
+                }
+            } else {
+                if (stdout){
+                    resolve(stdout);
+                } else {
+                    resolve('done');
+                }
             }
         });
     });
 };
 
-export const executeCLIOnlyForTarCmd = function(work_space_folder:string,tarfilename : string) : Promise<string> {
-    return new Promise(async (resolve, reject) => {
-        let status:string = "successful";
-        const cmd:string[]= ["cd",`${work_space_folder}`, "&&","tar","--disable-copyfile","-czvf",`${tarfilename}.tgz`, '--exclude="*.tgz"', "*"];
-        const process= await exec(generateCLICommand(cmd),(error:any,stdout:string, stderr:string)=>{
+export const executeCLIOnlyForTarCmd = async function(bundleFolder:string, bundlepath:string,tarFileName:string) : Promise<string> {
+    const cmd:string[]= ["cd",`${bundleFolder}`, "&&","tar","--disable-copyfile","-czvf",bundlepath, '--exclude="*.tgz"', "*"];
+     
+    // on command error an exception will be thrown to bubble outwrad
+    await new Promise((resolve, reject) => {
+        exec(generateCLICommand(cmd),{}, (error:any,stdout:string, stderr:string)=>{
             if (error) {
-                status=stderr.toString();
-                reject(ErrorMessageExt.create_bundle_fail+`${tarfilename}.tgz`+ " --due to -- "+status);
+                const status = stderr.toString();
+                reject(`${ErrorMessageExt.create_bundle_fail} ${tarFileName}.tgz ${ErrorMessageExt.display_original_error} ${status}`);
+            } else {
+                resolve(true);
             }
         });
-        if(status=== "successful"){
-            const check = await edgeWorkerCommands.checkFile(`**/${tarfilename}.tgz`);
-            if(check=== true){
-                resolve("Successfully created the EdgeWorker bundle - " + `${tarfilename}.tgz`);
-            }
-            else{
-                reject(ErrorMessageExt.create_bundle_fail+`${tarfilename}.tgz`+ ErrorMessageExt.display_original_error +process.stderr.toString());
-            }
-        }
     });
+
+    // if the process above is done, we should assume the file is created
+    return `Successfully created the EdgeWorker bundle - ${tarFileName}.tgz`;
 };
-export const executeDeleteFileCmd = function(work_space_folder:string,tarfilename: string):Promise<boolean|string>{
-    return new Promise(async (resolve, reject) => {
-        const cmd:string[]= ["cd",`${work_space_folder}`, "&&","rm",`${tarfilename}.tgz`];
-        const deleteCmd= generateCLICommand(cmd);
-        try{
-            const process= await executeCLICommandExceptTarCmd(deleteCmd);
-            const check = await edgeWorkerCommands.checkFile(`**/${tarfilename}.tgz`);
-            reject(ErrorMessageExt.file_replace_error+`${tarfilename}.tgz`); 
-        }catch(e){
-            resolve(true); 
-        }
-    });
+export const executeDeleteFileCmd = async function(fullTarballPath: string):Promise<void>{
+    const cmd:string[]= ["rm",fullTarballPath];
+    const deleteCmd= generateCLICommand(cmd);
+    const process= await executeCLICommandExceptTarCmd(deleteCmd);
+    const fileExists = await edgeWorkerCommands.checkFile(fullTarballPath);
+    if (fileExists) {
+        throw new Error(ErrorMessageExt.file_replace_error + path.basename(fullTarballPath)); 
+    }
 };
 export const getEdgeWorkerDownloadCmd = function(edgeworkerID:string,edgeworkerVersion:string,tarFilePath:string, accountKey:string):string[]{
     let downloadCmd:string[]= ["akamai","edgeworkers","download",`${edgeworkerID}`, `${edgeworkerVersion}`,"--downloadPath", `${tarFilePath}`];
@@ -135,16 +130,15 @@ export const deleteOutput = function(path:string){
 };
 
 export const untarTarballToTempDir = async function (tarFilePath:string, edgeworkerBundle:string):Promise<string>{
-    return new Promise(async (resolve, reject) => {
-        try{
-            const tarFileDir = '/tmp';
-            deleteOutputFolder(`${tarFileDir}/${edgeworkerBundle}`);
-            const statusUntar = await executeCLICommandExceptTarCmd(`mkdir ${tarFileDir}/${edgeworkerBundle} && tar -xf ${tarFilePath} -C  ${tarFileDir}/${edgeworkerBundle}`);
-            resolve(`${tarFileDir}/${edgeworkerBundle}`);
-        }catch(e){
-            reject("failed to untar the file: "+`${edgeworkerBundle}`+ErrorMessageExt.display_original_error+e);
-        }
-    });
+    try{
+        const tarFileDir = '/tmp';
+        const tempFolder = `${tarFileDir}/${edgeworkerBundle}-${Date.now()}`;
+        deleteOutputFolder(tempFolder);
+        const statusUntar = await executeCLICommandExceptTarCmd(`mkdir ${tempFolder} && tar -xf ${tarFilePath} -C  ${tempFolder}`);
+        return tempFolder;
+    }catch(e){
+        throw("failed to untar the file: "+`${edgeworkerBundle}`+ErrorMessageExt.display_original_error+e);
+    }
 };
 export const deleteOutputFolder = function(path:string){
     exec(`rm -rf ${path}`);

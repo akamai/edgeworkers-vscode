@@ -19,10 +19,9 @@ import * as jsonSample from './sampleTest.json';
 suite('testing create and validating edge worker', () => { 
     it('checking Akamai CLI is installed or not', async function(){
         this.timeout(100000);
-        const testComsd:string = "akamai --version";
 		const folder = vscode.workspace.workspaceFolders![0].uri.fsPath;
 			//check id akamai CLI is installed on user system
-        const status= await akamiCLICalls.checkAkamaiCLI(folder,testComsd);
+        const status= await akamiCLICalls.isAkamaiCLIInstalled();
         assert.strictEqual(status,true);
     });
 });
