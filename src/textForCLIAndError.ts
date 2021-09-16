@@ -27,7 +27,7 @@ export enum ErrorMessageExt {
     Fail_to_upload_EW_sandbox= 'Error: Filed to upload ',
     akamai_sandbox_not_installed = 'Error: Akamai sandbox is not installed.',
     upload_EW_fail_by_no_sandbox = "To upload EdgeWorker to sandbox finish the installation of akamai sandbox",
-    if_sandbox_not_started = "For your Account we could not find any sandbox to upload the Edgeworker. Please make sure your sandbox is started before uploding edgeworker to sandbox",
+    if_sandbox_not_started = "For your Account we could not find any sandbox to upload the Edgeworker. Please make sure your sandbox is started.",
     
 }
 
@@ -39,7 +39,6 @@ export enum textForInfoMsg{
     tar_file_path = "Enter the file system path to download edgeworker bundle",
     tar_download_success = " Successfully downloaded edgeworker bundle for ",
     get_edgeWorker_id_User = "Enter Edge Worker ID for which you want to Upload the Tar ball",
-    get_edgeWorker_versionId= "Enter the version id of edge worker for uploading tarball",
     upload_edgeWorker_success= "Successfully uploaded ",
     success_upload_ew_to_sandbox = 'is successfully uploaded to sandbox',
     info_to_test_edgeWorker_curl = "Use curl or a browser to test the functionality \n \nCurl: Run this command curl --header 'Host: www.example.com' http://127.0.0.1:9550/ \n \nBrowser: Open your /etc/hosts file and point the hostname associated with the property configuration to 127.0.0.1, then enter http://<your-hostname>:9550 in your browser.",

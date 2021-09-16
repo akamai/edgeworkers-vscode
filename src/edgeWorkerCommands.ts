@@ -11,8 +11,6 @@ import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 
 export const createAndValidateEdgeWorker = async function(folder:string){
     try{
-        //check if Akami cli is installed or not on user system
-        await akamiCLICalls.checkAkamaiCLI(folder);
         //check bundle.json as its mandatory file for edgeworker bundle; will throw an error if not found
         await searchBundle('bundle.json');
         //create edgeWorker Bundle

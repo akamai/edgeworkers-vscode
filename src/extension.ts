@@ -12,10 +12,12 @@ import * as downloadEdgeWorker from './downloadEdgeWorker';
 import * as uploadEdgeWorker from './uploadEdgeWorker';
 import { EdgeWorkerDetails, EdgeWorkerDetailsProvider } from './managementUI';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
+import * as akamiCLICalls from './akamiCLICalls';
 import * as uploadTarBallToSandbox from './uploadTarBallToSandbox';
+import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import console from 'console';
 
-export const activate = function(context: vscode.ExtensionContext) {
+export const activate = async function(context: vscode.ExtensionContext) {
     // management UI class initilization
     const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider();
     vscode.window.createTreeView('edgeWorkerDetails', {
@@ -29,7 +31,16 @@ export const activate = function(context: vscode.ExtensionContext) {
             treeDataProvider: edgeWorkerDetailsProvider,
             showCollapseAll: true
         });  
-     }); 
+    }); 
+
+    if (!await akamiCLICalls.isAkamaiCLIInstalled()) {
+        const resp = await vscode.window.showErrorMessage(ErrorMessageExt.akamai_cli_not_installed, 'Install');
+
+        if (resp === 'Install') {
+            vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(ErrorMessageExt.edgeworker_download_URI));
+        }
+    }
+
     // command activation for creating bundle
     vscode.commands.registerCommand('edgeworkers-vscode.edgeworkerBundle', async function (bundleFileInput:any) {
         // get the parent folder for the bundle.json
@@ -43,14 +54,14 @@ export const activate = function(context: vscode.ExtensionContext) {
         await downloadEdgeWorker.downloadEdgeWorker(edgeWorkerdetails.version,edgeWorkerdetails.label);
      });
 
-    //command for the upload EdgeWorker Tar ball
+    //command for the upload EdgeWorker Tar ball file in file explorer
     vscode.commands.registerCommand('edgeworkers-vscode.uploadEdgeWorker',  async (uploadCommandInput:any)=>{
         const filePath = getFilePathFromInput(uploadCommandInput);
         await uploadEdgeWorker.uploadEdgeWorker(filePath);
      });
 
-    //command for the upload EdgeWorker Tar ball
-    vscode.commands.registerCommand('edgeworkers-vscode.uploadEdgeWorkerFromMangementUI',  async ()=>{
+    //command for the upload EdgeWorker Tar ball from mangement UI add button
+    vscode.commands.registerCommand('edgeworkers-vscode.uploadEdgeWorkerFromMangementUI',  async (edgeWorkerdetails: EdgeWorkerDetails)=>{
         const tarFileFSPath = await vscode.window.showOpenDialog({
             canSelectFolders: true,
             canSelectFiles: true,
@@ -60,7 +71,7 @@ export const activate = function(context: vscode.ExtensionContext) {
         if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
             // there should be exactly one result
             const filePath = getFilePathFromInput(tarFileFSPath[0]);
-            await uploadEdgeWorker.uploadEdgeWorker(filePath);
+            await uploadEdgeWorker.uploadEdgeWorker(filePath, edgeWorkerdetails.version);
         }
         else{
             vscode.window.showErrorMessage("Tar file is not provided");
@@ -79,7 +90,7 @@ export function deactivate() {}
 
 function getFilePathFromInput(commandParam : any) : string {
     let filePath = '';
-        
+
     if (typeof commandParam === "string") {
         // use as is
         filePath = commandParam;
