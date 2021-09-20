@@ -42,10 +42,11 @@ export const activate = async function(context: vscode.ExtensionContext) {
     }
 
     // command activation for creating bundle
-    vscode.commands.registerCommand('edgeworkers-vscode.edgeworkerBundle', async function (bundleFileInput:any) {
+    vscode.commands.registerCommand('edgeworkers-vscode.edgeworkerBundle', async function (uri:vscode.Uri) {
         // get the parent folder for the bundle.json
-        const folder = getFileParentFolderFromInput(bundleFileInput);
-        await edgeWorkerCommands.createAndValidateEdgeWorker(folder);
+        const bundleFileInput = path.join(uri.fsPath,'..');
+        // const folder = getFileParentFolderFromInput(bundleFileInput);
+        await edgeWorkerCommands.createAndValidateEdgeWorker(bundleFileInput);
     });
 
     // command activation for downloading edgeworker
@@ -63,7 +64,7 @@ export const activate = async function(context: vscode.ExtensionContext) {
     //command for the upload EdgeWorker Tar ball from mangement UI add button
     vscode.commands.registerCommand('edgeworkers-vscode.uploadEdgeWorkerFromMangementUI',  async (edgeWorkerdetails: EdgeWorkerDetails)=>{
         const tarFileFSPath = await vscode.window.showOpenDialog({
-            canSelectFolders: true,
+            canSelectFolders: false,
             canSelectFiles: true,
             canSelectMany: false,
             filters: {'Tarball': ['tgz', 'tar.gz']}
@@ -88,7 +89,7 @@ export const activate = async function(context: vscode.ExtensionContext) {
 export function deactivate() {}
 
 
-function getFilePathFromInput(commandParam : any) : string {
+export function getFilePathFromInput(commandParam : any) : string {
     let filePath = '';
 
     if (typeof commandParam === "string") {
@@ -97,7 +98,7 @@ function getFilePathFromInput(commandParam : any) : string {
     } else if (typeof commandParam === "object" && typeof commandParam.path === "string") {
         // input is an object but we know it has the path property which is what we want so let's use that
         // looks like this is a vscode.uri object but it's hard to tell from the debugger -- at least it looks like one
-        filePath = commandParam.path;
+        filePath=  commandParam.fsPath;
     } else {
         // idk what this is so let's force it to be a string
         filePath = commandParam.toString();

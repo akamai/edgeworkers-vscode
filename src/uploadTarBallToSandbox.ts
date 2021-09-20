@@ -36,7 +36,7 @@ export const uploadEdgeWorkerTarballToSandbox = async function(tarFilepath:strin
             vscode.window.showInformationMessage(`EdgeWorker: ${edgeWorkerID} and Version: ${edgeWorkerversion} ` + textForInfoMsg.success_upload_ew_to_sandbox);
             vscode.window.showInformationMessage(textForInfoMsg.info_to_test_edgeWorker_curl,{ modal: true }); 
         }catch(e){
-            const errorString = e.toString();
+            const errorString = e as string;
             if(errorString.includes("Sandbox not found")){
                 throw new Error(ErrorMessageExt.if_sandbox_not_started);
             }
@@ -46,7 +46,8 @@ export const uploadEdgeWorkerTarballToSandbox = async function(tarFilepath:strin
         }
     return true;
     }catch(e){
-        vscode.window.showErrorMessage(e);
+        const err = e as string
+        vscode.window.showErrorMessage(err);
         return false;
     }
 };
