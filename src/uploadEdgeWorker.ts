@@ -12,9 +12,8 @@ import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
 
 export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:string = ''):Promise<boolean>{
-    let bundlePath = tarFilePath.replace('file://',''); // this seems unreliable and shouldn't be needed
     let userEdgeWorkerID :string = edgeworkerID as string;
-    const tarFileName = path.parse(bundlePath).base;
+    const tarFileName = path.parse(tarFilePath).base;
     let accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
     try{
         if(userEdgeWorkerID === '' || userEdgeWorkerID === undefined){
@@ -25,7 +24,7 @@ export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:
         }
         const validate = await validateEgdeWorkerID(userEdgeWorkerID,accountKey);
         if(validate === true){
-            const uploadCmd = await akamiCLICalls.getUploadEdgeWorkerCmd(bundlePath,userEdgeWorkerID,accountKey);
+            const uploadCmd = await akamiCLICalls.getUploadEdgeWorkerCmd(tarFilePath,userEdgeWorkerID,accountKey);
             const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(uploadCmd));
             const msg = textForInfoMsg.upload_edgeWorker_success+`${tarFileName}`+" to Edge Worker ID: "+`${userEdgeWorkerID}`;
             vscode.window.showInformationMessage(msg);

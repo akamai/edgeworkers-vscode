@@ -4,6 +4,12 @@ export enum textForCmd{
     akamai_sandbox_version = "akamai --version",
     
 }
+export enum systemType{
+    macOS = "Darwin",
+    linux = "Linux",
+    windows = "Windows_NT",
+
+}
 
 export enum ErrorMessageExt {
     akamai_cli_not_installed= "Error: akamai CLI is not installed. Do you want to install Akamai CLI ?",
@@ -28,7 +34,7 @@ export enum ErrorMessageExt {
     akamai_sandbox_not_installed = 'Error: Akamai sandbox is not installed.',
     upload_EW_fail_by_no_sandbox = "To upload EdgeWorker to sandbox finish the installation of akamai sandbox",
     if_sandbox_not_started = "For your Account we could not find any sandbox to upload the Edgeworker. Please make sure your sandbox is started.",
-    
+    windowsTarCmdUnfound = "Your system does not have 7z software to perform perform to create bundle(.tgz) file. \n Solution:\n 1.Install 7z in your machine. use this link : https://www.7-zip.org/download.html \n 2. Set path in Environment Variables-> SystemVariables\n 3. Select path variable and click on edit \n 4. Click on new-->copy paste filepath to 7-zip from program files \n 5. Click on 'ok'",
 }
 
 export enum textForInfoMsg{
