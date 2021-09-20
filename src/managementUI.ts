@@ -4,14 +4,15 @@ import * as path from 'path';
 import { Config } from './config';
 const config: Config = require('../config.json');
 const exec = require('child_process').exec;
+const os = require('os');
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
 import * as edgeWorkersSvc from './openAPI/edgeActions/ew-service';
 import { ErrorMessageExt } from './textForCLIAndError';
 
 export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWorkers> {
-	private _onDidChangeTreeData: vscode.EventEmitter<EdgeWorkers | undefined | void> = new vscode.EventEmitter<EdgeWorkers | undefined | void>();
-	readonly onDidChangeTreeData: vscode.Event<EdgeWorkers | undefined | void> = this._onDidChangeTreeData.event;
+	private _onDidChangeTreeData: vscode.EventEmitter<EdgeWorkers | undefined> = new vscode.EventEmitter<EdgeWorkers | undefined>();
+	readonly onDidChangeTreeData: vscode.Event<EdgeWorkers | undefined> = this._onDidChangeTreeData.event;
 	public  edgeWorkerJsonArray = {};
 	public accountKey:string= '';
 	public listIds:string ='';
@@ -93,7 +94,8 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 			}
 			else{
 				edgeWorkerJson.data.forEach(async (element: any) => {
-					edgeworker = toDep(`${element.name}`, `${element.edgeWorkerId}`, '');
+					let moduleName = element.name + " -- " + element.edgeWorkerId ;
+					edgeworker = toDep(`${moduleName}`, `${element.edgeWorkerId}`, '');
 					edgeworkers.push(edgeworker);
 				});
 			}
@@ -166,7 +168,7 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 	}
 	public async downloadBundle(edgeworkerID: string, edgeworkerVersion:string):Promise<string[]>{
 		return new Promise(async (resolve, reject) => {
-			let tarFilePath = '/tmp';
+			let tarFilePath = os.tmpdir();
 			let files = new Array();
 			let fileNames = new Array();
 			try{
