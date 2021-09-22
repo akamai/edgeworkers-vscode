@@ -9,6 +9,7 @@ import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
 import * as edgeWorkersSvc from './openAPI/edgeActions/ew-service';
 import { ErrorMessageExt } from './textForCLIAndError';
+const accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
 
 export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWorkers> {
 	private _onDidChangeTreeData: vscode.EventEmitter<EdgeWorkers | undefined> = new vscode.EventEmitter<EdgeWorkers | undefined>();
@@ -38,7 +39,7 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 		} else {
 			await akamiCLICalls.callAkamaiCLIFOrEdgeWorkerIDs(this.accountKey).then(async ids =>{
 				this.listIds=ids;
-				await this.fillDetails().then(details=>{
+				await this.fillVersions(ids).then(details=>{
 					this.edgeWorkerdetails= details;
 				}).catch(err=>{
 					vscode.window.showErrorMessage(ErrorMessageExt.edgworkerDetails_fail+ErrorMessageExt.display_original_error+err);
@@ -50,14 +51,14 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 			return Promise.resolve(this.getEdgeWorkers(this.listIds));
 		}
 	}
-	private async fillDetails( ):Promise<string>{
+	private async fillVersions( ids:string):Promise<string>{
 		return new Promise(async (resolve, reject) => {
-			let edgeWorkerJsonString: string = this.listIds;
+			let edgeWorkerJsonString: string = ids;
 			const edgeWorkerJson = JSON.parse(edgeWorkerJsonString);
 			try{
 				if(edgeWorkerJson.data !== undefined || edgeWorkerJson.data.length !== 0){
 					for(var i = 0; i < edgeWorkerJson.data.length; i++) {	
-						let versions  = await edgeWorkersSvc.getAllVersions(`${edgeWorkerJson.data[i].edgeWorkerId}`, `${this.accountKey}`);
+						let versions  = await edgeWorkersSvc.getAllVersions(`${edgeWorkerJson.data[i].edgeWorkerId}`, `${accountKey}`);
 						if(versions.hasOwnProperty("versions")){
 							versions= versions["versions"];
 							console.log(`the version details are ${versions}`);

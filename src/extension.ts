@@ -16,6 +16,10 @@ import * as akamiCLICalls from './akamiCLICalls';
 import * as uploadTarBallToSandbox from './uploadTarBallToSandbox';
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import console from 'console';
+import * as activationUI from './activationUI';
+import { Utils } from 'vscode-uri';
+import * as edgeWorkersSvc from './openAPI/edgeActions/ew-service';
+
 
 export const activate = async function(context: vscode.ExtensionContext) {
     // management UI class initilization
@@ -83,6 +87,40 @@ export const activate = async function(context: vscode.ExtensionContext) {
         const filePath = getFilePathFromInput(sandboxCommandInput);
         await uploadTarBallToSandbox.uploadEdgeWorkerTarballToSandbox(filePath);
      });
+
+     //Activation UI for edgeworker
+     vscode.commands.registerCommand("edgeworkers-vscode.activateEdgeWorker", async function() {
+        const accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
+        const listIds = await akamiCLICalls.callAkamaiCLIFOrEdgeWorkerIDs(accountKey);
+        const versionIds = await getVersions(listIds);
+        const jsonvalue = JSON.parse(listIds);
+        const panel = vscode.window.createWebviewPanel(
+            'Activate Edge Worker',
+            'Activate Edge Worker',
+             vscode.ViewColumn.One,
+            {
+                enableScripts: true,
+                localResourceRoots: [Utils.joinPath(context.extensionUri, 'media')]
+            }
+        );
+        panel.webview.html = activationUI.getWebviewContent(context,panel.webview,listIds,versionIds);
+        // Handle messages from the webview
+        panel.webview.onDidReceiveMessage(
+            message => {
+                switch (message.command) {
+                    case 'info':
+                      let msg ="the message"+ message.edgeWorker.toString()+message.version.toString()+message.network.toString();
+                    vscode.window.showErrorMessage(msg);
+                    return;
+                    case 'cancel':
+                    vscode.window.showErrorMessage(message.text);
+                    return;
+                }
+            },
+            undefined,
+            context.subscriptions
+        );
+    });
 };
 
 // this method is called when your extension is deactivated
@@ -111,4 +149,30 @@ export function getFilePathFromInput(commandParam : any) : string {
 function getFileParentFolderFromInput(commandParam : any) : string {
     const filePath = getFilePathFromInput(commandParam);
     return path.dirname(filePath);
+}
+
+export const getVersions =  async function( ids:string):Promise<string>{
+    return new Promise(async (resolve, reject) => {
+        const accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
+        let edgeWorkerJsonString: string = ids;
+        const edgeWorkerJson = JSON.parse(edgeWorkerJsonString);
+        try{
+            if(edgeWorkerJson.data !== undefined || edgeWorkerJson.data.length !== 0){
+                for(var i = 0; i < edgeWorkerJson.data.length; i++) {	
+                    let versions  = await edgeWorkersSvc.getAllVersions(`${edgeWorkerJson.data[i].edgeWorkerId}`, `${accountKey}`);
+                    if(versions.hasOwnProperty("versions")){
+                        versions= versions["versions"];
+                        console.log(`the version details are ${versions}`);
+                    }
+                    edgeWorkerJson.data[i].versions= versions;
+                    edgeWorkerJson.data[i].versions.forEach((element: any) => {
+                        console.log(element);
+                    });
+                }
+                resolve(JSON.stringify(edgeWorkerJson));
+            }
+        }catch(e){
+            reject(e);
+        }
+    });
 }
