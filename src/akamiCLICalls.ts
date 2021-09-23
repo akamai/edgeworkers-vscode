@@ -7,13 +7,15 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 import * as edgeWorkerCommands from './edgeWorkerCommands';
-import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
+import {textForCmd,ErrorMessageExt,textForInfoMsg,systemType } from './textForCLIAndError';
 const config: Config = require('../config.json');
+const ostype = os.type();
 
 export const  callAkamaiCLIFOrEdgeWorkerIDs = async function(accountKey?: string) : Promise<string> {
     return new Promise(async (resolve, reject) => { 
+        const outPutFilePath = path.resolve(os.tmpdir(),'output.json');
         let akamaiCmd:string[] = ["akamai", "edgeworkers", "list-ids"];
-        let cliCmd:string[] = ["--json","/tmp/output.json"];
+        let cliCmd:string[] = ["--json",`${outPutFilePath}`];
         if (accountKey !== ''|| typeof accountKey !== undefined){
             const accountKeyParams:string[]= ["--accountkey",`${accountKey}`];
             akamaiCmd.push(...accountKeyParams);
@@ -22,18 +24,18 @@ export const  callAkamaiCLIFOrEdgeWorkerIDs = async function(accountKey?: string
         const command = generateCLICommand(akamaiCmd);
         const process= await exec(command, {maxBuffer: config.settings.bufferSize, timeout: config.settings.timeOut}, (error : any, stdout : string, stderr : string) => {
             if (error){
-               fs.readFile("/tmp/output.json", "utf8", function(err:any, data:any) {
+               fs.readFile(outPutFilePath, "utf8", function(err:any, data:any) {
                     const json = JSON.parse(data);
                     reject(json.msg);
                 });
             } else if (stdout){
-                fs.readFile("/tmp/output.json", "utf8", function(err:any, data:any) {
+                fs.readFile(outPutFilePath, "utf8", function(err:any, data:any) {
                     resolve(data);
                 });
             } else if (stderr){
                 reject(stderr);
             }
-            deleteOutput("/tmp/output.json");
+            deleteOutput(outPutFilePath);
         });    
     });
 };
@@ -41,7 +43,6 @@ export const isAkamaiCLIInstalled = async function():Promise<boolean>{
     try{
         const cmd:string[]= [`${textForCmd.akamai_version}`];
         const process = await executeCLICommandExceptTarCmd(generateCLICommand(cmd));
-        
         return true;
     } catch(e){
         return false;
@@ -69,12 +70,15 @@ export const executeCLICommandExceptTarCmd = function(cmd : string, jsonFile?:st
 };
 
 export const executeCLIOnlyForTarCmd = async function(bundleFolder:string, bundlepath:string,tarFileName:string) : Promise<string> {
-    const cmd:string[]= ["cd",`${bundleFolder}`, "&&","tar","--disable-copyfile","-czvf",bundlepath, '--exclude="*.tgz"', "*"];
-     
+  const cmd = await getTarCmd(bundleFolder,bundlepath,tarFileName);
     // on command error an exception will be thrown to bubble outwrad
     await new Promise((resolve, reject) => {
         exec(generateCLICommand(cmd),{}, (error:any,stdout:string, stderr:string)=>{
             if (error) {
+                const errorString = error.toString();
+                if( (errorString.includes('is not recognized as an internal or external command') === true) && ostype === systemType.windows){
+                    reject(`${ErrorMessageExt.windowsTarCmdUnfound}`);
+                }
                 const status = stderr.toString();
                 reject(`${ErrorMessageExt.create_bundle_fail} ${tarFileName}.tgz ${ErrorMessageExt.display_original_error} ${status}`);
             } else {
@@ -86,8 +90,11 @@ export const executeCLIOnlyForTarCmd = async function(bundleFolder:string, bundl
     // if the process above is done, we should assume the file is created
     return `Successfully created the EdgeWorker bundle - ${tarFileName}.tgz`;
 };
+export const  getTarCmd = async function(bundleFolder:string,bundlepath:string,tarFileName:string):Promise<Array<string>>{
+        return(  ["cd",`${bundleFolder}`, "&&","tar","--disable-copyfile","-czvf",bundlepath, '--exclude="*.tgz"', "*"]);
+};
 export const executeDeleteFileCmd = async function(fullTarballPath: string):Promise<void>{
-    const cmd:string[]= ["rm",fullTarballPath];
+    const cmd =await  deleteFileCmd(fullTarballPath);
     const deleteCmd= generateCLICommand(cmd);
     const process= await executeCLICommandExceptTarCmd(deleteCmd);
     const fileExists = await edgeWorkerCommands.checkFile(fullTarballPath);
@@ -95,13 +102,22 @@ export const executeDeleteFileCmd = async function(fullTarballPath: string):Prom
         throw new Error(ErrorMessageExt.file_replace_error + path.basename(fullTarballPath)); 
     }
 };
+export const deleteFileCmd = async function(fullTarballPath:string):Promise<Array<string>>{
+    if(ostype === systemType.windows){
+       return( ["del",fullTarballPath]);
+    }
+   else{
+        return(["rm",fullTarballPath]);
+    }
+
+};
 export const getEdgeWorkerDownloadCmd = function(edgeworkerID:string,edgeworkerVersion:string,tarFilePath:string, accountKey:string):string[]{
     let downloadCmd:string[]= ["akamai","edgeworkers","download",`${edgeworkerID}`, `${edgeworkerVersion}`,"--downloadPath", `${tarFilePath}`];
     downloadCmd = addAccountKeyParams(downloadCmd,accountKey);
     return downloadCmd;
 };
-export const getEdgeWorkerValidateCmd = function(work_space_folder:string,tarfile:string,accountKey:string):string[]{
-    let validateCmd:string[]= ["akamai","edgeworkers","validate",`${work_space_folder}/${tarfile}.tgz`];
+export const getEdgeWorkerValidateCmd = function(tarFilePath:string,accountKey:string):string[]{
+    let validateCmd:string[]= ["akamai","edgeworkers","validate",tarFilePath];
     validateCmd = addAccountKeyParams(validateCmd,accountKey);
     return validateCmd;
 };
@@ -122,17 +138,26 @@ export const generateCLICommand = function(cmdArgs: string[]):string{
     let command:string = '';
     if (typeof cmdArgs !== 'undefined' && cmdArgs.length > 0) {
         command = cmdArgs.join(" ").toString();
+        console.log("command:" + command);
     }
     return command;
 };
 export const deleteOutput = function(path:string){
-    exec(`rm ${path}`);
+    let deleteFile:string = '';
+    if(ostype === systemType.windows){
+        deleteFile =  `del ${path}`;
+    }
+    else{
+        deleteFile =  `rm  ${path}`;
+    }
+    exec(deleteFile);
 };
 
 export const untarTarballToTempDir = async function (tarFilePath:string, edgeworkerBundle:string):Promise<string>{
     try{
-        const tarFileDir = '/tmp';
-        const tempFolder = `${tarFileDir}/${edgeworkerBundle}-${Date.now()}`;
+        const tarFileDir = os.tmpdir();
+        const tempfol = path.resolve(tarFileDir,edgeworkerBundle);
+        const tempFolder = `${tempfol}-${Date.now()}`;
         deleteOutputFolder(tempFolder);
         const statusUntar = await executeCLICommandExceptTarCmd(`mkdir ${tempFolder} && tar -xf ${tarFilePath} -C  ${tempFolder}`);
         return tempFolder;
@@ -141,7 +166,14 @@ export const untarTarballToTempDir = async function (tarFilePath:string, edgewor
     }
 };
 export const deleteOutputFolder = function(path:string){
-    exec(`rm -rf ${path}`);
+    let deleteFolder:string = '';
+    if(ostype === systemType.windows){
+        deleteFolder = `rmdir /Q /S ${path}`;
+    }
+    else{
+        deleteFolder = `rm -rf ${path}`;
+    }
+    exec(deleteFolder);
 };
 
 export const updateEdgeWorkerToSandboxCmd = function(bundlePath:string,edgeWorkerID:string,accountKey:string):string[]{
