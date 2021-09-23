@@ -16,10 +16,6 @@ export const createAndValidateEdgeWorker = async function(folder:string){
         await searchBundle(folder,'bundle.json');
         //create edgeWorker Bundle
         const bundleValidateName = await createEdgeWorkerBundle(folder);
-
-        // bundle tarball was created in parent folder so we need to resolve that
-        const parentFolder = path.dirname(folder);
-
         //validate edge worker bundle
         const bundleValidateCmd = await validateEdgeWorkerBundle(folder, bundleValidateName);
         vscode.window.showInformationMessage(bundleValidateCmd);
@@ -59,7 +55,8 @@ export const validateEdgeWorkerBundle = async function( work_space_folder:string
     return new Promise(async (resolve, reject) => {
         const accountKey = getAccountKeyFromUserConfig();
         try{
-            const cmd = akamiCLICalls.getEdgeWorkerValidateCmd(work_space_folder,tarfile,accountKey);
+            let tarFilePath = path.resolve(work_space_folder, `${tarfile}.tgz`);
+            const cmd = akamiCLICalls.getEdgeWorkerValidateCmd(tarFilePath,accountKey);
             const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(cmd));
             resolve(textForInfoMsg.validate_bundle_success+`${tarfile}.tgz`);
         }catch(e){
