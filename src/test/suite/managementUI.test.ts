@@ -30,7 +30,7 @@ suite('testing Management UI', () => {
 		const status = await obj1.getEdgeWorkers(JSON.stringify(emptyJson.data)) ;	
 		if (status.length ===1){
 			status.forEach(element => {
-				assert.strictEqual(element.label,"No edge workers details");
+				assert.strictEqual(element.label,"No EdgeWorkers details");
 			});
 		}	
 	});

@@ -4,7 +4,12 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as akamiCLICalls from '../../akamiCLICalls';
 import * as jsonSample from './sampleTest.json';
+<<<<<<< HEAD
 suite('testing create and validating edge worker', () => { 
+=======
+
+suite('testing create and validating EdgeWorker', () => { 
+>>>>>>> package json setup fix and text changes
     it('checking Akamai CLI is installed or not', async function(){
         this.timeout(100000);
 		const folder = vscode.workspace.workspaceFolders![0].uri.fsPath;

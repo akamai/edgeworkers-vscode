@@ -4,7 +4,7 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as edgeWorkerCommands from '../../edgeWorkerCommands';
 
-suite('testing create and validating edge worker', () => { 
+suite('testing create and validating EdgeWorker', () => { 
     it('creating the bundle', async function(){
         this.timeout(100000);
 		const folder = vscode.workspace.workspaceFolders![0].uri.fsPath;

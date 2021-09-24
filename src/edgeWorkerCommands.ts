@@ -15,7 +15,7 @@ export const createAndValidateEdgeWorker = async function(folder:string){
         await searchBundle(folder,'bundle.json');
         //create edgeWorker Bundle
         const bundleValidateName = await createEdgeWorkerBundle(folder);
-        //validate edge worker bundle
+        //validate EdgeWorker bundle
         const bundleValidateCmd = await validateEdgeWorkerBundle(folder, bundleValidateName);
         vscode.window.showInformationMessage(bundleValidateCmd);
     }catch(e:any){
