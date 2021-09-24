@@ -26,7 +26,7 @@ export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:
         if(validate === true){
             const uploadCmd = await akamiCLICalls.getUploadEdgeWorkerCmd(tarFilePath,userEdgeWorkerID,accountKey);
             const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(uploadCmd));
-            const msg = textForInfoMsg.upload_edgeWorker_success+`${tarFileName}`+" to Edge Worker ID: "+`${userEdgeWorkerID}`;
+            const msg = textForInfoMsg.upload_edgeWorker_success+`${tarFileName}`+" to EdgeWorker ID: "+`${userEdgeWorkerID}`;
             vscode.window.showInformationMessage(msg);
         }
         else{

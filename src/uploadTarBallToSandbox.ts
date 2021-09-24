@@ -41,7 +41,7 @@ export const uploadEdgeWorkerTarballToSandbox = async function(tarFilepath:strin
                 throw new Error(ErrorMessageExt.if_sandbox_not_started);
             }
             else{
-                throw new Error(ErrorMessageExt.Fail_to_upload_EW_sandbox+`Edge Worker : ${edgeWorkerID} and Version: ${edgeWorkerversion}`+'to sandbox'+ ErrorMessageExt.display_original_error+ e);
+                throw new Error(ErrorMessageExt.Fail_to_upload_EW_sandbox+`EdgeWorker : ${edgeWorkerID} and Version: ${edgeWorkerversion}`+'to sandbox'+ ErrorMessageExt.display_original_error+ e);
             } 
         }
     return true;
