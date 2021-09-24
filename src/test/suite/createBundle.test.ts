@@ -16,7 +16,7 @@ import {downloadEdgeWorker} from '../../downloadEdgeWorker';
 import * as akamiCLICalls from '../../akamiCLICalls';
 import * as jsonSample from './sampleTest.json';
 
-suite('testing create and validating edge worker', () => { 
+suite('testing create and validating EdgeWorker', () => { 
     it('creating the bundle', async function(){
         this.timeout(100000);
 		const folder = vscode.workspace.workspaceFolders![0].uri.fsPath;

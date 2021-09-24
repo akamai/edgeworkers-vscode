@@ -26,8 +26,8 @@ export enum ErrorMessageExt {
     edgworkerDetails_fail= "Failed to fetch the Edgeworker details ",
     bundle_download_fail= "Failed to download the Edgeworker Bundle",
     bundle_files_fail = "Failed to fetch files",
-    empty_edgeWorkerID = "Unable to upload tar ball without the Edge Worker ID",
-    edgeWorkerId_notFound= "Error: The edgeWorker ID is not linked to your account.Please try with another edge Worker ID",
+    empty_edgeWorkerID = "Unable to upload tar ball without the EdgeWorker ID",
+    edgeWorkerId_notFound= "Error: The edgeWorker ID is not linked to your account.Please try with another EdgeWorker ID",
     id_not_found= " :Id not Found",
     version_missing_bundleJSON = 'Error: The version is not provided in Bundle.json file',
     Fail_to_upload_EW_sandbox= 'Error: Filed to upload ',
@@ -39,7 +39,7 @@ export enum ErrorMessageExt {
 
 export enum textForInfoMsg{
     file_found = " Mandatory file found ",
-    bundle_name = "Enter edge worker bundle name",
+    bundle_name = "Enter EdgeWorker bundle name",
     create_bundle_success = "Successfully created the EdgeWorker bundle - ",
     validate_bundle_success = "Successfully validated the EdgeWorker bundle - ",
     tar_file_path = "Enter the file system path to download edgeworker bundle",

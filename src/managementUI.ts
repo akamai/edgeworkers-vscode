@@ -89,7 +89,7 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 		if(edgeWorkerJsonString !== ''){
 			const edgeWorkerJson = JSON.parse(edgeWorkerJsonString);
 			if(Object.keys(edgeWorkerJson.data).length === 0){
-				edgeworker = toDep(`No edge workers details`, '','none');
+				edgeworker = toDep(`No EdgeWorkers details`, '','none');
 				edgeworkers.push(edgeworker);
 			}
 			else{
