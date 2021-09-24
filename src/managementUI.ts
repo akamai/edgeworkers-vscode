@@ -51,12 +51,21 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 		}
 		else{
 			const edgeWorkerJson = JSON.parse(edgeWorkerJsonString);
+<<<<<<< HEAD
 			edgeWorkerJson.forEach(async (element: any) => {
 				if(element.name === undefined || element.edgeWorkerId === undefined ||element.name === "" || element.edgeWorkerId === "" ){
 					edgeworkers.push(toDep("No edge workers details", '','none'));
 					return edgeworkers; 
 				}
 				else{
+=======
+			if(Object.keys(edgeWorkerJson.data).length === 0){
+				edgeworker = toDep(`No EdgeWorkers details`, '','none');
+				edgeworkers.push(edgeworker);
+			}
+			else{
+				edgeWorkerJson.data.forEach(async (element: any) => {
+>>>>>>> package json setup fix and text changes
 					let moduleName = element.name + " -- " + element.edgeWorkerId ;
 					edgeworker = toDep(`${moduleName}`, `${element.edgeWorkerId}`, '');
 					edgeworkers.push(edgeworker);

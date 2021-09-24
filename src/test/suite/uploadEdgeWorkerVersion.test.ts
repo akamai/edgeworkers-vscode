@@ -23,7 +23,7 @@ suite('testing edgeworker vscode extension', () => {
             assert.strictEqual(success,true);
         });
 	});
-    it('check if the present edge worker 3654 and present version 2.0 allows to upload same bundle', async function(){
+    it('check if the present EdgeWorker 3654 and present version 2.0 allows to upload same bundle', async function(){
         //EdgeWorker ID 3654: when user tries to upload same bundle it fails since the bundle is already present
         //should return the error
 		this.timeout(100000);

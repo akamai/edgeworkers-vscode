@@ -6,17 +6,17 @@ import { EdgeWorkerDetailsProvider} from '../../managementUI';
 import {downloadEdgeWorker} from '../../downloadEdgeWorker';
 import * as akamiCLICalls from '../../akamiCLICalls';
 
-suite('testing Downloading edge Worker', () => {
+suite('testing Downloading EdgeWorker', () => {
     afterEach(function () {
         sinon.restore();
     });
-    it('test the download edgeworker option with right edge worker id and edge worker version: should return true', async function(){
+    it('test the download edgeworker option with right EdgeWorker id and EdgeWorker version: should return true', async function(){
         this.timeout(100000);
 		const result= await downloadEdgeWorker('3654','1.0');
 		assert.strictEqual(result,true);
 		
 	});
-	it('test the download edgeworker option with wrong edge worker id and edge worker version: should return false', async function(){
+	it('test the download edgeworker option with wrong EdgeWorker id and EdgeWorker version: should return false', async function(){
         this.timeout(100000);
 		const result= await downloadEdgeWorker('12312','1.0');
 		assert.strictEqual(result,false);
