@@ -1,28 +1,27 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 'use strict';
 import * as vscode from 'vscode';
-import {workspace}from 'vscode';
-const path = require('path');
-import { exit } from 'process';
-const cp = require('child_process');
-const exec = require('child_process').exec;
-const edgeworker_download_URI = 'https://github.com/akamai/cli-edgeworkers';
-const akamai_version_cmd = 'akamai --version';
 import * as downloadEdgeWorker from './downloadEdgeWorker';
 import * as uploadEdgeWorker from './uploadEdgeWorker';
 import { EdgeWorkerDetails, EdgeWorkerDetailsProvider } from './managementUI';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
+import * as managementUI from './managementUI';
 import * as uploadTarBallToSandbox from './uploadTarBallToSandbox';
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
-import console from 'console';
-import * as activationUI from './activationUI';
 import { Utils } from 'vscode-uri';
-import * as edgeWorkersSvc from './openAPI/edgeActions/ew-service';
+import * as activationUI from './activationUI';
+import * as registerUI from './registerUI';
+import console from 'console';
+const path = require('path');
+const os = require('os');
+const fs = require('fs');
+
 
 
 export const activate = async function(context: vscode.ExtensionContext) {
     // management UI class initilization
+    
     const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider();
     vscode.window.createTreeView('edgeWorkerDetails', {
          treeDataProvider: edgeWorkerDetailsProvider,
@@ -47,10 +46,10 @@ export const activate = async function(context: vscode.ExtensionContext) {
 
     // command activation for creating bundle
     vscode.commands.registerCommand('edgeworkers-vscode.edgeworkerBundle', async function (uri:vscode.Uri) {
-        // get the parent folder for the bundle.json
-        const bundleFileInput = path.join(uri.fsPath,'..');
-        // const folder = getFileParentFolderFromInput(bundleFileInput);
-        await edgeWorkerCommands.createAndValidateEdgeWorker(bundleFileInput);
+    // get the parent folder for the bundle.json
+    const bundleFileInput = path.join(uri.fsPath,'..');
+    // const folder = getFileParentFolderFromInput(bundleFileInput);
+    await edgeWorkerCommands.createAndValidateEdgeWorker(bundleFileInput);
     });
 
     // command activation for downloading edgeworker
@@ -90,9 +89,9 @@ export const activate = async function(context: vscode.ExtensionContext) {
 
      //Activation UI for edgeworker
      vscode.commands.registerCommand("edgeworkers-vscode.activateEdgeWorker", async function() {
-        const accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
-        const listIds = await akamiCLICalls.callAkamaiCLIFOrEdgeWorkerIDs(accountKey);
-        const versionIds = await getVersions(listIds);
+        const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+        const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+        const versionIds = await managementUI.fillVersions(listIds);
         const jsonvalue = JSON.parse(listIds);
         const panel = vscode.window.createWebviewPanel(
             'Activate Edge Worker',
@@ -106,13 +105,44 @@ export const activate = async function(context: vscode.ExtensionContext) {
         panel.webview.html = activationUI.getWebviewContent(context,panel.webview,listIds,versionIds);
         // Handle messages from the webview
         panel.webview.onDidReceiveMessage(
-            message => {
+            async message => {
                 switch (message.command) {
                     case 'info':
-                      let msg ="the message"+ message.edgeWorker.toString()+message.version.toString()+message.network.toString();
-                    vscode.window.showErrorMessage(msg);
+                    const msg = getActivationOutput(message.edgeWorker.toString(),message.network.toString(),message.version.toString());
                     return;
                     case 'cancel':
+                    vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+                    return;
+                }
+            },
+            undefined,
+            context.subscriptions
+        );
+    });
+    vscode.commands.registerCommand("edgeworkers-vscode.registerEdgeWorker", async function() {
+        const groupIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-groups",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+        const groupIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(groupIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+        const panel = vscode.window.createWebviewPanel(
+            'Register Edge Worker',
+            'Register Edge Worker',
+             vscode.ViewColumn.One,
+            {
+                enableScripts: true,
+                localResourceRoots: [Utils.joinPath(context.extensionUri, 'media')]
+            }
+        );
+        panel.webview.html = registerUI.getWebviewContent(context,panel.webview,groupIds);
+        // Handle messages from the webview
+        panel.webview.onDidReceiveMessage(
+            async message => {
+                switch (message.command) {
+                    case 'info':
+                    const msg = getRegisterEWOutput(message.groupId.toString(),message.edgeworker.toString(),message.resourceId.toString());
+                    return;
+                    case 'cancel':
+                    vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+                    return;
+                    case 'alert':
                     vscode.window.showErrorMessage(message.text);
                     return;
                 }
@@ -151,28 +181,30 @@ function getFileParentFolderFromInput(commandParam : any) : string {
     return path.dirname(filePath);
 }
 
-export const getVersions =  async function( ids:string):Promise<string>{
-    return new Promise(async (resolve, reject) => {
-        const accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
-        let edgeWorkerJsonString: string = ids;
-        const edgeWorkerJson = JSON.parse(edgeWorkerJsonString);
-        try{
-            if(edgeWorkerJson.data !== undefined || edgeWorkerJson.data.length !== 0){
-                for(var i = 0; i < edgeWorkerJson.data.length; i++) {	
-                    let versions  = await edgeWorkersSvc.getAllVersions(`${edgeWorkerJson.data[i].edgeWorkerId}`, `${accountKey}`);
-                    if(versions.hasOwnProperty("versions")){
-                        versions= versions["versions"];
-                        console.log(`the version details are ${versions}`);
-                    }
-                    edgeWorkerJson.data[i].versions= versions;
-                    edgeWorkerJson.data[i].versions.forEach((element: any) => {
-                        console.log(element);
-                    });
-                }
-                resolve(JSON.stringify(edgeWorkerJson));
-            }
-        }catch(e){
-            reject(e);
-        }
-    });
-}
+
+export const getActivationOutput =  async function(edgeWorker:string,network:string,version:string):Promise<string>{
+    let msg ="Error activating Edgeowrker ID:"+edgeWorker+" in network "+network + " for version "+version;
+    try{
+        const cmd = await akamiCLICalls.getEdgeWorkerActivationCmd("edgeworkers","activate",edgeWorker,network,version,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+        const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
+        msg = status;
+        vscode.window.showInformationMessage(msg);
+        return(msg);
+    }catch(e){
+        vscode.window.showErrorMessage(msg);
+        return(msg);
+    }
+};
+export const getRegisterEWOutput =  async function(groupId:string,ewName:string,resourceId:string):Promise<string>{
+    let msg ="Error registering Edgeowrker:"+ewName+" for Group ID"+groupId + " for resource Tier ID"+resourceId;
+    try{
+        const cmd = await akamiCLICalls.getEdgeWorkerRegisterCmd("edgeworkers","register",resourceId,groupId,ewName,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+        const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
+        msg = status+ewName+" for groupID: "+groupId+" and for resource ID: "+resourceId;
+        vscode.window.showInformationMessage(msg);
+        return(msg);
+    }catch(e){
+        vscode.window.showErrorMessage(msg);
+        return(msg);
+    }
+};

@@ -1,20 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Console } from 'console';
 import { afterEach, beforeEach, describe, it } from "mocha";
-import { expect } from "chai";
 import * as sinon from 'sinon';
-import * as nodeDependencies from '../../managementUI';
 const chai    = require("chai");
 import * as assert from 'assert';
-const spies = require('chai-spies');
-import {workspace}from 'vscode';
-import { join } from 'path';
-import * as vscode from 'vscode';
 import * as edgeWorkerCommands from '../../edgeWorkerCommands';
-import { EdgeWorkerDetailsProvider} from '../../managementUI';
-import * as uploadEdgeWorkerVersion from '../../uploadEdgeWorker';
 import * as akamiCLICalls from '../../akamiCLICalls';
-import * as jsonSample from './sampleTest.json';
 import * as uploadTarBallToSandbox from '../../uploadTarBallToSandbox';
 const path = require("path");
 

@@ -1,23 +1,16 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 'use strict';
 import * as vscode from 'vscode';
-import {workspace}from 'vscode';
-const fs = require('fs');
-const os = require('os');
-const ostype = os.type();
-const path = require('path');
-import { ErrorMessage } from './openAPI/utils/http-error-message';
-const cp = require('child_process');
-const exec = require('child_process').exec;
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import {getFilePathFromInput} from './extension';
 import * as akamiCLICalls from './akamiCLICalls';
+const os = require('os');
+const path = require('path');
 
 export const downloadEdgeWorker = async function(edgeworkerID: string, edgeworkerVersion:string):Promise<boolean>{
     try{
         let tarFilePath = os.tmpdir();
-        let accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
         const tarFileFSPath = await vscode.window.showOpenDialog({
             canSelectFolders: true,
             canSelectFiles: false,
@@ -25,8 +18,8 @@ export const downloadEdgeWorker = async function(edgeworkerID: string, edgeworke
         if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
              tarFilePath= getFilePathFromInput(tarFileFSPath[0]);
         }
-        const cmd = await akamiCLICalls.getEdgeWorkerDownloadCmd(edgeworkerID,edgeworkerVersion,tarFilePath,accountKey);
-        const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(cmd));
+        const cmd = await akamiCLICalls.getEdgeWorkerDownloadCmd("edgeworkers","download",edgeworkerID,edgeworkerVersion,tarFilePath,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+        const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
         const tarFile = await status.substring(status.indexOf('@') + 1);
         const tarFileName = path.parse(tarFile).base;
         const edgeworkerBundle =  tarFileName.substr(0,tarFileName.lastIndexOf('.'));

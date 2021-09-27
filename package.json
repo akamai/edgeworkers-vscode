@@ -5,7 +5,7 @@
 	"version": "0.0.1",
 	"enableProposedApi": true,
 	"engines": {
-		"vscode": "^1.56.0"
+		"vscode": "^1.59.0"
 	},
 	"categories": [
 		"Other"
@@ -17,6 +17,7 @@
 		"onCommand:edgeworkers-vscode.uploadEdgeWorker",
 		"onCommand:edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
 		"onCommand:edgeworkers-vscode.uploadTarBallToSandBox",
+		"onCommand:edgeworkers-vscode.registerEdgeWorker",
 		"onCommand:edgeworkers-vscode.activateEdgeWorker",
 		"onView:edgeWorkerDetails"
 	],
@@ -90,16 +91,39 @@
 			},
 			{
 				"command": "edgeworkers-vscode.activateEdgeWorker",
-				"title": "Activate Edge Worker"
+				"title": "Activate Edge Worker",
+				"icon": {
+					"light": "resources/light/activate.svg",
+					"dark": "resources/dark/activate.svg"
+				}
+			},
+			{
+				"command": "edgeworkers-vscode.registerEdgeWorker",
+				"title": "Register Edge Worker",
+				"icon": {
+					"light": "resources/light/register.svg",
+					"dark": "resources/dark/register.svg"
+				}
 			}
 		],
 		"menus": {
 			"view/title": [
 				{
+					"command": "edgeworkers-vscode.activateEdgeWorker",
+					"when": "view == edgeWorkerDetails",
+					"group": "navigation"
+				},
+				{
+					"command": "edgeworkers-vscode.registerEdgeWorker",
+					"when": "view == edgeWorkerDetails",
+					"group": "navigation"
+				},
+				{
 					"command": "edgeworkers-vscode.refreshEntry",
 					"when": "view == edgeWorkerDetails",
 					"group": "navigation"
 				}
+
 			],
 			"view/item/context": [
 				{
@@ -144,6 +168,11 @@
 					"type": "string",
 					"default": "",
 					"description": "Account key only for internal users"
+				},
+				"edgeworkers-vscode.edgercFile": {
+					"type": "string",
+					"default": "",
+					"description": ".edgerc file path apart from home directory"
 				},
 				"jsonOutline.autorefresh": {
 					"type": "boolean",
