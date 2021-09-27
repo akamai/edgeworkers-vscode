@@ -18,7 +18,7 @@ export enum ErrorMessageExt {
     validate_bundle_fail = "Error: Failed to validate EdgeWorker bundle - ",
     bundle_already_exists = "Error: File already exists. Do you want to replace - ",
     display_original_error = " ---due to --- ",
-    file_replace_error= " Create new tar with different file name. Unable to replace the file - ",
+    file_replace_error= "Cannot Replace the file - ",
     edgeworker_download_URI = 'https://github.com/akamai/cli-edgeworkers',
     akamai_sanbox_download= 'https://learn.akamai.com/en-us/webhelp/sandbox/sandbox-user-guide/GUID-0D12845D-255E-4054-8A1D-59D11B931B81.html',
     file_not_found = " File not found ",

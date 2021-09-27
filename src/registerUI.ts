@@ -3,9 +3,9 @@
 import * as vscode from 'vscode';
 import { Utils } from 'vscode-uri';
 
-export function getWebviewContent(context:vscode.ExtensionContext,webview: vscode.Webview,listIds:string,versionIds:string){
+export function getWebviewContent(context:vscode.ExtensionContext,webview: vscode.Webview,groupIds:string){
     // Local path to main script run in the webview
-		const scriptPathOnDisk = Utils.joinPath(context.extensionUri, 'media', 'activateEW.js');
+		const scriptPathOnDisk = Utils.joinPath(context.extensionUri, 'media', 'registerUI.js');
 		// And the uri we use to load this script in the webview
 		const scriptUri =  webview.asWebviewUri(scriptPathOnDisk);
     		// Local path to css styles
@@ -18,41 +18,38 @@ return `<!DOCTYPE html>
 <link rel="stylesheet"  href="${stylesMainUri}">
 </head>
 <body>
-<h2>Activate EdgeWorker Version</h2>
-<p>Enter the below details to activate version in a network</p>
-
+<h2>Register EdgeWorker </h2>
+<p>Enter the below details to Register Edgeworker</p>
+ 
 <div class="container">
 <form id="form">
 <div class="row">
     <div class="col-25">
-    <label for="lId">Edge Worker </label>
+    <label for="gId">Group ID </label>
     </div>
     <div class="col-75">
-        <select id="selectId" required>
-        <option value="" disable selected hidden>Select EdgeWorker</option>
+        <select id="groupId" required>
+        <option value="" disable selected hidden>Select Group ID</option>
         </select>
     </div>
 </div>
 <div class="row">
     <div class="col-25">
-    <label for="lVersion">Version</label>
+    <label for="EWName">EdgeWorker Name</label>
     </div>
 <div class="col-75">
-        <select id="selectVersion" required  >
-        <option value="" disable selected hidden>Select Version</option>
-        </select>
-    <label style="padding-top :0" for="infoVersion">you can only select a version if you have permissions to activate it.</label>
-    </div>
+        <input type="text" id="edgeworkerName" name="EWName" required>
+</div>
 </div>
 <div class="row">
     <div class="col-25">
-    <label for="groupId">Network</label>
+    <label for="resourceID" required>Resource Tier ID</label>
     </div>
     <div class="col-75">
-        <select id="selectNet" required>
-        <option value="" disable selected hidden>Select Network</option>
-        <option value="staging">Staging</option>
-        <option value="production">Production</option>
+        <select id="resourceId" required>
+        <option value="" disable selected hidden>Select Resource Tier ID</option>
+        <option value="100">Basic Compute</option>
+        <option value="200">Dynamic Compute</option>
         </select>
     </div>
 </div>
@@ -61,14 +58,13 @@ return `<!DOCTYPE html>
     <button id ="cancel">Cancel</button>
 </div>
 <div class="col-75">
-    <button id ="activate">Activate Version</button>
+    <button id ="register">Register EdgeWorker</button>
 </div>
 </div>
 </form>
 </div>
 <script >
-arrayList = `+JSON.stringify(listIds)+`
-arrayListVersion = `+JSON.stringify(versionIds)+`
+groupId = `+JSON.stringify(groupIds)+`
 </script>
 <script src = "${scriptUri}">
 </script>
