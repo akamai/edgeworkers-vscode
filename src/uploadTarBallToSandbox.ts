@@ -1,22 +1,18 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 'use strict';
 import * as vscode from 'vscode';
-import {workspace}from 'vscode';
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
-import { ErrorMessage } from './openAPI/utils/http-error-message';
-const cp = require('child_process');
-const exec = require('child_process').exec;
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
-import {validateEgdeWorkerID} from './uploadEdgeWorker';
+import * as uploadEdgeWorker from './uploadEdgeWorker';
 import * as akamiCLICalls from './akamiCLICalls';
 
-export const uploadEdgeWorkerTarballToSandbox = async function(tarFilepath:string):Promise<boolean>{
+export const uploadEdgeWorkerTarballToSandbox = async function(bundlePath:string):Promise<boolean>{
     try{
         const akamaiSandboxInstall= await akamiCLICalls.checkAkamaiSandbox(textForCmd.akamai_sandbox_version);
-        const accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
-        let bundlePath = tarFilepath.replace('file://','');
+        // let bundlePath = tarFilepath.replace('file://','');
         const tarFileName = path.parse(bundlePath).base;
         const edgeworkerBundle =  tarFileName.substr(0,tarFileName.lastIndexOf('.'));
         const unTar= await akamiCLICalls.untarTarballToTempDir(bundlePath,edgeworkerBundle);
@@ -25,14 +21,16 @@ export const uploadEdgeWorkerTarballToSandbox = async function(tarFilepath:strin
         if(edgeWorkerversion === ''){
             throw new Error(ErrorMessageExt.version_missing_bundleJSON);
         }
-        const edgeWorkerID = await edgeWorkerCommands.askUserForUserInput(textForInfoMsg.get_edgeWorker_id_User,'');
+        const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+        const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+        let edgeWorkerID = await uploadEdgeWorker.quickPickItem(textForInfoMsg.get_edgeWorker_id_User,listIds);
+        edgeWorkerID = edgeWorkerID.substring(edgeWorkerID.lastIndexOf('|')+2);
         if(edgeWorkerID === '' || edgeWorkerID === undefined){
             throw new Error(ErrorMessageExt.empty_edgeWorkerID);
         }
-        const updateCmd = await akamiCLICalls.updateEdgeWorkerToSandboxCmd(bundlePath,edgeWorkerID,accountKey);
-        const cmdUpdate = await akamiCLICalls.generateCLICommand(updateCmd);
+        const updateCmd = await akamiCLICalls.updateEdgeWorkerToSandboxCmd("sandbox","update-edgeworker",bundlePath,edgeWorkerID);
         try{
-            const updateStatus = await akamiCLICalls.executeCLICommandExceptTarCmd(cmdUpdate);
+            const updateStatus = await akamiCLICalls.executeCLICommandExceptTarCmd(await akamiCLICalls.generateCLICommand(updateCmd));
             vscode.window.showInformationMessage(`EdgeWorker: ${edgeWorkerID} and Version: ${edgeWorkerversion} ` + textForInfoMsg.success_upload_ew_to_sandbox);
             vscode.window.showInformationMessage(textForInfoMsg.info_to_test_edgeWorker_curl,{ modal: true }); 
         }catch(e){
@@ -46,7 +44,7 @@ export const uploadEdgeWorkerTarballToSandbox = async function(tarFilepath:strin
         }
     return true;
     }catch(e){
-        const err = e as string
+        const err = e as string;
         vscode.window.showErrorMessage(err);
         return false;
     }

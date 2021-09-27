@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-'use strict';
 import * as vscode from 'vscode';
 import {workspace}from 'vscode';
-import { ErrorMessage } from './openAPI/utils/http-error-message';
+import * as akamiCLICalls from './akamiCLICalls';
+import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 const cp = require('child_process');
 const exec = require('child_process').exec;
 const path = require('path');
-import * as akamiCLICalls from './akamiCLICalls';
-import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
+const os = require('os');
 const fs = require("fs");
 
 export const createAndValidateEdgeWorker = async function(folder:string){
@@ -36,7 +35,7 @@ export const createEdgeWorkerBundle = async function(bundleFolder:string):Promis
 
         if(resp === 'yes'){
             // there might be an exception thrown below but if so it will bubble out to the calling function
-            await akamiCLICalls.executeDeleteFileCmd(bundlepath);
+            await akamiCLICalls.deleteOutput(bundlepath);
             const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(bundleFolder, bundlepath,`${tarFileName}`);
             vscode.window.showInformationMessage(createBundleCmd);
             return (`${tarFileName}`);
@@ -53,11 +52,10 @@ export const createEdgeWorkerBundle = async function(bundleFolder:string):Promis
 };
 export const validateEdgeWorkerBundle = async function( work_space_folder:string,tarfile:string):Promise<string>{
     return new Promise(async (resolve, reject) => {
-        const accountKey = getAccountKeyFromUserConfig();
         try{
             let tarFilePath = path.resolve(work_space_folder, `${tarfile}.tgz`);
-            const cmd = akamiCLICalls.getEdgeWorkerValidateCmd(tarFilePath,accountKey);
-            const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(cmd));
+            const cmd = await akamiCLICalls.getEdgeWorkerValidateCmd("edgeworkers","validate",tarFilePath,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+            const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
             resolve(textForInfoMsg.validate_bundle_success+`${tarfile}.tgz`);
         }catch(e){
             reject(ErrorMessageExt.validate_bundle_fail+`${tarfile}.tgz`+ErrorMessageExt.display_original_error+e);
@@ -79,20 +77,15 @@ export const askUserForUserInput = async function(promptName: string,defaultValu
     });
 };
 export const getAccountKeyFromUserConfig= function():string{
-    let accountKey: string = <string>workspace.getConfiguration('edgeworkers-vscode').get('accountKey');
-    console.log(`account key ${accountKey}`);
-    if(accountKey === '' || accountKey === undefined){
-        return '';
-    }
-    else{
-        return(accountKey);
-    }
+        return(<string>workspace.getConfiguration('edgeworkers-vscode').get('accountKey'));
 };
 export const getSectionNameFromUserConfig= function():string{
-    let sectionName: string = <string>workspace.getConfiguration('edgeworkers-vscode').get('sectionName');
-    console.log(`section name ${sectionName}`);
-    return(sectionName);
+    return(<string>workspace.getConfiguration('edgeworkers-vscode').get('sectionName'));
 };
+export const getEdgercFilePathFromUserConfig= function():string{
+    return(<string>workspace.getConfiguration('edgeworkers-vscode').get('edgercFile'));
+};
+
 
 export const checkFile = async function(filePath: string): Promise<boolean> {
     try{
