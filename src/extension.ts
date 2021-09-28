@@ -13,13 +13,14 @@ import { Utils } from 'vscode-uri';
 import * as activationUI from './activationUI';
 import * as registerUI from './registerUI';
 import console from 'console';
+import { throws } from 'assert';
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
 
 
 
-export const activate = async function(context: vscode.ExtensionContext) {
+export const activate = async function(context: vscode.ExtensionContext){
     // management UI class initilization
     
     const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider(await getListArrayOfEdgeWorker());
