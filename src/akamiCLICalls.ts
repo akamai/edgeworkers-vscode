@@ -201,13 +201,12 @@ export const checkAkamaiSandbox = async function(akamaiSandboxCmd: string):Promi
 };
 export const parseJsonToGetResultAkamaiCLI = async function(filePathForJson:string,msg:string):Promise<string>{
     const result = JSON.parse(fs.readFileSync(filePathForJson,'utf8'));
-    return new Promise((resolve) => {
         if(result !== undefined || result.length !== 0){
                 if(result.cliStatus.toString() === '0' && msg==="msg"){
-                    return(resolve(result[msg]));
+                    return(result[msg]);
                 }
                 else if(result.cliStatus.toString() === '0' && msg==="data"){
-                    return(resolve(JSON.stringify(result.data)));
+                    return(JSON.stringify(result.data));
                 }
                 else
                 {
@@ -215,7 +214,6 @@ export const parseJsonToGetResultAkamaiCLI = async function(filePathForJson:stri
                 }
         }
         throw new Error("Error: Failed to execute The command");
-    });
 };
 export const executeAkamaiEdgeWorkerCLICmds = async function(cmd : string, jsonFilePath:string,msg:string) : Promise<string> {
     // wrap exec in a promise
