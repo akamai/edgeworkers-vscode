@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import * as downloadEdgeWorker from './downloadEdgeWorker';
 import * as uploadEdgeWorker from './uploadEdgeWorker';
-import { EdgeWorkerDetails, EdgeWorkerDetailsProvider } from './managementUI';
+import { EdgeWorkerDetails, EdgeWorkerDetailsProvider,getListArrayOfEdgeWorker } from './managementUI';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
 import * as managementUI from './managementUI';
@@ -22,14 +22,14 @@ const fs = require('fs');
 export const activate = async function(context: vscode.ExtensionContext) {
     // management UI class initilization
     
-    const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider();
+    const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider(await getListArrayOfEdgeWorker());
     vscode.window.createTreeView('edgeWorkerDetails', {
          treeDataProvider: edgeWorkerDetailsProvider,
          showCollapseAll: true
      });
      //refresh the tree view in management UI
-	vscode.commands.registerCommand('edgeworkers-vscode.refreshEntry', function() {
-		const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider();
+	vscode.commands.registerCommand('edgeworkers-vscode.refreshEntry', async function() {
+		const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider(await getListArrayOfEdgeWorker());
         vscode.window.createTreeView('edgeWorkerDetails', {
             treeDataProvider: edgeWorkerDetailsProvider,
             showCollapseAll: true
