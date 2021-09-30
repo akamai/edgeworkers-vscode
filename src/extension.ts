@@ -205,7 +205,8 @@ export const getRegisterEWOutput =  async function(groupId:string,ewName:string,
         vscode.window.showInformationMessage(msg);
         return(msg);
     }catch(e){
-        vscode.window.showErrorMessage(msg);
+        const err = e as string;
+        vscode.window.showErrorMessage(msg+"due to"+err.toString());
         return(msg);
     }
 };
