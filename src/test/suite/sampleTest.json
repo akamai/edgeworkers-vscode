@@ -6,31 +6,51 @@
         "edgeWorkerId": 1111,
         "name": "abc",
         "groupId": 1111,
-        "resourceTierId": 111
+        "resourceTierId": 111,
+        "versions":[{
+          "version": 1.0
+        },
+        {
+          "version": 2.0
+        }
+        
+      ]
       },
       {
         "edgeWorkerId": 2222,
         "name": "efg",
         "groupId": 2222,
-        "resourceTierId": 200
+        "resourceTierId": 200,
+        "versions":[{
+          "version": 1.0
+        }]
       },
       {
         "edgeWorkerId": 3333,
         "name": "hij",
         "groupId": 3333,
-        "resourceTierId": 200
+        "resourceTierId": 200,
+        "versions":[{
+          "version": 4.0
+        }]
       },
       {
         "edgeWorkerId": 5555,
         "name": "lmn",
         "groupId": 5555,
-        "resourceTierId": 200
+        "resourceTierId": 200,
+        "versions":[{
+          "version": 5.0
+        }]
       },
       {
         "edgeWorkerId": 6666,
         "name": "khn",
         "groupId": 6666,
-        "resourceTierId": 100
+        "resourceTierId": 100,
+        "versions":[{
+          "version": 6.0
+        }]
       }
     ]
   }
