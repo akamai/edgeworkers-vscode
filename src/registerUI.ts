@@ -19,7 +19,7 @@ return `<!DOCTYPE html>
 </head>
 <body>
 <h2>Register EdgeWorker </h2>
-<p>Enter the below details to Register Edgeworker</p>
+<p>Enter the below details to Register EdgeWorker</p>
  
 <div class="container">
 <form id="form">

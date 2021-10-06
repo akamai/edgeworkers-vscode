@@ -76,7 +76,7 @@ export const activate = async function(context: vscode.ExtensionContext){
             await downloadEdgeWorker.downloadEdgeWorker(edgeWorkerdetails.version,edgeWorkerdetails.label);
         }
         else{
-            vscode.window.showErrorMessage("No Edgeworker versions are available to download");
+            vscode.window.showErrorMessage("No EdgeWorker versions are available to download");
         }
      });
     //command for the upload EdgeWorker Tar ball file in file explorer
@@ -87,7 +87,7 @@ export const activate = async function(context: vscode.ExtensionContext){
                 canSelectFolders: false,
                 canSelectFiles: true,
                 filters: {'Tarball': ['tgz', 'tar.gz']},
-                openLabel: 'select tar file to upload Edgeworker Version',
+                openLabel: 'Select tar file to upload EdgeWorker Version',
             });
             if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
                 filePath = getFilePathFromInput(tarFileFSPath[0]);
@@ -129,7 +129,7 @@ export const activate = async function(context: vscode.ExtensionContext){
                 canSelectFolders: false,
                 canSelectFiles: true,
                 filters: {'Tarball': ['tgz', 'tar.gz']},
-                openLabel: 'select tar file to upload Edgeworker to sandbox',
+                openLabel: 'Select tar file to upload EdgeWorker to sandbox',
             });
             if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
                 filePathSandbox = getFilePathFromInput(tarFileFSPath[0]);
@@ -152,8 +152,8 @@ export const activate = async function(context: vscode.ExtensionContext){
         const versionIds = await managementUI.fillVersions(listIds);
         const jsonvalue = JSON.parse(listIds);
         const panel = vscode.window.createWebviewPanel(
-            'Activate Edge Worker',
-            'Activate Edge Worker',
+            'Activate EdgeWorker',
+            'Activate EdgeWorker',
              vscode.ViewColumn.One,
             {
                 enableScripts: true,
@@ -181,8 +181,8 @@ export const activate = async function(context: vscode.ExtensionContext){
         const groupIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-groups",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
         const groupIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(groupIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
         const panel = vscode.window.createWebviewPanel(
-            'Register Edge Worker',
-            'Register Edge Worker',
+            'Register EdgeWorker',
+            'Register EdgeWorker',
              vscode.ViewColumn.One,
             {
                 enableScripts: true,
