@@ -14,6 +14,7 @@ export const downloadEdgeWorker = async function(edgeworkerID: string, edgeworke
         const tarFileFSPath = await vscode.window.showOpenDialog({
             canSelectFolders: true,
             canSelectFiles: false,
+            openLabel: 'select folder to download Edgeworker',
         });
         if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
              tarFilePath= getFilePathFromInput(tarFileFSPath[0]);
@@ -27,8 +28,8 @@ export const downloadEdgeWorker = async function(edgeworkerID: string, edgeworke
         const statusUntar = await akamiCLICalls.executeCLICommandExceptTarCmd(`cd  ${tarFilePath} && mkdir ${edgeworkerBundle} && cd  ${bundlePath} && tar --extract --file ${tarFile}`);
         vscode.window.showInformationMessage(`${textForInfoMsg.tar_download_success} id: ${edgeworkerID} version: ${edgeworkerVersion} at: ${bundlePath}`);
         return(true);
-    }catch(e){
-        vscode.window.showErrorMessage(ErrorMessageExt.bundle_download_fail+' '+ `${edgeworkerID}`+' '+ `${edgeworkerVersion}`+" "+ErrorMessageExt.display_original_error+e);
+    }catch(e:any){
+        vscode.window.showErrorMessage(ErrorMessageExt.bundle_download_fail+' '+ `${edgeworkerID}`+' '+ `${edgeworkerVersion}`+" "+ErrorMessageExt.display_original_error+e.toString());
         return(false);
     }
 };

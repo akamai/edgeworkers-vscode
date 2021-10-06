@@ -63,7 +63,7 @@
 			},
 			{
 				"command": "edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
-				"title": "Upload Version",
+				"title": "Upload Edgeworker Version",
 				"icon": {
 					"light": "resources/light/add.svg",
 					"dark": "resources/dark/add.svg"
@@ -71,7 +71,7 @@
 			},
 			{
 				"command": "edgeworkers-vscode.uploadEdgeWorker",
-				"title": "Upload Edge Worker Version",
+				"title": "Upload Edgeworker Version",
 				"icon": {
 					"light": "resources/light/add.svg",
 					"dark": "resources/dark/add.svg"
@@ -79,7 +79,7 @@
 			},
 			{
 				"command": "edgeworkers-vscode.downloadEdgeWorker",
-				"title": "Download",
+				"title": "Download Edgeworker",
 				"icon": {
 					"light": "resources/light/download.svg",
 					"dark": "resources/dark/download.svg"
@@ -91,7 +91,7 @@
 			},
 			{
 				"command": "edgeworkers-vscode.activateEdgeWorker",
-				"title": "Activate Edge Worker",
+				"title": "Activate Edgeworker",
 				"icon": {
 					"light": "resources/light/activate.svg",
 					"dark": "resources/dark/activate.svg"
@@ -99,7 +99,7 @@
 			},
 			{
 				"command": "edgeworkers-vscode.registerEdgeWorker",
-				"title": "Register Edge Worker",
+				"title": "Register Edgeworker",
 				"icon": {
 					"light": "resources/light/register.svg",
 					"dark": "resources/dark/register.svg"
@@ -134,6 +134,16 @@
 					"command": "edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
 					"when": "viewItem == EdgeWorkers",
 					"group": "inline"
+				}
+			],
+			"commandPalette": [
+				{
+					"command": "edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
+					"when": "false"
+				},
+				{
+					"command": "edgeworkers-vscode.downloadEdgeWorker",
+					"when": "false"
 				}
 			],
 			"explorer/context": [

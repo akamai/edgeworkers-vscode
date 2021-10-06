@@ -124,10 +124,10 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 					});
 				return bundleFiles; 
 			}
-		}catch(e){
+		}catch(e:any){
 			bundleFile = toDep(`error in fetching files`);
 			bundleFiles.push(bundleFile);
-			vscode.window.showErrorMessage(ErrorMessageExt.bundle_files_fail+ErrorMessageExt.display_original_error+e);
+			vscode.window.showErrorMessage(ErrorMessageExt.bundle_files_fail+ErrorMessageExt.display_original_error+e.toString());
 			return bundleFiles; 
 		}	
 	}

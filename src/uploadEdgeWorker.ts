@@ -9,8 +9,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:string = ''):Promise<boolean>{
-    let userEdgeWorkerID :string = edgeworkerID as string;
+export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:string):Promise<boolean>{
+    let userEdgeWorkerID :string = edgeworkerID;
     const tarFileName = path.parse(tarFilePath).base;
     const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
     const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");

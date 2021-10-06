@@ -19,36 +19,42 @@ export const createAndValidateEdgeWorker = async function(folder:string){
         const bundleValidateCmd = await validateEdgeWorkerBundle(folder, bundleValidateName);
         vscode.window.showInformationMessage(bundleValidateCmd);
     }catch(e:any){
-        vscode.window.showErrorMessage(e);
+        vscode.window.showErrorMessage(e.toString());
     }
 };
 export const createEdgeWorkerBundle = async function(bundleFolder:string):Promise<string>{
-    const defaultFilename:string = 'edgeworkerBundle';
-    const tarFileName:string = await askUserForUserInput(textForInfoMsg.bundle_name,defaultFilename);
-    const bundlepath = path.resolve(bundleFolder,`${tarFileName}.tgz`);
-    const tarballExists = await checkFile(bundlepath);
-    if (tarballExists) {
-        const resp = await vscode.window.showErrorMessage(
-            `${ErrorMessageExt.bundle_already_exists} + ${tarFileName}.tgz`,
-            ...['yes','no']
-        );
-
-        if(resp === 'yes'){
-            // there might be an exception thrown below but if so it will bubble out to the calling function
-            await akamiCLICalls.deleteOutput(bundlepath);
-            const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(bundleFolder, bundlepath,`${tarFileName}`);
-            vscode.window.showInformationMessage(createBundleCmd);
-            return (`${tarFileName}`);
+    return new Promise(async (resolve, reject) => {
+        try{
+            const defaultFilename:string = 'edgeworkerBundle';
+            const tarFileName:string = await askUserForUserInput(textForInfoMsg.bundle_name,defaultFilename);
+            const bundlepath = path.resolve(bundleFolder,`${tarFileName}.tgz`);
+            const tarballExists = await checkFile(bundlepath);
+            if (tarballExists) {
+                const resp = await vscode.window.showErrorMessage(
+                    `${ErrorMessageExt.bundle_already_exists} + ${tarFileName}.tgz`,
+                    ...['yes','no']
+                );
+                if(resp === 'yes'){
+                    // there might be an exception thrown below but if so it will bubble out to the calling function
+                    await akamiCLICalls.deleteOutput(bundlepath);
+                    const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(bundleFolder, bundlepath,`${tarFileName}`);
+                    vscode.window.showInformationMessage(createBundleCmd);
+                    resolve (`${tarFileName}`);
+                }
+                else{
+                    resolve(`${tarFileName}`);
+                }
+            } else {
+                // again there might be an exception thrown below but if so it will bubble out to the calling function
+                const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(bundleFolder, bundlepath,`${tarFileName}`);
+                vscode.window.showInformationMessage(createBundleCmd);
+                resolve (`${tarFileName}`);
+            }
         }
-        else{
-            return `${tarFileName}`;
+        catch(e:any){
+            reject(e);
         }
-    } else {
-        // again there might be an exception thrown below but if so it will bubble out to the calling function
-        const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(bundleFolder, bundlepath,`${tarFileName}`);
-        vscode.window.showInformationMessage(createBundleCmd);
-        return (`${tarFileName}`);
-    }
+    });
 };
 export const validateEdgeWorkerBundle = async function( work_space_folder:string,tarfile:string):Promise<string>{
     return new Promise(async (resolve, reject) => {
@@ -57,8 +63,8 @@ export const validateEdgeWorkerBundle = async function( work_space_folder:string
             const cmd = await akamiCLICalls.getEdgeWorkerValidateCmd("edgeworkers","validate",tarFilePath,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
             const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
             resolve(textForInfoMsg.validate_bundle_success+`${tarfile}.tgz`);
-        }catch(e){
-            reject(ErrorMessageExt.validate_bundle_fail+`${tarfile}.tgz`+ErrorMessageExt.display_original_error+e);
+        }catch(e:any){
+            reject(ErrorMessageExt.validate_bundle_fail+`${tarfile}.tgz`+ErrorMessageExt.display_original_error+e.toString());
     }
     });
 };
