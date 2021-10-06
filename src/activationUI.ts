@@ -25,7 +25,7 @@ return `<!DOCTYPE html>
 <form id="form">
 <div class="row">
     <div class="col-25">
-    <label for="lId">Edge Worker </label>
+    <label for="lId">EdgeWorker </label>
     </div>
     <div class="col-75">
         <select id="selectId" required>

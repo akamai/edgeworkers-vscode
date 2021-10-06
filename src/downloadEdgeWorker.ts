@@ -14,7 +14,7 @@ export const downloadEdgeWorker = async function(edgeworkerID: string, edgeworke
         const tarFileFSPath = await vscode.window.showOpenDialog({
             canSelectFolders: true,
             canSelectFiles: false,
-            openLabel: 'select folder to download Edgeworker',
+            openLabel: 'Select folder to download EdgeWorker',
         });
         if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
              tarFilePath= getFilePathFromInput(tarFileFSPath[0]);
