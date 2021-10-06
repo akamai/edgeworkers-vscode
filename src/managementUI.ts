@@ -1,24 +1,18 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
-import { Config } from './config';
-const config: Config = require('../config.json');
-const exec = require('child_process').exec;
-const os = require('os');
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
-import * as edgeWorkersSvc from './openAPI/edgeActions/ew-service';
 import { ErrorMessageExt } from './textForCLIAndError';
+const os = require('os');
 
 export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWorkers> {
-	private _onDidChangeTreeData: vscode.EventEmitter<EdgeWorkers | undefined> = new vscode.EventEmitter<EdgeWorkers | undefined>();
-	readonly onDidChangeTreeData: vscode.Event<EdgeWorkers | undefined> = this._onDidChangeTreeData.event;
+	private _onDidChangeTreeData: vscode.EventEmitter<EdgeWorkers | undefined|null> = new vscode.EventEmitter<EdgeWorkers | undefined|null>();
+	readonly onDidChangeTreeData: vscode.Event<EdgeWorkers | undefined|null> = this._onDidChangeTreeData.event;
 	public  edgeWorkerJsonArray = {};
-	public accountKey:string= '';
-	public listIds:string ='';
+	public listIds;
 	public edgeWorkerdetails: string= '';
-	constructor() {
-		this.accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
+	constructor(listIDs:string) {
+		this.listIds = listIDs;
 	}
 	refresh(): void {
 		this._onDidChangeTreeData.fire();
@@ -30,53 +24,19 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 		if (element) {
 			console.log("the id id :"+ element.version +"and version is "+ element.label);
 			if(element.type !== ''){
-				return Promise.resolve(this.getBundleFiles(element.version,element.label));
+				return Promise.resolve(await this.getBundleFiles(element.version,element.label));
 			}
 			else{
-				return Promise.resolve(this.getEdgeWorkersDetails(element.version));
+				return Promise.resolve(await this.getEdgeWorkersDetails(element.version));
 			}
 		} else {
-			await akamiCLICalls.callAkamaiCLIFOrEdgeWorkerIDs(this.accountKey).then(async ids =>{
-				this.listIds=ids;
-				await this.fillDetails().then(details=>{
-					this.edgeWorkerdetails= details;
-				}).catch(err=>{
-					vscode.window.showErrorMessage(ErrorMessageExt.edgworkerDetails_fail+ErrorMessageExt.display_original_error+err);
-				});
-			}).catch(err =>{
-				this.listIds= '';
-				vscode.window.showErrorMessage(ErrorMessageExt.edgworkerid_fail+ErrorMessageExt.display_original_error+err);
-			});
-			return Promise.resolve(this.getEdgeWorkers(this.listIds));
+			return Promise.resolve(await this.getEdgeWorkers(await this.listIds));
 		}
-	}
-	private async fillDetails( ):Promise<string>{
-		return new Promise(async (resolve, reject) => {
-			let edgeWorkerJsonString: string = this.listIds;
-			const edgeWorkerJson = JSON.parse(edgeWorkerJsonString);
-			try{
-				if(edgeWorkerJson.data !== undefined || edgeWorkerJson.data.length !== 0){
-					for(var i = 0; i < edgeWorkerJson.data.length; i++) {	
-						let versions  = await edgeWorkersSvc.getAllVersions(`${edgeWorkerJson.data[i].edgeWorkerId}`, `${this.accountKey}`);
-						if(versions.hasOwnProperty("versions")){
-							versions= versions["versions"];
-							console.log(`the version details are ${versions}`);
-						}
-						edgeWorkerJson.data[i].versions= versions;
-						edgeWorkerJson.data[i].versions.forEach((element: any) => {
-							console.log(element);
-						});
-					}
-					resolve(JSON.stringify(edgeWorkerJson));
-				}
-			}catch(e){
-				reject(e);
-			}
-		});
 	}
 	public async getEdgeWorkers(edgeWorkerJsonString: string): Promise<EdgeWorkers[]> {
 		let edgeworkers: EdgeWorkers[]= [];
 		let edgeworker: EdgeWorkers;
+		let stringDisplay: string = "";
 		const toDep = (moduleName: string, version: string, collapsibleState: string): EdgeWorkers => {
 			if(collapsibleState !== ''){
 				return new EdgeWorkers(moduleName,version,vscode.TreeItemCollapsibleState.None,'');
@@ -85,30 +45,37 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 				return new EdgeWorkers(moduleName,version,vscode.TreeItemCollapsibleState.Collapsed,'');
 			}
 		};
-
-		if(edgeWorkerJsonString !== ''){
+		if(edgeWorkerJsonString === '' || edgeWorkerJsonString === undefined || edgeWorkerJsonString.length === 0 ){
+			edgeworkers.push(toDep("No edge workers details", '','none'));
+			return edgeworkers; 
+		}
+		else{
 			const edgeWorkerJson = JSON.parse(edgeWorkerJsonString);
+<<<<<<< HEAD
+			edgeWorkerJson.forEach(async (element: any) => {
+				if(element.name === undefined || element.edgeWorkerId === undefined ||element.name === "" || element.edgeWorkerId === "" ){
+					edgeworkers.push(toDep("No edge workers details", '','none'));
+					return edgeworkers; 
+				}
+				else{
+=======
 			if(Object.keys(edgeWorkerJson.data).length === 0){
 				edgeworker = toDep(`No EdgeWorkers details`, '','none');
 				edgeworkers.push(edgeworker);
 			}
 			else{
 				edgeWorkerJson.data.forEach(async (element: any) => {
+>>>>>>> package json setup fix and text changes
 					let moduleName = element.name + " -- " + element.edgeWorkerId ;
 					edgeworker = toDep(`${moduleName}`, `${element.edgeWorkerId}`, '');
 					edgeworkers.push(edgeworker);
-				});
-			}
-			return edgeworkers; 
-		}
-		else{
-			edgeworker = toDep(`cannot find edgeworkers`, '','none');
-			edgeworkers.push(edgeworker);
-			return edgeworkers; 
+				}
+			});
+			return edgeworkers;
 		}
 	}
 	public async getEdgeWorkersDetails(edgeworkerId : string): Promise<EdgeWorkerDetails[]> {
-		const edgeWorkerJsonDeatilsString: string= await this.edgeWorkerdetails;
+		const edgeWorkerJsonDeatilsString: string= await this.listIds;
 		const edgeWorkerJsonDeatils = JSON.parse(edgeWorkerJsonDeatilsString);
 		const toDep = (moduleName: string, version: string,collapsibleState:string,type:string,): EdgeWorkerDetails => {
 			if(collapsibleState !== ''){
@@ -122,20 +89,27 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 		let edgeworkersDetails: EdgeWorkerDetails[]= [];
 		let edgeworkersDetail: EdgeWorkerDetails; 
 		let edgeWorkerid:string;
-		for(var i = 0; i < edgeWorkerJsonDeatils.data.length; i++) {
-			edgeWorkerid = `${edgeWorkerJsonDeatils.data[i].edgeWorkerId}`;
-			if( edgeWorkerid === element){
-				if(edgeWorkerJsonDeatils.data[i].versions.length === 0){
-					edgeworkersDetail = toDep(`No Versions`, '','none','');
-					edgeworkersDetails.push(edgeworkersDetail);
-				}
-				else{
-					for(var j = 0; j < edgeWorkerJsonDeatils.data[i].versions.length; j++){
-						edgeworkersDetail = toDep(`${edgeWorkerJsonDeatils.data[i].versions[j].version}`,`${edgeworkerId}`, '','');
+		if( edgeWorkerJsonDeatils.length !== 0){
+			for(var i = 0; i < edgeWorkerJsonDeatils.length; i++) {
+				edgeWorkerid = `${edgeWorkerJsonDeatils[i].edgeWorkerId}`;
+				if( edgeWorkerid === element){
+					if(edgeWorkerJsonDeatils[i].versions.length !== 0){
+						for(var j = 0; j < edgeWorkerJsonDeatils[i].versions.length; j++){
+							if(edgeWorkerJsonDeatils[i].versions[j].version === undefined || edgeWorkerJsonDeatils[i].versions[j].version === ""){
+								edgeworkersDetail= toDep(`No Versions`, '','none','');
+							}
+							else{
+								edgeworkersDetail = toDep(`${edgeWorkerJsonDeatils[i].versions[j].version}`,`${edgeworkerId}`, '','');
+							}
+							edgeworkersDetails.push(edgeworkersDetail);
+						}
+					}
+					else{
+						edgeworkersDetail = toDep(`No Versions`, '','none','');
 						edgeworkersDetails.push(edgeworkersDetail);
-				}
+					}
+				}	
 			}
-			}	
 		}
 		return edgeworkersDetails;
 	}
@@ -159,10 +133,10 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 					});
 				return bundleFiles; 
 			}
-		}catch(e){
+		}catch(e:any){
 			bundleFile = toDep(`error in fetching files`);
 			bundleFiles.push(bundleFile);
-			vscode.window.showErrorMessage(ErrorMessageExt.bundle_files_fail+ErrorMessageExt.display_original_error+e);
+			vscode.window.showErrorMessage(ErrorMessageExt.bundle_files_fail+ErrorMessageExt.display_original_error+e.toString());
 			return bundleFiles; 
 		}	
 	}
@@ -172,8 +146,8 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 			let files = new Array();
 			let fileNames = new Array();
 			try{
-				const cmd = await akamiCLICalls.getEdgeWorkerDownloadCmd(edgeworkerID,edgeworkerVersion,tarFilePath,this.accountKey);
-				const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(cmd));
+				const cmd = await akamiCLICalls.getEdgeWorkerDownloadCmd("edgeworkers","download",edgeworkerID,edgeworkerVersion,tarFilePath,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+				const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
 				console.log(status);
 				const tarFile = await status.substring(status.indexOf('@') + 1);
 				const tarFileName = path.parse(tarFile).base;
@@ -196,6 +170,30 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 		});
 	}
 }
+
+export const fillVersions = async function( ids:string):Promise<string>{
+	return new Promise(async (resolve, reject) => {
+		let edgeWorkerJsonString: string = ids;
+		const edgeWorkerJson = JSON.parse(edgeWorkerJsonString);
+		try{
+			if(edgeWorkerJson.length !== 0){
+				for(var i = 0; i < edgeWorkerJson.length; i++) {
+					const getVersionCmd = await akamiCLICalls.getEdgeWorkerListVersions("edgeworkers","list-versions",`${edgeWorkerJson[i].edgeWorkerId}`,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+					const data = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(getVersionCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+					edgeWorkerJson[i].versions= JSON.parse(data);
+				}
+			}
+			resolve(JSON.stringify(edgeWorkerJson));
+		}catch(e){
+			reject(e);
+		}
+	});
+};
+export const getListArrayOfEdgeWorker= async function():Promise<string>{
+	const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+	const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(await akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+	return(await fillVersions(listIds));
+};
 
 export class  EdgeWorkers extends vscode.TreeItem {
 	constructor(
