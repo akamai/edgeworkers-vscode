@@ -22,7 +22,14 @@
         for(var j = 0; j < listVersion.length; j++){
             if(listVersion[j].edgeWorkerId == value1){
                     listVersion[j].versions.forEach((element) => {
-                        catOptions += "<option>" +  element["version"] + "</option>";
+                        if(element["version"] === undefined || element["version"] === ''|| element["version"]=== null)
+                        {
+                            catOptions += "<option>" +"No Versions"+"</option>";
+                        }
+                        else{
+                            catOptions += "<option>" +  element["version"] + "</option>";
+                        }
+                        
                     });
                 }
         }
