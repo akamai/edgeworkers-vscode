@@ -11,7 +11,7 @@ import * as akamiCLICalls from './akamiCLICalls';
 
 export const uploadEdgeWorkerTarballToSandbox = async function(bundlePath:string):Promise<boolean>{
     try{
-        const akamaiSandboxInstall= await akamiCLICalls.checkAkamaiSandbox(textForCmd.akamai_sandbox_version);
+        await akamiCLICalls.checkAkamaiSandbox(textForCmd.akamai_sandbox_version);
         // let bundlePath = tarFilepath.replace('file://','');
         const tarFileName = path.parse(bundlePath).base;
         const edgeworkerBundle =  tarFileName.substr(0,tarFileName.lastIndexOf('.'));
@@ -30,22 +30,23 @@ export const uploadEdgeWorkerTarballToSandbox = async function(bundlePath:string
         }
         const updateCmd = await akamiCLICalls.updateEdgeWorkerToSandboxCmd("sandbox","update-edgeworker",bundlePath,edgeWorkerID);
         try{
-            const updateStatus = await akamiCLICalls.executeCLICommandExceptTarCmd(await akamiCLICalls.generateCLICommand(updateCmd));
+            await akamiCLICalls.executeCLICommandExceptTarCmd(await akamiCLICalls.generateCLICommand(updateCmd));
             vscode.window.showInformationMessage(`EdgeWorker: ${edgeWorkerID} and Version: ${edgeWorkerversion} ` + textForInfoMsg.success_upload_ew_to_sandbox);
             vscode.window.showInformationMessage(textForInfoMsg.info_to_test_edgeWorker_curl,{ modal: true }); 
         }catch(e){
-            const errorString = e as string;
-            if(errorString.includes("Sandbox not found")){
-                throw new Error(ErrorMessageExt.if_sandbox_not_started);
+            let errorString = e as string;
+            let errorStr = errorString.substring(errorString.indexOf('{'), errorString.indexOf('}')+1);
+            if(errorStr){
+                let jsonError = JSON.parse(errorStr);
+                throw new Error(ErrorMessageExt.upload_ew_tosandbox_fail+jsonError.detail);
             }
             else{
                 throw new Error(ErrorMessageExt.Fail_to_upload_EW_sandbox+`Edge Worker : ${edgeWorkerID} and Version: ${edgeWorkerversion}`+'to sandbox'+ ErrorMessageExt.display_original_error+ e);
             } 
         }
     return true;
-    }catch(e){
-        const err = e as string;
-        vscode.window.showErrorMessage(err);
+    }catch(e:any){
+        vscode.window.showErrorMessage(e.toString());
         return false;
     }
 };
