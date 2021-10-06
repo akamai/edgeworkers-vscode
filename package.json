@@ -1,8 +1,9 @@
 {
-	"name": "test-ext",
-	"displayName": "test_ext",
-	"description": "testing",
-	"version": "0.0.1",
+	"name": "akamai-edgeworkers-vscode-extension",
+	"displayName": "akamai-edgeworkers-vscode-extension",
+	"description": "Akamai EdgeWorkers VSCode Extension",
+	"publisher": "akamai",
+	"version": "0.9.0",
 	"enableProposedApi": true,
 	"engines": {
 		"vscode": "^1.59.0"
@@ -27,7 +28,7 @@
 			"activitybar": [
 				{
 					"id": "package-explorer",
-					"title": "Edge Worker",
+					"title": "Akamai EdgeWorkers",
 					"icon": "media/dep.svg"
 				}
 			]
@@ -71,7 +72,7 @@
 			},
 			{
 				"command": "edgeworkers-vscode.uploadEdgeWorker",
-				"title": "Upload Edgeworker Version",
+				"title": "Upload EdgeWorker Version",
 				"icon": {
 					"light": "resources/light/add.svg",
 					"dark": "resources/dark/add.svg"
@@ -215,7 +216,7 @@
 		"glob": "^7.1.7",
 		"mocha": "^8.4.0",
 		"typescript": "^4.3.2",
-		"vscode-extension-tester": "^4.2.0",
+		"vscode-extension-tester": "^4.1.2",
 		"vscode-test": "^1.5.2"
 	},
 	"dependencies": {
