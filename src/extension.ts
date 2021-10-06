@@ -46,23 +46,61 @@ export const activate = async function(context: vscode.ExtensionContext){
     }
 
     // command activation for creating bundle
-    vscode.commands.registerCommand('edgeworkers-vscode.edgeworkerBundle', async function (uri:vscode.Uri) {
-    // get the parent folder for the bundle.json
-    const bundleFileInput = path.join(uri.fsPath,'..');
-    // const folder = getFileParentFolderFromInput(bundleFileInput);
-    await edgeWorkerCommands.createAndValidateEdgeWorker(bundleFileInput);
+    vscode.commands.registerCommand('edgeworkers-vscode.edgeworkerBundle', async function (uri:any) {
+        let creatBundleFilePath = "";
+        if(uri === undefined || uri === null || uri === ''){
+            const folderFSPath = await vscode.window.showOpenDialog({
+                canSelectFolders: true,
+                canSelectFiles: false,
+                openLabel: 'select folder with bundle files',
+            });
+            if(folderFSPath !== undefined && folderFSPath.length >0){
+                creatBundleFilePath = getFilePathFromInput(folderFSPath[0]);
+                await edgeWorkerCommands.createAndValidateEdgeWorker(creatBundleFilePath);
+            }
+            else{
+                vscode.window.showErrorMessage("Error:Folder with bundle files is not provided");
+            }
+        }
+        else{
+            creatBundleFilePath = getFilePathFromInput(uri);
+            const bundleFileInput = path.join(creatBundleFilePath,'..');
+            await edgeWorkerCommands.createAndValidateEdgeWorker(bundleFileInput);
+        }
     });
 
     // command activation for downloading edgeworker
     vscode.commands.registerCommand('edgeworkers-vscode.downloadEdgeWorker',  async (edgeWorkerdetails: EdgeWorkerDetails) => {
-        console.log("the id id :"+ edgeWorkerdetails.version +"and version is "+ edgeWorkerdetails.label);
-        await downloadEdgeWorker.downloadEdgeWorker(edgeWorkerdetails.version,edgeWorkerdetails.label);
+        if(edgeWorkerdetails.label !== 'No Versions'){
+            console.log("the id id :"+ edgeWorkerdetails.version +"and version is "+ edgeWorkerdetails.label);
+            await downloadEdgeWorker.downloadEdgeWorker(edgeWorkerdetails.version,edgeWorkerdetails.label);
+        }
+        else{
+            vscode.window.showErrorMessage("No Edgeworker versions are available to download");
+        }
      });
-
     //command for the upload EdgeWorker Tar ball file in file explorer
     vscode.commands.registerCommand('edgeworkers-vscode.uploadEdgeWorker',  async (uploadCommandInput:any)=>{
-        const filePath = getFilePathFromInput(uploadCommandInput);
-        await uploadEdgeWorker.uploadEdgeWorker(filePath);
+        let filePath = '';
+        if(uploadCommandInput === undefined || uploadCommandInput === null || uploadCommandInput === ''){
+            const tarFileFSPath = await vscode.window.showOpenDialog({
+                canSelectFolders: false,
+                canSelectFiles: true,
+                filters: {'Tarball': ['tgz', 'tar.gz']},
+                openLabel: 'select tar file to upload Edgeworker Version',
+            });
+            if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
+                filePath = getFilePathFromInput(tarFileFSPath[0]);
+                await uploadEdgeWorker.uploadEdgeWorker(filePath,'');
+            }
+            else{
+                vscode.window.showErrorMessage("TError:Tar file is not provided to upload edgeworker version");
+            }
+        }
+        else{
+            filePath = getFilePathFromInput(uploadCommandInput);
+            await uploadEdgeWorker.uploadEdgeWorker(filePath,'');
+        }
      });
 
     //command for the upload EdgeWorker Tar ball from mangement UI add button
@@ -71,21 +109,40 @@ export const activate = async function(context: vscode.ExtensionContext){
             canSelectFolders: false,
             canSelectFiles: true,
             canSelectMany: false,
-            filters: {'Tarball': ['tgz', 'tar.gz']}
+            filters: {'Tarball': ['tgz', 'tar.gz']},
+            openLabel: 'select the tar file to upload edgeworker',
         });
         if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
             // there should be exactly one result
             const filePath = getFilePathFromInput(tarFileFSPath[0]);
-            await uploadEdgeWorker.uploadEdgeWorker(filePath, edgeWorkerdetails.version);
+            await uploadEdgeWorker.uploadEdgeWorker(filePath, edgeWorkerdetails.version.toString());
         }
         else{
-            vscode.window.showErrorMessage("Tar file is not provided");
+            vscode.window.showErrorMessage("Error: Tar file is not provided to upload edgeworker version");
         }
     });
 
     vscode.commands.registerCommand('edgeworkers-vscode.uploadTarBallToSandBox',  async (sandboxCommandInput:any)=>{
-        const filePath = getFilePathFromInput(sandboxCommandInput);
-        await uploadTarBallToSandbox.uploadEdgeWorkerTarballToSandbox(filePath);
+        let filePathSandbox = '';
+        if(sandboxCommandInput === undefined || sandboxCommandInput === null || sandboxCommandInput === ''){
+            const tarFileFSPath = await vscode.window.showOpenDialog({
+                canSelectFolders: false,
+                canSelectFiles: true,
+                filters: {'Tarball': ['tgz', 'tar.gz']},
+                openLabel: 'select tar file to upload Edgeworker to sandbox',
+            });
+            if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
+                filePathSandbox = getFilePathFromInput(tarFileFSPath[0]);
+                await uploadTarBallToSandbox.uploadEdgeWorkerTarballToSandbox(filePathSandbox);
+            }
+            else{
+                vscode.window.showErrorMessage("Tar file is not provided to upload edgeworker version to sandbox");
+            }
+        }
+        else{
+            filePathSandbox = getFilePathFromInput(sandboxCommandInput);
+            await uploadTarBallToSandbox.uploadEdgeWorkerTarballToSandbox(filePathSandbox);
+        }
      });
 
      //Activation UI for edgeworker
@@ -184,16 +241,23 @@ function getFileParentFolderFromInput(commandParam : any) : string {
 
 
 export const getActivationOutput =  async function(edgeWorker:string,network:string,version:string):Promise<string>{
-    let msg ="Error activating Edgeowrker ID:"+edgeWorker+" in network "+network + " for version "+version;
-    try{
-        const cmd = await akamiCLICalls.getEdgeWorkerActivationCmd("edgeworkers","activate",edgeWorker,network,version,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-        const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
-        msg = status;
-        vscode.window.showInformationMessage(msg);
-        return(msg);
-    }catch(e){
+    if(version === "No Versions"){
+        const msg = "Cannot activate edgeworker id: "+ edgeWorker+" due to no versions for this edgeworker";
         vscode.window.showErrorMessage(msg);
         return(msg);
+    }
+    else{
+        let msg ="Error activating Edgeowrker ID:"+edgeWorker+" in network "+network + " for version "+version;
+        try{
+            const cmd = await akamiCLICalls.getEdgeWorkerActivationCmd("edgeworkers","activate",edgeWorker,network,version,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+            const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
+            msg = status;
+            vscode.window.showInformationMessage(msg);
+            return(msg);
+        }catch(e){
+            vscode.window.showErrorMessage(msg);
+            return(msg);
+        }
     }
 };
 export const getRegisterEWOutput =  async function(groupId:string,ewName:string,resourceId:string):Promise<string>{
@@ -204,9 +268,8 @@ export const getRegisterEWOutput =  async function(groupId:string,ewName:string,
         msg = status+ewName+" for groupID: "+groupId+" and for resource ID: "+resourceId;
         vscode.window.showInformationMessage(msg);
         return(msg);
-    }catch(e){
-        const err = e as string;
-        vscode.window.showErrorMessage(msg+"due to"+err.toString());
+    }catch(e:any){
+        vscode.window.showErrorMessage(msg+"due to"+e.toString());
         return(msg);
     }
 };

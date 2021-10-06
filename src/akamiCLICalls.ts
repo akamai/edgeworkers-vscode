@@ -58,7 +58,7 @@ export const  getTarCmd = async function(bundleFolder:string,bundlepath:string,t
         return(  ["cd",`${bundleFolder}`, "&&","tar","--disable-copyfile","-czvf",bundlepath, '--exclude="*.tgz"', "*"]);
 };
 
-export const deleteOutput = async function(filePath:string){
+export const deleteOutput = async function(filePath:string):Promise<string>{
     let deleteFile:string = '';
     if(ostype === systemType.windows){
         deleteFile =  `del ${filePath}`;
@@ -66,8 +66,18 @@ export const deleteOutput = async function(filePath:string){
     else{
         deleteFile =  `rm  ${filePath}`;
     }
-    await exec(deleteFile);
-    if(fs.existsSync(filePath)){throw new Error(ErrorMessageExt.file_replace_error + path.basename(filePath));}
+    await new Promise((resolve, reject) => {
+       exec(deleteFile,{}, (error:Error,stdout:string, stderr:string)=>{
+        if (error) {
+            const status = stderr.toString();
+            reject('');
+        } else {
+            if(fs.existsSync(filePath)){throw new Error(ErrorMessageExt.file_replace_error + path.basename(filePath));}
+            resolve('');
+        }
+    }); 
+    });
+    return('');
 };
 
 export const untarTarballToTempDir = async function (tarFilePath:string, edgeworkerBundle:string):Promise<string>{
@@ -210,7 +220,12 @@ export const parseJsonToGetResultAkamaiCLI = async function(filePathForJson:stri
                 }
                 else
                 {
-                    throw new Error(`${result.msg}`+ " due to "+ `${result.data[0]["detail"]}`);
+                    if(result.data[0]["detail"] === undefined || result.data[0]["detail"] === null ){
+                        throw new Error(`${result.msg}`);
+                    }
+                    else{
+                        throw new Error(`${result.msg}`+ " due to "+ `${result.data[0]["detail"]}`);
+                    }
                 }
         }
         throw new Error("Error: Failed to execute The command");
