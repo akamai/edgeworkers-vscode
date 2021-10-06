@@ -16,7 +16,7 @@ export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:
     const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
     try{
         if(userEdgeWorkerID === '' || userEdgeWorkerID === undefined){
-        userEdgeWorkerID = await quickPickItem("Select Edge Worker ID",listIds);
+        userEdgeWorkerID = await quickPickItem("Select EdgeWorker ID",listIds);
             userEdgeWorkerID = userEdgeWorkerID.substring(userEdgeWorkerID.lastIndexOf('|')+2);
             if(userEdgeWorkerID === '' || userEdgeWorkerID === undefined){
                 throw new Error(ErrorMessageExt.empty_edgeWorkerID);
@@ -24,8 +24,8 @@ export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:
         }
         const validate = await validateEgdeWorkerID(userEdgeWorkerID);
         if(validate === true){
-            const uploadCmd = await akamiCLICalls.getUploadEdgeWorkerCmd(tarFilePath,userEdgeWorkerID,accountKey);
-            const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(uploadCmd));
+            const uploadCmd = await akamiCLICalls.getUploadEdgeWorkerCmd("edgeworkers","upload",tarFilePath,userEdgeWorkerID,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+            const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(uploadCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
             const msg = textForInfoMsg.upload_edgeWorker_success+`${tarFileName}`+" to EdgeWorker ID: "+`${userEdgeWorkerID}`;
             vscode.window.showInformationMessage(msg);
         }
