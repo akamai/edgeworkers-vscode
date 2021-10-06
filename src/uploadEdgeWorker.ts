@@ -24,15 +24,9 @@ export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:
         }
         const validate = await validateEgdeWorkerID(userEdgeWorkerID);
         if(validate === true){
-<<<<<<< HEAD
-            const uploadCmd = await akamiCLICalls.getUploadEdgeWorkerCmd("edgeworkers","upload",tarFilePath,userEdgeWorkerID,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-            const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(uploadCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
-            const msg = textForInfoMsg.upload_edgeWorker_success+`${tarFileName}`+" to Edge Worker ID: "+`${userEdgeWorkerID}`;
-=======
             const uploadCmd = await akamiCLICalls.getUploadEdgeWorkerCmd(tarFilePath,userEdgeWorkerID,accountKey);
             const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(uploadCmd));
             const msg = textForInfoMsg.upload_edgeWorker_success+`${tarFileName}`+" to EdgeWorker ID: "+`${userEdgeWorkerID}`;
->>>>>>> package json setup fix and text changes
             vscode.window.showInformationMessage(msg);
         }
         else{
