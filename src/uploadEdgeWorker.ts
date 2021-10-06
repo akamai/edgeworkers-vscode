@@ -2,27 +2,27 @@
 'use strict';
 import * as vscode from 'vscode';
 import {workspace}from 'vscode';
-const fs = require('fs');
-const path = require('path');
-import { ErrorMessage } from './openAPI/utils/http-error-message';
-const cp = require('child_process');
-const exec = require('child_process').exec;
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
-export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:string = ''):Promise<boolean>{
-    let userEdgeWorkerID :string = edgeworkerID as string;
+export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:string):Promise<boolean>{
+    let userEdgeWorkerID :string = edgeworkerID;
     const tarFileName = path.parse(tarFilePath).base;
-    let accountKey = edgeWorkerCommands.getAccountKeyFromUserConfig();
+    const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+    const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
     try{
         if(userEdgeWorkerID === '' || userEdgeWorkerID === undefined){
-            userEdgeWorkerID = await edgeWorkerCommands.askUserForUserInput(textForInfoMsg.get_edgeWorker_id_User,'') as string;
+        userEdgeWorkerID = await quickPickItem("Select Edge Worker ID",listIds);
+            userEdgeWorkerID = userEdgeWorkerID.substring(userEdgeWorkerID.lastIndexOf('|')+2);
             if(userEdgeWorkerID === '' || userEdgeWorkerID === undefined){
                 throw new Error(ErrorMessageExt.empty_edgeWorkerID);
             }
         }
-        const validate = await validateEgdeWorkerID(userEdgeWorkerID,accountKey);
+        const validate = await validateEgdeWorkerID(userEdgeWorkerID);
         if(validate === true){
             const uploadCmd = await akamiCLICalls.getUploadEdgeWorkerCmd(tarFilePath,userEdgeWorkerID,accountKey);
             const status = await akamiCLICalls.executeCLICommandExceptTarCmd(akamiCLICalls.generateCLICommand(uploadCmd));
@@ -40,13 +40,14 @@ export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:
     }
 };
 
-export const validateEgdeWorkerID = async function(edgeWorkerID: string, accountKey?:string ):Promise<boolean|string>{
+export const validateEgdeWorkerID = async function(edgeWorkerID: string):Promise<boolean|string>{
     return new Promise(async (resolve, reject) => {
         try{
             let found:boolean=false;
-            const edgeWorkerIDsString= await akamiCLICalls.callAkamaiCLIFOrEdgeWorkerIDs(accountKey);
+            const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+            const edgeWorkerIDsString= await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
             const edgeWorkerIDsJson = JSON.parse(edgeWorkerIDsString);
-            edgeWorkerIDsJson.data.find((element:any) => {
+            edgeWorkerIDsJson.find((element:any) => {
                 if(edgeWorkerID === element.edgeWorkerId.toString()){
                     found = true;
                 } 
@@ -55,6 +56,29 @@ export const validateEgdeWorkerID = async function(edgeWorkerID: string, account
         }catch(e){
             reject(e);
         }
+    });
+};
+export const quickPickItem = async function quickPickItem(displayTxt:string,listIds: string): Promise<string> {
+    const listIdsJson = JSON.parse(listIds);
+    const options = listIdsJson.map((item: any) => ({ label: `${item.name} || ${item.edgeWorkerId}`}));
+
+    return new Promise((resolve, _) => {
+        const quickPick = vscode.window.createQuickPick();
+        const placeholder = displayTxt;
+        quickPick.placeholder = placeholder;
+        quickPick.items = options;
+        quickPick.canSelectMany = false;
+        let selectedItems = '';
+        quickPick.onDidChangeSelection((selected) => {
+            selectedItems = selected[0].label.toString(); // string[]
+        });
+        quickPick.onDidAccept(_ => {
+            // workaround for no activeItems when canSelectMany is true
+            resolve(selectedItems);
+            quickPick.hide();
+        });
+        quickPick.onDidHide(_ => quickPick.dispose());
+        quickPick.show();
     });
 };
 

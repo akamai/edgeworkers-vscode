@@ -1,0 +1,12 @@
+{
+    "cliStatus": 0,
+    "msg": "sample json",
+    "data": [
+      {
+        "id": 1111,
+        "name": "abc",
+        "groupId": 1111,
+        "": 111
+      }
+    ]
+  }

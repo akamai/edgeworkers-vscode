@@ -1,17 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Console } from 'console';
 import { afterEach, beforeEach, describe, it } from "mocha";
-import { expect } from "chai";
 import * as sinon from 'sinon';
-import * as nodeDependencies from '../../managementUI';
 const chai    = require("chai");
 import * as assert from 'assert';
-const spies = require('chai-spies');
-import {workspace}from 'vscode';
-import { join } from 'path';
-import * as vscode from 'vscode';
 import * as edgeWorkerCommands from '../../edgeWorkerCommands';
-import { EdgeWorkerDetailsProvider} from '../../managementUI';
 import * as uploadEdgeWorkerVersion from '../../uploadEdgeWorker';
 import * as akamiCLICalls from '../../akamiCLICalls';
 import * as jsonSample from './sampleTest.json';
@@ -25,9 +17,9 @@ suite('testing edgeworker vscode extension', () => {
     it('check if the edgeWorker is present under the user account', async function(){
         //EdgeWorker ID : 3333 is present in sample.json
 		this.timeout(100000);
-        const ListIds = JSON.stringify(jsonSample);
-        sinon.stub(akamiCLICalls, 'callAkamaiCLIFOrEdgeWorkerIDs').resolves(ListIds);
-		const status:any = await uploadEdgeWorkerVersion.validateEgdeWorkerID('3333',accountKey).then((success)=>{
+        const ListIds = JSON.stringify(jsonSample.data);
+        sinon.stub(akamiCLICalls, 'executeAkamaiEdgeWorkerCLICmds').resolves(ListIds);
+		const status:any = await uploadEdgeWorkerVersion.validateEgdeWorkerID('3333').then((success)=>{
             assert.strictEqual(success,true);
         });
 	});
@@ -43,7 +35,8 @@ suite('testing edgeworker vscode extension', () => {
     it('check if upload bundle is successfull', async function(){
         //should return the true since it is done
 		this.timeout(100000);
-        sinon.stub(akamiCLICalls, 'executeCLICommandExceptTarCmd').resolves('done');
+        sinon.stub(uploadEdgeWorkerVersion, 'validateEgdeWorkerID').resolves(true);
+        sinon.stub(akamiCLICalls, 'executeAkamaiEdgeWorkerCLICmds').resolves('');
         let tarFilePath= path.resolve(__dirname,'../../../src/test/testSpace/bundle.tgz');
         let edgeworkerID:string = "";
 		const status:any = await uploadEdgeWorkerVersion.uploadEdgeWorker(tarFilePath,edgeworkerID);
