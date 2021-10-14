@@ -33,7 +33,8 @@
 3.  Download an EdgeWorker by clicking the download button to the right of the version number. The download is automatically extracted for easy viewing of contents:
     
 
-<img src="https://lh4.googleusercontent.com/UILVZTXWdSLD4R4Y7kedWp6ei8LpfUvwaNAArTyksv_TYFJz6SQSUIZkZmbLaS999r-Sjqi0pi2NWBdmeXFwQ1xQFQXS6tCSFb8VDBF0ckBRdyLyyuwHmgnKWtUnPaPhOlPeLMlo=s0)![](https://lh6.googleusercontent.com/MFC_J4l1JC955Ja_PfOQvvQY-sOoKGKEDYMRT687_680imbMWFyV4PJTVsw7QTxOZPMfXpnYeKezdcniFvURL50xheCPSsDhaw3vYlEnDJeIr2l_9Cya8vLWzTwLJ3BIqVESsguv=s0" width="300px">
+<img src="https://lh4.googleusercontent.com/UILVZTXWdSLD4R4Y7kedWp6ei8LpfUvwaNAArTyksv_TYFJz6SQSUIZkZmbLaS999r-Sjqi0pi2NWBdmeXFwQ1xQFQXS6tCSFb8VDBF0ckBRdyLyyuwHmgnKWtUnPaPhOlPeLMlo=s0" width="300px">
+<img src="https://lh6.googleusercontent.com/MFC_J4l1JC955Ja_PfOQvvQY-sOoKGKEDYMRT687_680imbMWFyV4PJTVsw7QTxOZPMfXpnYeKezdcniFvURL50xheCPSsDhaw3vYlEnDJeIr2l_9Cya8vLWzTwLJ3BIqVESsguv=s0" width="300px">
 
 4.  Activating an EdgeWorker can be done by clicking the leftmost / “Activate EdgeWorker” icon in the EdgeWorkers pane toolbar; this will bring up the Activation UI:
     
