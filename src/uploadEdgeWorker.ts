@@ -35,7 +35,7 @@ export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:
         }
         return true;
     }catch(e:any){
-        vscode.window.showErrorMessage(e.toString());
+        vscode.window.showErrorMessage(`Failed to upload Edgeworker id:${userEdgeWorkerID} due to `+e.toString());
         return false;
     }
 };

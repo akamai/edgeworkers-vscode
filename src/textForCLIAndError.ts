@@ -12,7 +12,7 @@ export enum systemType{
 }
 
 export enum ErrorMessageExt {
-    akamai_cli_not_installed= "akamai CLI is not installed. Do you want to install Akamai CLI ?",
+    akamai_cli_not_installed= "Akamai CLI is not installed. Do you want to install Akamai CLI ?",
     bundle_JSON_not_found= " Mandatory file missing - ",
     create_bundle_fail = " Failed to create EdgeWorker bundle - ",
     validate_bundle_fail = "  Failed to validate EdgeWorker bundle - ",
