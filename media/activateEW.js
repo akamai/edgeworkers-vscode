@@ -21,16 +21,20 @@
         var catOptions = "";
         for(var j = 0; j < listVersion.length; j++){
             if(listVersion[j].edgeWorkerId == value1){
+                if(listVersion[j].versions === undefined || listVersion[j].versions === "" ||listVersion[j].versions === null){
+                    catOptions += "<option>" +"No Versions"+"</option>";
+                }
+                else{
                     listVersion[j].versions.forEach((element) => {
-                        if(element["version"] === undefined || element["version"] === ''|| element["version"]=== null)
+                        if(element["version"] === undefined || element["version"] === ""|| element["version"]=== null)
                         {
                             catOptions += "<option>" +"No Versions"+"</option>";
                         }
                         else{
                             catOptions += "<option>" +  element["version"] + "</option>";
                         }
-                        
                     });
+                }
                 }
         }
         document.getElementById("selectVersion").innerHTML = catOptions;

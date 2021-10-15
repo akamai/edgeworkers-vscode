@@ -210,7 +210,7 @@ export const checkAkamaiSandbox = async function(akamaiSandboxCmd: string):Promi
     });
 };
 export const parseJsonToGetResultAkamaiCLI = async function(filePathForJson:string,msg:string):Promise<string>{
-    const result = JSON.parse(fs.readFileSync(filePathForJson,'utf8'));
+    const result = await JSON.parse(fs.readFileSync(filePathForJson,'utf8'));
         if(result !== undefined || result.length !== 0){
                 if(result.cliStatus.toString() === '0' && msg==="msg"){
                     return(result[msg]);
@@ -233,7 +233,7 @@ export const parseJsonToGetResultAkamaiCLI = async function(filePathForJson:stri
 export const executeAkamaiEdgeWorkerCLICmds = async function(cmd : string, jsonFilePath:string,msg:string) : Promise<string> {
     // wrap exec in a promise
     return new Promise(async (resolve, reject) => {
-        exec(cmd, async (error : Error, stdout : string, stderr : string) => {
+        await exec(cmd, async (error : Error, stdout : string, stderr : string) => {
             if(stdout) {
                 try{
                     const output = await parseJsonToGetResultAkamaiCLI(jsonFilePath,msg);
