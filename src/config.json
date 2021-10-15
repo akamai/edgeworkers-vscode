@@ -1,0 +1,7 @@
+{
+    "settings": {
+        "timeOut": 10000,
+        "bufferSize": 120000,
+        "EW_DETAILS_BATCH_SIZE": 10
+    }
+}
