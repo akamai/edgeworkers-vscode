@@ -3,7 +3,7 @@
 	"displayName": "akamai-edgeworkers-vscode-extension",
 	"description": "Akamai EdgeWorkers VSCode Extension",
 	"publisher": "akamai",
-	"version": "0.9.0",
+	"version": "1.0.0",
 	"enableProposedApi": true,
 	"engines": {
 		"vscode": "^1.59.0"
