@@ -3,6 +3,8 @@ import * as path from 'path';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
 import { ErrorMessageExt } from './textForCLIAndError';
+import config from './config.json';
+import { rejects } from 'assert';
 const os = require('os');
 
 export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWorkers> {
@@ -163,27 +165,90 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 }
 
 export const fillVersions = async function( ids:string):Promise<string>{
-	return new Promise(async (resolve, reject) => {
+	return new Promise(async (resolve) => {
 		let edgeWorkerJsonString: string = ids;
 		const edgeWorkerJson = JSON.parse(edgeWorkerJsonString);
-		try{
-			if(edgeWorkerJson.length !== 0){
-				for(var i = 0; i < edgeWorkerJson.length; i++) {
-					const getVersionCmd = await akamiCLICalls.getEdgeWorkerListVersions("edgeworkers","list-versions",`${edgeWorkerJson[i].edgeWorkerId}`,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+		if(edgeWorkerJson.length !== 0){
+			for(var i = 0; i < edgeWorkerJson.length; i++) {
+				const getVersionCmd = await akamiCLICalls.getEdgeWorkerListVersions("edgeworkers","list-versions",`${edgeWorkerJson[i].edgeWorkerId}`,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+				try{
 					const data = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(getVersionCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
 					edgeWorkerJson[i].versions= JSON.parse(data);
+				}catch(e:any){
+					vscode.window.showErrorMessage(`cannot fetch versions for id :${edgeWorkerJson[i].edgeWorkerId} due to `+e.toString());
+					edgeWorkerJson[i].versions= "";
 				}
 			}
-			resolve(JSON.stringify(edgeWorkerJson));
-		}catch(e){
-			reject(e);
 		}
+		resolve(JSON.stringify(edgeWorkerJson));
 	});
 };
+
+export const getListIdsAndVersions = async function():Promise<string> {
+    let listIdsAndVersions = [];
+    try{
+        let batchSize:number = Number(config.settings.EW_DETAILS_BATCH_SIZE)||5;
+        let listIds = JSON.parse(await getListIds());
+        let arr = Object.keys(listIds).map(function(k) { return listIds[k];});
+		for(let i=0;i<arr.length;i+=1){
+			let results = await Promise.all(
+                arr
+				.slice(i,i+1)
+                .map((obj: any) => getVersions(obj))
+            );
+            listIdsAndVersions.push(...results);
+		}
+        return Promise.resolve(JSON.stringify(listIdsAndVersions));
+    }catch(e:any){
+        vscode.window.showErrorMessage("Failed to fetch the Edgeworker details");
+		return "";
+    }
+};
+export const getVersions = async function( edgeWorker:any):Promise<any>{
+    return new Promise(async (resolve) => {
+            if(edgeWorker.length !== 0){
+                    const getVersionCmd = await akamiCLICalls.getEdgeWorkerListVersions("edgeworkers","list-versions",`${edgeWorker.edgeWorkerId}`,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+                    await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(getVersionCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data")
+					.then((data => {
+						if(data.length===0|| data.length=== undefined||data ===""){
+							edgeWorker.versions = "";
+						}
+						else{
+							edgeWorker.versions= JSON.parse(data);
+						}
+						
+					}))
+					.catch((e:any)=>{
+						vscode.window.showErrorMessage(`cannot fetch versions for id :${edgeWorker.edgeWorkerId} due to `+e.toString());
+						edgeWorker.versions = "";
+					});
+            }
+            await new Promise((resolve)=> setTimeout(resolve,1000));
+            resolve(edgeWorker);
+    });
+};
+
+
+export const getListIds = async function():Promise<string>{
+	try{
+		const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+		const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+		return Promise.resolve(listIds);
+	}catch(e:any){
+		vscode.window.showErrorMessage(`cannot fetch edgeworker Details due to `+e.toString());
+		return "";
+	}
+};
+
 export const getListArrayOfEdgeWorker= async function():Promise<string>{
-	const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-	const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(await akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
-	return(await fillVersions(listIds));
+	try{
+		const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+		const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(await akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+		return(await fillVersions(listIds));
+	}catch(e:any){
+		vscode.window.showErrorMessage(`cannot fetch edgeworker Details due to `+e.toString());
+		return "";
+	}
 };
 
 export class  EdgeWorkers extends vscode.TreeItem {
