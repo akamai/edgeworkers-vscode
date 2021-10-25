@@ -11,8 +11,6 @@ import * as akamiCLICalls from './akamiCLICalls';
 
 export const uploadEdgeWorkerTarballToSandbox = async function(bundlePath:string):Promise<boolean>{
     try{
-        await akamiCLICalls.checkAkamaiSandbox(textForCmd.akamai_sandbox_version);
-        // let bundlePath = tarFilepath.replace('file://','');
         const tarFileName = path.parse(bundlePath).base;
         const edgeworkerBundle =  tarFileName.substr(0,tarFileName.lastIndexOf('.'));
         const unTar= await akamiCLICalls.untarTarballToTempDir(bundlePath,edgeworkerBundle);
@@ -23,7 +21,7 @@ export const uploadEdgeWorkerTarballToSandbox = async function(bundlePath:string
         }
         const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
         const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
-        let edgeWorkerID = await uploadEdgeWorker.quickPickItem(textForInfoMsg.get_edgeWorker_id_User,listIds);
+        let edgeWorkerID = await uploadEdgeWorker.quickPickItem(textForInfoMsg.get_edgeWorker_id_User,listIds).catch((e:any) => {throw new Error(`failed to Test Edgeworker in Sandbox due to :`+e.toString());});
         edgeWorkerID = edgeWorkerID.substring(edgeWorkerID.lastIndexOf('|')+2);
         if(edgeWorkerID === '' || edgeWorkerID === undefined){
             throw new Error(ErrorMessageExt.empty_edgeWorkerID);
@@ -46,7 +44,7 @@ export const uploadEdgeWorkerTarballToSandbox = async function(bundlePath:string
         }
     return true;
     }catch(e:any){
-        vscode.window.showErrorMessage(e.toString());
+        vscode.window.showErrorMessage("Failed to Upload Edgeworker to Sandbox due to "+ e.toString());
         return false;
     }
 };

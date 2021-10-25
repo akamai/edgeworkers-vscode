@@ -12,9 +12,9 @@ const path = require('path');
 export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:string):Promise<boolean>{
     let userEdgeWorkerID :string = edgeworkerID;
     const tarFileName = path.parse(tarFilePath).base;
-    const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-    const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
     try{
+        const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+        const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
         if(userEdgeWorkerID === '' || userEdgeWorkerID === undefined){
         userEdgeWorkerID = await quickPickItem("Select EdgeWorker ID",listIds);
             userEdgeWorkerID = userEdgeWorkerID.substring(userEdgeWorkerID.lastIndexOf('|')+2);
@@ -60,25 +60,18 @@ export const validateEgdeWorkerID = async function(edgeWorkerID: string):Promise
 };
 export const quickPickItem = async function quickPickItem(displayTxt:string,listIds: string): Promise<string> {
     const listIdsJson = JSON.parse(listIds);
-    const options = listIdsJson.map((item: any) => ({ label: `${item.name} || ${item.edgeWorkerId}`}));
-
-    return new Promise((resolve, _) => {
-        const quickPick = vscode.window.createQuickPick();
-        const placeholder = displayTxt;
-        quickPick.placeholder = placeholder;
-        quickPick.items = options;
-        quickPick.canSelectMany = false;
-        let selectedItems = '';
-        quickPick.onDidChangeSelection((selected) => {
-            selectedItems = selected[0].label.toString(); // string[]
-        });
-        quickPick.onDidAccept(_ => {
-            // workaround for no activeItems when canSelectMany is true
-            resolve(selectedItems);
-            quickPick.hide();
-        });
-        quickPick.onDidHide(_ => quickPick.dispose());
-        quickPick.show();
+    const mapQuickPickItems: Array<vscode.QuickPickItem> = [];
+    listIdsJson.map((map: any) => mapQuickPickItems.push({
+        label: `${map.name} || ${map.edgeWorkerId}`
+    }));
+    return new Promise(async (resolve, reject) => {
+        const selected: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(mapQuickPickItems, {canPickMany: false});
+        if (selected) {
+            resolve(selected.label.toString());
+        }
+        else{
+            reject("Edgeworker ID not provided");
+        }
     });
 };
 

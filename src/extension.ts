@@ -8,6 +8,7 @@ import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
 import * as managementUI from './managementUI';
 import * as uploadTarBallToSandbox from './uploadTarBallToSandbox';
+import * as akamaiCLIConfig from './cliConfigChange';
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import { Utils } from 'vscode-uri';
 import * as activationUI from './activationUI';
@@ -18,22 +19,16 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 
-
-
 export const activate = async function(context: vscode.ExtensionContext){
-    if (!await akamiCLICalls.isAkamaiCLIInstalled()) {
-        const resp = await vscode.window.showErrorMessage(ErrorMessageExt.akamai_cli_not_installed, 'Install');
-        if (resp === 'Install') {
-            vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(ErrorMessageExt.edgeworker_download_URI));
-        }
-    }
-    else{
-        // management UI class initilization
+    // management UI class initilization
+    await akamaiCLIConfig.setAkamaiCLIConfig();
+    akamiCLICalls.checkEnvBeforeEachCommand()
+    .then(async ()=> { 
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: "Gathering EdgeWorker Details",
             cancellable: true
-        }, async (progress, token) => {
+            }, async (progress, token) => {
             token.onCancellationRequested(() => {
                 console.log("User canceled the long running operation");
             });
@@ -43,28 +38,45 @@ export const activate = async function(context: vscode.ExtensionContext){
                 treeDataProvider: edgeWorkerDetailsProvider,
                 showCollapseAll: true
             });
-        });
-        //refresh the tree view in management UI
-        await vscode.commands.registerCommand('edgeworkers-vscode.refreshEntry', async function() {
+            });
+    }).catch((err:any)=> {
+        vscode.window.showErrorMessage(err.toString());
+        const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider('');
+            vscode.window.createTreeView('edgeWorkerDetails', {
+                treeDataProvider: edgeWorkerDetailsProvider,
+                showCollapseAll: true
+            });
+    });
+        
+    //refresh the tree view in management UI
+    context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.refreshEntry', async function() {
+        akamiCLICalls.checkEnvBeforeEachCommand()
+        .then(async ()=> {     
         await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: "Refreshing EdgeWorker Details",
-            cancellable: true
-        }, async (progress, token) => {
-            token.onCancellationRequested(() => {
-                console.log("User canceled the long running operation");
-            });
-            const listIdsAndVersion = await managementUI.getListIdsAndVersions();
-            const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider(listIdsAndVersion);
-            vscode.window.createTreeView('edgeWorkerDetails', {
-                treeDataProvider: edgeWorkerDetailsProvider,
-                showCollapseAll: true
-            });  
-            });
-        }); 
+                location: vscode.ProgressLocation.Notification,
+                title: "Refreshing EdgeWorker Details",
+                cancellable: true
+            }, async (progress, token) => {
+                token.onCancellationRequested(() => {
+                    console.log("User canceled the long running operation");
+                });
+                const listIdsAndVersion = await managementUI.getListIdsAndVersions();
+                const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider(listIdsAndVersion);
+                vscode.window.createTreeView('edgeWorkerDetails', {
+                    treeDataProvider: edgeWorkerDetailsProvider,
+                    showCollapseAll: true
+                });  
+                });
+        })
+        .catch((err:any)=> {
+            vscode.window.showErrorMessage(err.toString());
+        });
+    }));
 
-        // command activation for creating bundle
-       await vscode.commands.registerCommand('edgeworkers-vscode.edgeworkerBundle', async function (uri:any) {
+    // command activation for creating bundle
+    context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.edgeworkerBundle', async function (uri:any) {
+        akamiCLICalls.checkEnvBeforeEachCommand()
+        .then(async ()=> {     
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Creating and validating the Bundle",
@@ -93,12 +105,17 @@ export const activate = async function(context: vscode.ExtensionContext){
                     const bundleFileInput = path.join(creatBundleFilePath,'..');
                     await edgeWorkerCommands.createAndValidateEdgeWorker(bundleFileInput);
                 }
-
             });
+        })
+        .catch((err:any)=> {
+            vscode.window.showErrorMessage(err.toString());
         });
+    }));
 
-        // command activation for downloading edgeworker
-        await vscode.commands.registerCommand('edgeworkers-vscode.downloadEdgeWorker',  async (edgeWorkerdetails: EdgeWorkerDetails) => {
+    // command activation for downloading edgeworker
+    context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.downloadEdgeWorker',  async (edgeWorkerdetails: EdgeWorkerDetails) => {
+        akamiCLICalls.checkEnvBeforeEachCommand()
+        .then(async ()=> {
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Downloading EdgeWorker Bundle",
@@ -115,9 +132,15 @@ export const activate = async function(context: vscode.ExtensionContext){
                     vscode.window.showErrorMessage("No EdgeWorker versions are available to download");
                 }
             });
+        })
+        .catch((err:any)=>{
+            vscode.window.showErrorMessage(err.toString());
         });
-        //command for the upload EdgeWorker Tar ball file in file explorer
-        await vscode.commands.registerCommand('edgeworkers-vscode.uploadEdgeWorker',  async (uploadCommandInput:any)=>{
+    }));
+    //command for the upload EdgeWorker Tar ball file in file explorer
+    context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.uploadEdgeWorker',  async (uploadCommandInput:any)=>{
+        akamiCLICalls.checkEnvBeforeEachCommand()
+        .then(async ()=> {
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Uploading EdgeWorker",
@@ -147,10 +170,16 @@ export const activate = async function(context: vscode.ExtensionContext){
                     await uploadEdgeWorker.uploadEdgeWorker(filePath,'');
                 }
             });
+        })
+        .catch((err:any)=>{
+            vscode.window.showErrorMessage(err.toString());
         });
+    }));
 
-        //command for the upload EdgeWorker Tar ball from mangement UI add button
-        await vscode.commands.registerCommand('edgeworkers-vscode.uploadEdgeWorkerFromMangementUI',  async (edgeWorkerdetails: EdgeWorkerDetails)=>{
+    //command for the upload EdgeWorker Tar ball from mangement UI add button
+    context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.uploadEdgeWorkerFromMangementUI',  async (edgeWorkerdetails: EdgeWorkerDetails)=>{
+        akamiCLICalls.checkEnvBeforeEachCommand()
+        .then(async ()=> {
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Uploading EdgeWorker",
@@ -175,9 +204,15 @@ export const activate = async function(context: vscode.ExtensionContext){
                     vscode.window.showErrorMessage("Error: Tar file is not provided to upload edgeworker version");
                 }
             });
+        })
+        .catch((err:any)=>{
+            vscode.window.showErrorMessage(err.toString());
         });
+    }));
 
-        await vscode.commands.registerCommand('edgeworkers-vscode.uploadTarBallToSandBox',  async (sandboxCommandInput:any)=>{
+   context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.uploadTarBallToSandBox',  async (sandboxCommandInput:any)=>{
+        akamiCLICalls.checkAkamaiSandbox()
+        .then(async ()=> {
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Uploading TarBall to SandBox",
@@ -207,10 +242,16 @@ export const activate = async function(context: vscode.ExtensionContext){
                     await uploadTarBallToSandbox.uploadEdgeWorkerTarballToSandbox(filePathSandbox);
                 }
             });
+        })
+        .catch((err:any)=>{
+            vscode.window.showErrorMessage(err.toString());
         });
+    }));
 
-        //Activation UI for edgeworker
-        await vscode.commands.registerCommand("edgeworkers-vscode.activateEdgeWorker", async function() {
+    //Activation UI for edgeworker
+    context.subscriptions.push(vscode.commands.registerCommand("edgeworkers-vscode.activateEdgeWorker", async function() {
+        akamiCLICalls.checkEnvBeforeEachCommand()
+        .then(async ()=> {
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Opening Activation EdgeWorker Window",
@@ -219,41 +260,48 @@ export const activate = async function(context: vscode.ExtensionContext){
                 token.onCancellationRequested(() => {
                     console.log("User canceled the long running operation");
                 });
-                const listIds = await managementUI.getListIds();
-                if(listIds !== ""){
-                    const versions = await managementUI.getListIdsAndVersions();
-                    const panel = vscode.window.createWebviewPanel(
-                        'Activate EdgeWorker',
-                        'Activate EdgeWorker',
-                        vscode.ViewColumn.One,
-                        {
-                            enableScripts: true,
-                            localResourceRoots: [Utils.joinPath(context.extensionUri, 'media')]
-                        }
-                    );
-                    panel.webview.html = activationUI.getWebviewContent(context,panel.webview,listIds,versions);
-                    // Handle messages from the webview
-                    panel.webview.onDidReceiveMessage(
-                        async message => {
-                            switch (message.command) {
-                                case 'info':
-                                const msg = getActivationOutput(message.edgeWorker.toString(),message.network.toString(),message.version.toString());
-                                return;
-                                case 'cancel':
-                                vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-                                return;
+                try{
+                    const listIds = await managementUI.getListIds();
+                    if(listIds !== ""){
+                        const versions = await managementUI.getListIdsAndVersions();
+                        const panel = vscode.window.createWebviewPanel(
+                            'Activate EdgeWorker',
+                            'Activate EdgeWorker',
+                            vscode.ViewColumn.One,
+                            {
+                                enableScripts: true,
+                                localResourceRoots: [Utils.joinPath(context.extensionUri, 'media')]
                             }
-                        },
-                        undefined,
-                        context.subscriptions
-                    );
-                }
-                else{
-                    vscode.window.showErrorMessage("Failed to open activation window due to error fetching edgeworker details");
+                        );
+                        panel.webview.html = activationUI.getWebviewContent(context,panel.webview,listIds,versions);
+                        // Handle messages from the webview
+                        panel.webview.onDidReceiveMessage(
+                            async message => {
+                                switch (message.command) {
+                                    case 'info':
+                                    const msg = getActivationOutput(message.edgeWorker.toString(),message.network.toString(),message.version.toString());
+                                    return;
+                                    case 'cancel':
+                                    vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+                                    return;
+                                }
+                            },
+                            undefined,
+                            context.subscriptions
+                        );
+                    }
+                }catch(err:any){
+                    vscode.window.showErrorMessage("Failed to open activation window due : "+err.toString());
                 }
             });
+        })
+        .catch((err:any)=>{
+            vscode.window.showErrorMessage("Failed to open activation window due : "+err.toString());
         });
-        vscode.commands.registerCommand("edgeworkers-vscode.registerEdgeWorker", async function() {
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand("edgeworkers-vscode.registerEdgeWorker", async function() {
+        akamiCLICalls.checkEnvBeforeEachCommand()
+        .then(async ()=> {
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Opening Registration EdgeWorker Window",
@@ -262,8 +310,9 @@ export const activate = async function(context: vscode.ExtensionContext){
                 token.onCancellationRequested(() => {
                     console.log("User canceled the long running operation");
                 });
-                const groupIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-groups",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+               
                 try{
+                    const groupIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-groups",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
                     const groupIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(groupIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
                     const panel = vscode.window.createWebviewPanel(
                         'Register EdgeWorker',
@@ -297,8 +346,11 @@ export const activate = async function(context: vscode.ExtensionContext){
                     vscode.window.showErrorMessage("Failed to open Registration page due to "+ e.toString());
                 }
             });
+        })
+        .catch((err:any)=>{
+            vscode.window.showErrorMessage("Failed to open Registration page due to "+ err.toString());
         });
-    }
+    }));
 };
 
 // this method is called when your extension is deactivated

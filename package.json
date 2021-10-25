@@ -1,10 +1,10 @@
 {
 	"name": "akamai-edgeworkers-vscode-extension",
-	"displayName": "akamai-edgeworkers-vscode-extension",
+	"displayName": "akamai Edgeworkers VScode Extension",
 	"description": "Akamai EdgeWorkers VSCode Extension",
-	"publisher": "akamai",
+	"publisher": "AkamaiEdgeWorker",
 	"version": "1.0.0",
-	"enableProposedApi": true,
+	"enableProposedApi": false,
 	"engines": {
 		"vscode": "^1.59.0"
 	},
@@ -12,6 +12,7 @@
 		"Other"
 	],
 	"activationEvents": [
+		"*",
 		"onCommand:edgeworkers-vscode.edgeworkerBundle",
 		"onCommand:edgeworkers-vscode.refreshEntry",
 		"onCommand:edgeworkers-vscode.downloadEdgeWorker",
@@ -184,6 +185,16 @@
 					"default": "",
 					"description": ".edgerc file path apart from home directory"
 				},
+				"edgeworkers-vscode.enableCLIStatistics": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable CLI Statistics for Akamai CLI"
+				},
+				"edgeworkers-vscode.enableUpdateCheck": {
+					"type": "boolean",
+					"default": false,
+					"description": "Enable Update Check for Akamai CLI"
+				},
 				"jsonOutline.autorefresh": {
 					"type": "boolean",
 					"default": false
@@ -217,6 +228,7 @@
 		"mocha": "^8.4.0",
 		"typescript": "^4.3.2",
 		"vscode-extension-tester": "^4.1.2",
+		"vscode": "^1.1.37",
 		"vscode-test": "^1.5.2"
 	},
 	"dependencies": {
@@ -230,7 +242,6 @@
 		"sinon": "^11.1.2",
 		"tar": "^6.1.9",
 		"untildify": "^4.0.0",
-		"vscode": "^1.1.37",
 		"vscode-uri": "^3.0.2"
 	}
 }

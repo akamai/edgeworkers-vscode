@@ -200,8 +200,7 @@ export const getListIdsAndVersions = async function():Promise<string> {
 		}
         return Promise.resolve(JSON.stringify(listIdsAndVersions));
     }catch(e:any){
-        vscode.window.showErrorMessage("Failed to fetch the Edgeworker details");
-		return "";
+        throw new Error("Failed to fetch the Edgeworker details due to " + e.toString());
     }
 };
 export const getVersions = async function( edgeWorker:any):Promise<any>{
@@ -219,7 +218,7 @@ export const getVersions = async function( edgeWorker:any):Promise<any>{
 						
 					}))
 					.catch((e:any)=>{
-						vscode.window.showErrorMessage(`cannot fetch versions for id :${edgeWorker.edgeWorkerId} due to `+e.toString());
+						vscode.window.showErrorMessage(`Cannot fetch versions for id :${edgeWorker.edgeWorkerId} due to `+e.toString());
 						edgeWorker.versions = "";
 					});
             }
@@ -235,8 +234,7 @@ export const getListIds = async function():Promise<string>{
 		const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
 		return Promise.resolve(listIds);
 	}catch(e:any){
-		vscode.window.showErrorMessage(`cannot fetch edgeworker Details due to `+e.toString());
-		return "";
+		throw new Error(`cannot fetch edgeworker Details due to `+e.toString());
 	}
 };
 

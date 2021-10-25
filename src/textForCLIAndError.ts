@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 export enum textForCmd{
     akamai_version = "akamai --version",
-    akamai_sandbox_version = "akamai --version",
+    akamai_edgeWorker_version = "akamai edgewo --version",
+    akamai_sandbox_version = "akamai sandbox --version",
+    install_akamai_edgeworkers = "akamai install edgeworkers",
+    install_akamai_sandbox = "akamai install sandbox",
+    akamai_help = "akamai --help",
     
 }
 export enum systemType{
@@ -20,7 +24,10 @@ export enum ErrorMessageExt {
     display_original_error = " ---due to --- ",
     file_replace_error= "Cannot Replace the file - ",
     edgeworker_download_URI = 'https://github.com/akamai/cli-edgeworkers',
+    akamai_download_URI = 'https://developer.akamai.com/cli/docs/getting-started',
     akamai_sanbox_download= 'https://learn.akamai.com/en-us/webhelp/sandbox/sandbox-user-guide/GUID-0D12845D-255E-4054-8A1D-59D11B931B81.html',
+    edgeWorkers_cli_to_install = "Akamai edgeworkers CLI is not installed. Click INSTALL to proceed",
+    akamai_edgeworkers_cli_install_error = "Failed to install Akamai Edgeworkers.To manually install refer the below link: ",
     file_not_found = " File not found ",
     edgworkerid_fail= "Failed to fetch the EdgeWorker ids ",
     edgworkerDetails_fail= "Failed to fetch the EdgeWorker details ",

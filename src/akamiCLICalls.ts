@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import { promise } from 'selenium-webdriver';
 import * as vscode from 'vscode';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
+import * as akamaiCLIConfig from './cliConfigChange';
 import {textForCmd,ErrorMessageExt,textForInfoMsg,systemType } from './textForCLIAndError';
 const exec = require('child_process').exec;
 const os = require('os');
@@ -11,16 +13,40 @@ const ostype = os.type();
 export const isAkamaiCLIInstalled = async function():Promise<boolean>{
     try{
         const cmd:string[]= [`${textForCmd.akamai_version}`];
+        await akamaiCLIConfig.setAkamaiCLIConfig();
         const process = await executeCLICommandExceptTarCmd(generateCLICommand(cmd));
         return true;
     } catch(e){
         return false;
     }
 };
+export const checkEnvBeforeEachCommand = async function():Promise<string>{
+        if (!await isAkamaiCLIInstalled()) {
+            const resp = await vscode.window.showErrorMessage(ErrorMessageExt.akamai_cli_not_installed, 'Install');
+            if (resp === 'Install') {
+                vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(ErrorMessageExt.akamai_download_URI));
+            }
+            throw new Error(`Install Akamai CLI using the refernce:${ErrorMessageExt.akamai_download_URI}`);
+        }
+        else{
+            if (!await checkAndInstallAkamaiCommands(textForCmd.akamai_help,"edgeworkers")) {
+                const resp = await vscode.window.showErrorMessage(ErrorMessageExt.edgeWorkers_cli_to_install, 'Install');
+                if (resp === 'Install') {
+                if(!await checkAndInstallAkamaiCommands(textForCmd.install_akamai_edgeworkers,"install")){
+                    throw new Error(`Akamai Edgeworkers install faled! .Install Akamai Edgeworkers using the refernce:${ErrorMessageExt.edgeworker_download_URI}`);
+                }
+                }
+                else{
+                    throw new Error(`Install Akamai Edgeworkers using the refernce:${ErrorMessageExt.edgeworker_download_URI}`);
+                }
+            } 
+        }
+        return('done');
+};
 export const executeCLICommandExceptTarCmd = function(cmd : string, jsonFile?:string) : Promise<string> {
     // wrap exec in a promise
     return new Promise(async (resolve, reject) => {
-        exec(cmd, (error : Error, stdout : string, stderr : string) => {
+        await exec(cmd, (error : Error, stdout : string, stderr : string) => {
             if (error) {
                 if (stderr) {
                     reject(stderr);
@@ -33,6 +59,20 @@ export const executeCLICommandExceptTarCmd = function(cmd : string, jsonFile?:st
                 } else {
                     resolve('done');
                 }
+            }
+        });
+    });
+};
+
+export const akamaiHelpCmd = function(cmd:string) : Promise<string> {
+    // wrap exec in a promise
+    return new Promise(async (resolve, reject) => {
+        await exec(cmd, (error : Error, stdout : string, stderr : string) => {
+            if(stdout){
+                resolve(stdout);
+            }
+            else{
+                reject();
             }
         });
     });
@@ -163,7 +203,7 @@ export const akamaiEdgeWorkerOptionsCmd = function(type:string):string[]{
     let edgerc = edgeWorkerCommands.getEdgercFilePathFromUserConfig();
     if(edgerc !== null && edgerc !== '' && edgerc !== undefined){
         if(fs.existsSync(edgerc) === false){
-            throw new Error(`Error:Invalid path-${edgerc}`);
+            throw new Error(`Invalid .edgerc file path in user settings - ${edgerc}`);
         }
         else{
             cmd.push("--edgerc",`${edgerc}`);
@@ -192,22 +232,48 @@ export const generateCLICommand = function(cmdArgs: string[]):string{
     }
     return command;
 };
-export const checkAkamaiSandbox = async function(akamaiSandboxCmd: string):Promise<boolean|string>{
-    return new Promise(async (resolve, reject) => {
-        try{
-            const process= await executeCLICommandExceptTarCmd(akamaiSandboxCmd);
-            resolve(true);
-        }catch(e){
-            const resp = await vscode.window.showErrorMessage(
-                ErrorMessageExt.akamai_sandbox_not_installed,
-                'Install'
-                );
-                if (resp === 'Install') {
-                    vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(ErrorMessageExt.akamai_sanbox_download));
-                }
-            reject(ErrorMessageExt.upload_EW_fail_by_no_sandbox+ ' at ' + vscode.Uri.parse(ErrorMessageExt.akamai_sanbox_download));
+export const checkAkamaiSandbox = async function():Promise<string>{
+    if(!isAkamaiCLIInstalled()){
+        const resp = await vscode.window.showErrorMessage(
+            ErrorMessageExt.akamai_sandbox_not_installed,
+            'Install'
+            );
+        if (resp === 'Install') {
+            vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(ErrorMessageExt.akamai_sanbox_download));
         }
-    });
+        throw new Error(`Install Akamai CLI using the refernce:${ErrorMessageExt.akamai_download_URI}`);
+        }
+    else{
+        if (!await checkAndInstallAkamaiCommands(textForCmd.akamai_help,"sandbox")) {
+            const resp = await vscode.window.showErrorMessage(ErrorMessageExt.edgeWorkers_cli_to_install, 'Install');
+            if (resp === 'Install') {
+            if(!await checkAndInstallAkamaiCommands(textForCmd.install_akamai_sandbox,"install")){
+                throw new Error(`Akamai Sandbox install faled! .Install Akamai Sandbox using the refernce:${ErrorMessageExt.akamai_sanbox_download}`);
+            }
+            }
+            else{
+                throw new Error(`Install Akamai Sandbox using the refernce:${ErrorMessageExt.akamai_sanbox_download} `);
+            }
+        } 
+    }
+    return('done');
+};
+
+export const checkAndInstallAkamaiCommands = async function(cmd:string,type:string):Promise<boolean>{
+    try{
+        if(type === "install"){
+            await executeCLICommandExceptTarCmd(cmd);
+        }
+        else{
+            const process = await akamaiHelpCmd(cmd);
+            if(!process.toString().includes(type)){
+                return false;
+            }
+        }
+        return true;
+    } catch(e){
+        return false;
+    }
 };
 export const parseJsonToGetResultAkamaiCLI = async function(filePathForJson:string,msg:string):Promise<string>{
     const result = await JSON.parse(fs.readFileSync(filePathForJson,'utf8'));

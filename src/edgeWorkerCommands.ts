@@ -91,6 +91,22 @@ export const getSectionNameFromUserConfig= function():string{
 export const getEdgercFilePathFromUserConfig= function():string{
     return(<string>workspace.getConfiguration('edgeworkers-vscode').get('edgercFile'));
 };
+export const getCLIStatisticsEnable = function():boolean{
+    if(workspace.getConfiguration('edgeworkers-vscode').get('enableCLIStatistics')){
+        return true;
+    }
+    else{
+        return false;
+    }
+};
+export const getCLIUpdateCheckEnable= function():boolean{
+    if(workspace.getConfiguration('edgeworkers-vscode').get('enableUpdateCheck')){
+        return true;
+    }
+    else{
+        return false;
+    }
+};
 
 
 export const checkFile = async function(filePath: string): Promise<boolean> {
