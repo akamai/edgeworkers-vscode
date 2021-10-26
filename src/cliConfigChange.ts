@@ -9,8 +9,7 @@ export const setAkamaiCLIConfig = async function():Promise<boolean>{
     const cliStatistics = edgeWorkerCommands.getCLIStatisticsEnable();
     const cliUpdateCheck = edgeWorkerCommands.getCLIUpdateCheckEnable();
     const config = new ConfigParser();
-    // const configPath = path.resolve(os.homedir(),".akamai-cli","config");
-    const configPath = path.resolve('/Users/hkambham',"hemaconfig");
+    const configPath = path.resolve(os.homedir(),".akamai-cli","config");
     if(fs.existsSync(configPath)){
         config.read(configPath);
         config.set('cli', 'last-upgrade-check','ignore');
