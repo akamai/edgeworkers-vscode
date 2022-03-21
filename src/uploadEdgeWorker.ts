@@ -13,8 +13,8 @@ export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:
     let userEdgeWorkerID :string = edgeworkerID;
     const tarFileName = path.parse(tarFilePath).base;
     try{
-        const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-        const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+        const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOutputListIds.json"));
+        const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOutputListIds.json"),"data");
         if(userEdgeWorkerID === '' || userEdgeWorkerID === undefined){
         userEdgeWorkerID = await quickPickItem("Select EdgeWorker ID",listIds);
             userEdgeWorkerID = userEdgeWorkerID.substring(userEdgeWorkerID.lastIndexOf('|')+2);
@@ -24,8 +24,8 @@ export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:
         }
         const validate = await validateEgdeWorkerID(userEdgeWorkerID);
         if(validate === true){
-            const uploadCmd = await akamiCLICalls.getUploadEdgeWorkerCmd("edgeworkers","upload",tarFilePath,userEdgeWorkerID,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-            const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(uploadCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
+            const uploadCmd = await akamiCLICalls.getUploadEdgeWorkerCmd("edgeworkers","upload",tarFilePath,userEdgeWorkerID,path.resolve(os.tmpdir(),"akamaiCLIOutputUpload.json"));
+            const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(uploadCmd),path.resolve(os.tmpdir(),"akamaiCLIOutputUpload.json"),"msg");
             const msg = textForInfoMsg.upload_edgeWorker_success+`${tarFileName}`+" to EdgeWorker ID: "+`${userEdgeWorkerID}`;
             vscode.window.showInformationMessage(msg);
         }
@@ -44,8 +44,8 @@ export const validateEgdeWorkerID = async function(edgeWorkerID: string):Promise
     return new Promise(async (resolve, reject) => {
         try{
             let found:boolean=false;
-            const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-            const edgeWorkerIDsString= await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+            const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOutputListid.json"));
+            const edgeWorkerIDsString= await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOutputListid.json"),"data");
             const edgeWorkerIDsJson = JSON.parse(edgeWorkerIDsString);
             edgeWorkerIDsJson.find((element:any) => {
                 if(edgeWorkerID === element.edgeWorkerId.toString()){
