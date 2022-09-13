@@ -1,6 +1,6 @@
 {
 	"name": "akamai-edgeworkers-vscode-extension",
-	"displayName": "akamai Edgeworkers VScode Extension",
+	"displayName": "Akamai Edgeworkers VScode Extension",
 	"description": "Akamai EdgeWorkers VSCode Extension",
 	"publisher": "AkamaiEdgeWorker",
 	"version": "1.0.0",
