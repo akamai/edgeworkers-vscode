@@ -185,6 +185,12 @@ export const getUploadEdgeWorkerCmd = function(type:string,command:string,bundle
     return (jsonOutputParams(cmd,jsonFilePath));
 };
 
+export const getAkamaiEWTraceCmd = function(type:string,command:string,hostname:string,jsonFilePath:string):string[]{
+    let cmd = akamaiEdgeWorkerOptionsCmd(type);
+    cmd.push(command,hostname);
+    return (jsonOutputParams(cmd,jsonFilePath));
+};
+
 export const akamiTypeCmd =function(type:string):string[]{
     if(type==="sandbox"){
         return(["akamai","sandbox"]);
