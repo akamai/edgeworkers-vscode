@@ -1,6 +1,6 @@
 {
 	"name": "akamai-edgeworkers-vscode-extension",
-	"displayName": "akamai Edgeworkers VScode Extension",
+	"displayName": "Akamai Edgeworkers VScode Extension",
 	"description": "Akamai EdgeWorkers VSCode Extension",
 	"publisher": "AkamaiEdgeWorker",
 	"version": "1.0.0",
@@ -30,6 +30,13 @@
 	"main": "./out/extension.js",
 	"contributes": {
 		"viewsContainers": {
+			"panel": [
+				{
+					"id": "myPanel",
+					"title": "Akamai EdgeWorkers",
+					"icon": "fancy.icon"
+				}
+			],
 			"activitybar": [
 				{
 					"id": "package-explorer",
@@ -39,6 +46,13 @@
 			]
 		},
 		"views": {
+			"myPanel": [
+				{
+					"type": "webview",
+					"id": "edgeworkers-vscode.fetchDataView",
+					"name": "Code Profiler"
+				}
+			],
 			"package-explorer": [
 				{
 					"id": "edgeWorkerDetails",
@@ -231,21 +245,25 @@
 		"glob": "^7.1.7",
 		"mocha": "^8.4.0",
 		"typescript": "^4.3.2",
-		"vscode-extension-tester": "^4.1.2",
 		"vscode": "^1.1.37",
+		"vscode-extension-tester": "^4.1.2",
 		"vscode-test": "^1.5.2"
 	},
 	"dependencies": {
+		"axios": "^0.27.2",
 		"chai-spies": "^1.0.0",
 		"cli-spinner": "^0.2.10",
+		"dns": "^0.2.2",
 		"edgegrid": "^3.0.8",
 		"expect": "^27.0.6",
+		"extract-json-from-string": "^1.0.1",
 		"inquirer": "^8.1.2",
 		"nyc": "^15.1.0",
 		"sha256-file": "^1.0.0",
 		"sinon": "^11.1.2",
 		"tar": "^6.1.9",
 		"untildify": "^4.0.0",
+		"url": "^0.11.0",
 		"vscode-uri": "^3.0.2"
 	}
 }
