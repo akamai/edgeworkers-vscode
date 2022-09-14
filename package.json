@@ -257,7 +257,7 @@
 		"edgegrid": "^3.0.8",
 		"expect": "^27.0.6",
 		"extract-json-from-string": "^1.0.1",
-		"inquirer": "^8.1.2",
+		"inquirer": "^8.2.4",
 		"nyc": "^15.1.0",
 		"sha256-file": "^1.0.0",
 		"sinon": "^11.1.2",
