@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const dns = require('node:dns');
+const dns = require('dns');
 import axios from 'axios';
 import { Agent } from 'https';
 const util = require('util');
