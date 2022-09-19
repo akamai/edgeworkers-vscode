@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 const ConfigParser = require('configparser');
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
+import * as os from 'os';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export const setAkamaiCLIConfig = async function():Promise<boolean>{
     const cliStatistics = edgeWorkerCommands.getCLIStatisticsEnable();
@@ -21,4 +21,29 @@ export const setAkamaiCLIConfig = async function():Promise<boolean>{
         return false;
     }
 };
+
+export const checkAkamaiConfig = async function():Promise<string[]>{
+    let cmd = [];
+    let accountkey = edgeWorkerCommands.getAccountKeyFromUserConfig();
+    let section = edgeWorkerCommands.getSectionNameFromUserConfig();
+    let edgerc = edgeWorkerCommands.getEdgercFilePathFromUserConfig();
+    if(edgerc !== null && edgerc !== '' && edgerc !== undefined){
+        if(fs.existsSync(edgerc) === false){
+            throw new Error(`Invalid .edgerc file path in user settings - ${edgerc}`);
+        }
+        else{
+            cmd.push("--edgerc",`${edgerc}`);
+        }
+    }
+    if(section !== null && section !== '' && section!== undefined){
+        section= section.trim();
+        cmd.push("--section",`${section}`);
+    }
+    if(accountkey !== null && accountkey !== ''&& accountkey !== undefined){
+        accountkey= accountkey.trim();
+        cmd.push("--accountkey",`${accountkey}`);
+    }
+    return cmd;
+};
+
 

@@ -1,11 +1,5 @@
 (function () {
     const vscode = acquireVsCodeApi();
-    document.getElementById("cancel").addEventListener("click", () => {
-        vscode.postMessage({
-            command: 'cancel',
-            text: "cancelled html"
-        });
-    });
 //for tghe other headers UI
     document.getElementById("add").addEventListener("click", () => {
         if (document.getElementById("boxContainer").childElementCount >= 2) {
@@ -78,7 +72,7 @@
                     index = index + 1;
                 }
             });
-        if (filepath && fileName && codeProfvalueilerURL && eventHandlerButton ) {
+        if (codeProfvalueilerURL && eventHandlerButton ) {
             vscode.postMessage({
                 command: 'info',
                 filePath: filepath,
