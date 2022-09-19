@@ -7,7 +7,6 @@ import * as activationUI from '../../activationUI';
 import * as vscode from 'vscode';
 import * as assert from 'assert';
 import * as jsonSample from './sampleTest.json';
-import { stringContaining } from 'expect';
 import { Utils } from 'vscode-uri';
 const path = require("path");
 suite('WebView', () => {
