@@ -33,8 +33,7 @@ export class CodeProfilerTerminal implements vscode.WebviewViewProvider {
 				case 'info':
 					console.log(message.otherHeaders);
 					try{
-						const msg = await codeProfiler.getCodeProfilerFile(message.filePath, message.fileName, message.url, message.eventHandler, message.pragmaHeaders, message.otherHeaders);
-						vscode.window.showInformationMessage(msg);
+						await codeProfiler.getCodeProfilerFile(message.filePath, message.fileName, message.url, message.eventHandler, message.pragmaHeaders, message.otherHeaders);
 					}catch(err:any){
 						vscode.window.showErrorMessage(err.toString());
 					}
