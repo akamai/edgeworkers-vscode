@@ -255,7 +255,7 @@
 		"cli-spinner": "^0.2.10",
 		"dns": "^0.2.2",
 		"edgegrid": "^3.0.8",
-		"expect": "^27.0.6",
+		"expect": "^27.5.1",
 		"extract-json-from-string": "^1.0.1",
 		"inquirer": "^8.1.2",
 		"nyc": "^15.1.0",
