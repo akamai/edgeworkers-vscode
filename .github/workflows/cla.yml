@@ -20,7 +20,7 @@ jobs:
           PERSONAL_ACCESS_TOKEN : ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         with:
           path-to-signatures: 'signatures/cla.json'
-          branch: 'master'
+          branch: 'main'
           remote-organization-name: akamai
           remote-repository-name: cla-sign
           path-to-document: 'https://github.com/akamai/edgeworkers-vscode/blob/master/cla.md' # e.g. a CLA or a DCO document
