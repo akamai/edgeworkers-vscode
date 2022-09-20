@@ -26,7 +26,7 @@ const fs = require('fs');
 
 export const activate = async function(context: vscode.ExtensionContext){
     akamiCLICalls.checkEnvBeforeEachCommand()
-    .then(async ()=> { 
+    .then(async ()=> {
         const provider = new CodeProfilerTerminal(context.extensionUri);
         context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(CodeProfilerTerminal.viewType, provider));
