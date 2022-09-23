@@ -3,11 +3,9 @@ import * as vscode from 'vscode';
 import {workspace}from 'vscode';
 import * as akamiCLICalls from './akamiCLICalls';
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
-const cp = require('child_process');
-const exec = require('child_process').exec;
-const path = require('path');
-const os = require('os');
-const fs = require("fs");
+import * as os from 'os';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export const createAndValidateEdgeWorker = async function(folder:string){
     try{
