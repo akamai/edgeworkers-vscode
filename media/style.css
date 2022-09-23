@@ -17,7 +17,7 @@ input[type=radio] {
 }
 
 label {
-  padding: 12px 12px 12px 0;
+  padding: 4px 12px 4px 0;
   display: inline-block;
 }
 input[type=button], input[type=reset]{
@@ -27,7 +27,7 @@ input[type=button], input[type=reset]{
   border-radius: 4px;
   cursor: pointer;
   float: right;
-  margin-bottom: 20px;
+  margin-bottom: 6px;
 }
 input[type=button]:hover, input[type=reset]:hover {
   background-color: #45a049;
@@ -60,7 +60,7 @@ button:hover {
   border-radius: 5px;
   background-color: transparent;
   width: 80%;
-  padding: 20px;
+  padding: 5px;
 }
 
 .col-25 {
@@ -80,7 +80,7 @@ button:hover {
   float: left;
   width: 70%;
   margin-top: 6px;
-  margin-bottom: 20px;
+  margin-bottom: 6px;
 }
 
 .header-container {
@@ -100,6 +100,11 @@ button:hover {
   display: inline-block;
 }
 
+h2 {
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+}
+
 .submit-container {
   display: flex;
   justify-content: space-between;
@@ -110,7 +115,12 @@ button:hover {
   content: "";
   display: table;
   clear: both;
-  padding: 18px;
+  padding: 0px;
+}
+
+form p {
+  margin: 8px;
+  padding: 0;
 }
 
 /* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
