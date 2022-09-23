@@ -411,8 +411,8 @@ export const getActivationOutput =  async function(edgeWorker:string,network:str
     else{
         let msg ="Activating Edgeowrker ID:"+edgeWorker+" in network "+network + " for version "+version + " failed";
         try{
-            const cmd = await akamiCLICalls.getEdgeWorkerActivationCmd("edgeworkers","activate",edgeWorker,network,version,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-            const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
+            const cmd = await akamiCLICalls.getEdgeWorkerActivationCmd("edgeworkers","activate",edgeWorker,network,version,path.resolve(os.tmpdir(),"akamaiCLIOutputActivate.json"));
+            const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOutputActivate.json"),"msg");
             msg = status;
             vscode.window.showInformationMessage(msg);
             return(msg);
@@ -425,8 +425,8 @@ export const getActivationOutput =  async function(edgeWorker:string,network:str
 export const getRegisterEWOutput =  async function(groupId:string,ewName:string,resourceId:string):Promise<string>{
     let msg ="Error Registering Edgeowrker:"+ewName+" for Group ID"+groupId + " for resource Tier ID"+resourceId +" failed";
     try{
-        const cmd = await akamiCLICalls.getEdgeWorkerRegisterCmd("edgeworkers","register",resourceId,groupId,ewName,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-        const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
+        const cmd = await akamiCLICalls.getEdgeWorkerRegisterCmd("edgeworkers","register",resourceId,groupId,ewName,path.resolve(os.tmpdir(),"akamaiCLIOutputRegister.json"));
+        const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOutputRegister.json"),"msg");
         msg = status+ewName+" for groupID: "+groupId+" and for resource ID: "+resourceId;
         vscode.window.showInformationMessage(msg);
         return(msg);
