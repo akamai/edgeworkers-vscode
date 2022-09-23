@@ -13,14 +13,9 @@ export const uploadEdgeWorker = async function(tarFilePath: string,edgeworkerID:
     let userEdgeWorkerID :string = edgeworkerID;
     const tarFileName = path.parse(tarFilePath).base;
     try{
-<<<<<<< HEAD
         const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
         const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"),akamaiConfigcmd);
         const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
-=======
-        const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOutputListIds.json"));
-        const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOutputListIds.json"),"data");
->>>>>>> develop
         if(userEdgeWorkerID === '' || userEdgeWorkerID === undefined){
         userEdgeWorkerID = await quickPickItem("Select EdgeWorker ID",listIds);
             userEdgeWorkerID = userEdgeWorkerID.substring(userEdgeWorkerID.lastIndexOf('|')+2);
@@ -50,14 +45,9 @@ export const validateEgdeWorkerID = async function(edgeWorkerID: string):Promise
     return new Promise(async (resolve, reject) => {
         try{
             let found:boolean=false;
-<<<<<<< HEAD
             const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
             const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"),akamaiConfigcmd);
             const edgeWorkerIDsString= await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
-=======
-            const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOutputListid.json"));
-            const edgeWorkerIDsString= await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOutputListid.json"),"data");
->>>>>>> develop
             const edgeWorkerIDsJson = JSON.parse(edgeWorkerIDsString);
             edgeWorkerIDsJson.find((element:any) => {
                 if(edgeWorkerID === element.edgeWorkerId.toString()){

@@ -27,7 +27,7 @@ input[type=button], input[type=reset]{
   border-radius: 4px;
   cursor: pointer;
   float: right;
-  margin-bottom: 6px;
+  margin: 2px;
 }
 input[type=button]:hover, input[type=reset]:hover {
   background-color: #45a049;
