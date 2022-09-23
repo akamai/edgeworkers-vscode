@@ -1,4 +1,4 @@
-# Akamai EdgeWorkers VSCode Extension
+# Akamai EdgeWorkers Toolkit for VSCode
 
 ## Install
     

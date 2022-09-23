@@ -28,7 +28,7 @@
 		"onView:webview",
 		"*"
 	],
-	"main":  "./dist/extension",
+	"main": "./dist/extension",
 	"contributes": {
 		"viewsContainers": {
 			"panel": [

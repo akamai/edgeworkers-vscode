@@ -71,30 +71,20 @@ return `<!DOCTYPE html>
 </head>
 <body>
 <h2>EdgeWorkers Code Profiler</h2>
-<p>Enter the details below to profile your EdgeWorkers code.</p>
-<p>(<span style="color:red;">*</span>)Indicated requiered feilds</p>
-
 <div class="container">
 <form id="form">
 <div class="row">
-   <div class="col-25">
-   <label for="Path" >Enter a file path </label>
-   </div>
-   <div class="col-75">
-	   <input type="text" id="filePath" name="filePath"  placeholder="For example, /Users/$USERID/Downloads" />
-   </div>
+	<div class="col-75">
+		<p>Profile the EdgeWorker code active on the Akamai Staging network.</p>
+		<p>(<span style="color:red;">*</span>)Indicated requiered fields</p>
+	</div>
+	<div class="col-25 submit-container">
+		<input type="button" value="Run Profiler" id="codeProfiler">
+	</div>
 </div>
 <div class="row">
    <div class="col-25">
-   <label for="File" >Enter a file name</label>
-   </div>
-   <div class="col-75">
-	   <input type="text" id="fileName" name="fileName" />
-   </div>
-</div>
-<div class="row">
-   <div class="col-25">
-   <label for="URL" class="required">Enter a URL to profile </label>
+   <label for="URL" class="required">URL to profile </label>
    </div>
    <div class="col-75">
 	   <input type="text" id="codeProfilerURL" name="codeProfilerUrl"  placeholder="For example, https://www.example.com" required />
@@ -102,7 +92,7 @@ return `<!DOCTYPE html>
 </div>
 <div class="row">
    <div class="col-25">
-	   <label for="eventHandler" class="required">Event handler to use for the request</label>
+	   <label for="eventHandler" class="required">Event handler to profile</label>
    </div>
    <div class="col-75">
 	   <div class="eventhandlerOptions">
@@ -121,12 +111,29 @@ return `<!DOCTYPE html>
 </div>
 <div class="row">
    <div class="col-25">
+   <label for="Path">File path (optional)</label>
+   </div>
+   <div class="col-75">
+	   <input type="text" id="filePath" name="filePath"  placeholder="For example, /Users/$USERID/Downloads" />
+   </div>
+</div>
+<div class="row">
+   <div class="col-25">
+   <label for="File" >File name (optional)</label>
+   </div>
+   <div class="col-75">
+	   <input type="text" id="fileName" name="fileName" />
+   </div>
+</div>
+<!--
+<div class="row">
+   <div class="col-25">
    <label for="pragma">Pragma Headers </label>
    </div>
    <div class="col-75">
 	   <input type="text" id="pragmaHeader" value="akamai-x-cache-on,akamai-x-cache-remote-on,akamai-x-check-cacheable,akamai-x-get-true-cache-key,akamai-x-get-cache-key,akamai-x-serial-no,akamai-x-get-request-id">
    </div>
-</div>
+</div> -->
 <div class="row">
    <div class="col-25">
 	   <label for="otherHeaders">Add headers</label>
@@ -135,15 +142,7 @@ return `<!DOCTYPE html>
 	   <button type="button" id="add">ADD</button>
 	   <div></div>
 	   <div id="boxContainer"></div>
-</div>
-<div class="row">
-<div class="col-25">
-   
-</div>
-<div class="col-75 submit-container">
-   <input type="button"  value = "Run Code Profiler" id="codeProfiler">
-   <input type="reset" value="Reset">
-</div>
+	</div>
 </div>
 </form>
 </div>

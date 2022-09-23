@@ -15,13 +15,13 @@
         file.setAttribute("type", "text");
         file.setAttribute("id", "headerName"); // You may want to change this
         file.setAttribute("style", "width: 20%; margin-right: 16px;");
-        file.setAttribute('placeholder', 'Header name');
+        file.setAttribute('placeholder', 'Name');
         // Create a text input
         var text = document.createElement("input");
         text.setAttribute("type", "text");
         text.setAttribute("id", "headerValue"); // you may want to change this
         text.setAttribute("style", "width:70%;margin-right: 16px;");
-        text.setAttribute('placeholder', 'Header values');
+        text.setAttribute('placeholder', 'Value');
         //add button for the delete  operation.
         var deleteButton = document.createElement("button");
         deleteButton.setAttribute("type", "button" );
@@ -62,7 +62,7 @@
             }
         });
         //pragma headers
-        const pragmaHeaders =  document.getElementById("pragmaHeader").value;
+        const pragmaHeaders = undefined;// document.getElementById("pragmaHeader").value;
         var headers = new Array;
         // get the other headers values
         let index = 0;
