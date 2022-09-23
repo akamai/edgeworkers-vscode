@@ -1,65 +1,135 @@
 * {
-    box-sizing: border-box;
-    }
-    
-    input[type=text], select, textarea {
+  box-sizing: border-box;
+}
+
+input[type=text],
+select,
+textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+input[type=radio] {
+  display: inline;
+}
+
+label {
+  padding: 4px 12px 4px 0;
+  display: inline-block;
+}
+input[type=button], input[type=reset]{
+  background-color: #04AA6D;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  float: right;
+  margin-bottom: 6px;
+}
+input[type=button]:hover, input[type=reset]:hover {
+  background-color: #45a049;
+}
+.required:after {
+  content:" *";
+  color: red;
+}
+
+button {
+  background-color: #04AA6D;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  float: right;
+  margin-bottom: 20px;
+}
+.asterisc {
+  display: block;
+  color: red;
+  margin: -19px 185px;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+.container {
+  border-radius: 5px;
+  background-color: transparent;
+  width: 80%;
+  padding: 5px;
+}
+
+.col-25 {
+  float: left;
+  width: 30%;
+  margin-top: 6px;
+}
+.col-75 #add{
+  width: 20%;
+}
+.col-25 label {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.col-75 {
+  float: left;
+  width: 70%;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.header-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+
+
+.scrollView {
+  height: 12.5rem;
+  overflow: auto;
+}
+
+.col-25 .eventhandlerOptions {
+  display: inline-block;
+}
+
+h2 {
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+}
+
+.submit-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+  padding: 0px;
+}
+
+form p {
+  margin: 8px;
+  padding: 0;
+}
+
+/* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 600px) {
+
+  .col-25,
+  .col-75,
+  input[type=button] {
     width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    resize: vertical;
-    }
-    
-    label {
-    padding: 12px 12px 12px 0;
-    display: inline-block;
-    }
-    
-    button{
-    background-color: #04AA6D;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    float: right;
-    }
-    
-    button:hover{
-    background-color: #45a049;
-    }
-    
-    .container {
-    border-radius: 5px;
-    background-color: transparent;
-    width: 50%;
-    padding: 20px;
-    }
-    
-    .col-25 {
-    float: left;
-    width: 25%;
-    margin-top: 6px;
-    }
-    
-    .col-75 {
-    float: left;
-    width: 75%;
-    margin-top: 6px;
-    }
-    
-    
-    /* Clear floats after the columns */
-    .row:after {
-    content: "";
-    display: table;
-    clear: both;
-    }
-    
-    /* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
-    @media screen and (max-width: 600px) {
-    .col-25, .col-75, input[type=submit] {
-      width: 100%;
-      margin-top: 0;
-    }
-    }
+    margin-top: 0;
+  }
+}

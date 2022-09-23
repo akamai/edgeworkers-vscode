@@ -5,8 +5,8 @@ import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import {getFilePathFromInput} from './extension';
 import * as akamiCLICalls from './akamiCLICalls';
-const os = require('os');
-const path = require('path');
+import * as os from 'os';
+import * as path from 'path';
 
 export const downloadEdgeWorker = async function(edgeworkerID: string, edgeworkerVersion:string):Promise<boolean>{
     try{
