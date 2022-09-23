@@ -33,7 +33,13 @@ export class CodeProfilerTerminal implements vscode.WebviewViewProvider {
 				case 'info':
 					console.log(message.otherHeaders);
 					try{
-						await codeProfiler.getCodeProfilerFile(message.filePath, message.fileName, message.url, message.eventHandler, message.pragmaHeaders, message.otherHeaders);
+						await vscode.window.withProgress({
+							location: vscode.ProgressLocation.Notification,
+							title: "Running Code Profiler",
+							cancellable: false
+							}, async () => {
+							await codeProfiler.getCodeProfilerFile(message.filePath, message.fileName, message.url, message.eventHandler, message.pragmaHeaders, message.otherHeaders);
+						});
 					}catch(err:any){
 						vscode.window.showErrorMessage(err.toString());
 					}
@@ -72,18 +78,18 @@ return `<!DOCTYPE html>
 <form id="form">
 <div class="row">
    <div class="col-25">
-   <label for="Path" class="required">Enter a file path </label>
+   <label for="Path" >Enter a file path </label>
    </div>
    <div class="col-75">
-	   <input type="text" id="filePath" name="filePath"  placeholder="For example, /Users/$USERID/Downloads" required />
+	   <input type="text" id="filePath" name="filePath"  placeholder="For example, /Users/$USERID/Downloads" />
    </div>
 </div>
 <div class="row">
    <div class="col-25">
-   <label for="File" class="required">Enter a file name</label>
+   <label for="File" >Enter a file name</label>
    </div>
    <div class="col-75">
-	   <input type="text" id="fileName" name="fileName" required />
+	   <input type="text" id="fileName" name="fileName" />
    </div>
 </div>
 <div class="row">
@@ -100,7 +106,7 @@ return `<!DOCTYPE html>
    </div>
    <div class="col-75">
 	   <div class="eventhandlerOptions">
-		   <input type="radio" id="onClientRequest" name="eventHandler" value="x-ew-code-profile-onclientrequest" required />
+		   <input type="radio" id="onClientRequest" name="eventHandler" value="x-ew-code-profile-onclientrequest" required checked="checked" />
 		   <label for="onClientRequest">onClientRequest</label><br>
 		   <input type="radio" id="onOriginRequest" name="eventHandler" value="x-ew-code-profile-onoriginrequest" >
 		   <label for="onOriginRequest">onOriginRequest</label><br> 
@@ -135,7 +141,6 @@ return `<!DOCTYPE html>
    
 </div>
 <div class="col-75 submit-container">
-   <button id ="cancel">Cancel</button>
    <input type="button"  value = "Run Code Profiler" id="codeProfiler">
    <input type="reset" value="Reset">
 </div>

@@ -1,9 +1,10 @@
+/* eslint-disable no-throw-literal */
 /* eslint-disable @typescript-eslint/naming-convention */
 'use strict';
 import * as vscode from 'vscode';
 import * as downloadEdgeWorker from './downloadEdgeWorker';
 import * as uploadEdgeWorker from './uploadEdgeWorker';
-import { EdgeWorkerDetails, EdgeWorkerDetailsProvider,getListArrayOfEdgeWorker } from './managementUI';
+import { EdgeWorkerDetails, EdgeWorkerDetailsProvider } from './managementUI';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
 import * as managementUI from './managementUI';
@@ -13,16 +14,12 @@ import * as codeProfiler from './codeProfilerFunction';
 import {CodeProfilerTerminal} from './codeProfilerUI';
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import { Utils } from 'vscode-uri';
-import { hostname } from 'os';
 
-import { off } from 'process';
 import * as activationUI from './activationUI';
 import * as registerUI from './registerUI';
 import console from 'console';
-import { throws } from 'assert';
-const path = require('path');
-const os = require('os');
-const fs = require('fs');
+import * as os from 'os';
+import * as path from 'path';
 
 export const activate = async function(context: vscode.ExtensionContext){
     akamiCLICalls.checkEnvBeforeEachCommand()
@@ -45,7 +42,8 @@ export const activate = async function(context: vscode.ExtensionContext){
             token.onCancellationRequested(() => {
                 console.log("User canceled the long running operation");
             });
-            const listIdsAndVersion = await managementUI.getListIdsAndVersions();
+            const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
+            const listIdsAndVersion = await managementUI.getListIdsAndVersions(akamaiConfigcmd);
             const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider(listIdsAndVersion);
             vscode.window.createTreeView('edgeWorkerDetails', {
                 treeDataProvider: edgeWorkerDetailsProvider,
@@ -64,16 +62,17 @@ export const activate = async function(context: vscode.ExtensionContext){
     //refresh the tree view in management UI
     context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.refreshEntry', async function() {
         akamiCLICalls.checkEnvBeforeEachCommand()
-        .then(async ()=> {     
+        .then(async ()=> {    
         await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Refreshing EdgeWorker Details",
                 cancellable: true
             }, async (progress, token) => {
                 token.onCancellationRequested(() => {
-                    console.log("User canceled the long running operation");
+                    throw "Fetching Edgeworkers cancelled";
                 });
-                const listIdsAndVersion = await managementUI.getListIdsAndVersions();
+                const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
+                const listIdsAndVersion = await managementUI.getListIdsAndVersions(akamaiConfigcmd);
                 const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider(listIdsAndVersion);
                 vscode.window.createTreeView('edgeWorkerDetails', {
                     treeDataProvider: edgeWorkerDetailsProvider,
@@ -82,6 +81,11 @@ export const activate = async function(context: vscode.ExtensionContext){
                 });
         })
         .catch((err:any)=> {
+            const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider('');
+            vscode.window.createTreeView('edgeWorkerDetails', {
+                treeDataProvider: edgeWorkerDetailsProvider,
+                showCollapseAll: true
+            });  
             vscode.window.showErrorMessage(err.toString());
         });
     }));
@@ -274,9 +278,11 @@ export const activate = async function(context: vscode.ExtensionContext){
                     console.log("User canceled the long running operation");
                 });
                 try{
-                    const listIds = await managementUI.getListIds();
+                    const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
+                    const listIds = await managementUI.getListIds(akamaiConfigcmd);
                     if(listIds !== ""){
-                        const versions = await managementUI.getListIdsAndVersions();
+                        const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
+                        const versions = await managementUI.getListIdsAndVersions(akamaiConfigcmd);
                         const panel = vscode.window.createWebviewPanel(
                             'Activate EdgeWorker',
                             'Activate EdgeWorker',
@@ -325,7 +331,8 @@ export const activate = async function(context: vscode.ExtensionContext){
                 });
                
                 try{
-                    const groupIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-groups",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+                    const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
+                    const groupIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-groups",path.resolve(os.tmpdir(),"akamaiCLIOput.json"),akamaiConfigcmd);
                     const groupIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(groupIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
                     const panel = vscode.window.createWebviewPanel(
                         'Register EdgeWorker',

@@ -31,13 +31,7 @@ suite('testing code profiler UI ---------------------', () => {
             assert.match(err.toString(), /Error:/);
         }
 	});
-    it('test code profiler success when all params are right', async function(){
-        this.timeout(130000);
-        sinon.stub(codeProfiler, 'callCodeProfiler').returns(Promise.resolve("successfully downloaded the cpuprofile"));
-		const msg = await codeProfiler.getCodeProfilerFile('/users/hkambham','sample','http://www.mofroyo.co/us/en/?random=$RANDOM','x-ew-code-profile-onclientresponse','',[]);
-        assert.strictEqual(msg,"successfully downloaded the cpuprofile");
-	});
-    it('test getIpAddress for the www.mofroyo.co cname should return error with invalid cnameAkami', async function(){
+    it('test callCodeProfiler, test getIpAddress for the www.mofroyo.co cname should return error with invalid cnameAkami', async function(){
         this.timeout(100000);
        	const cnameAkamai = "fake-staging.net";
         try{
@@ -46,14 +40,14 @@ suite('testing code profiler UI ---------------------', () => {
             assert.match(err.toString(), /Falied to get IP address for the host/); 
         }
 	});
-    it('test getIpAddress for the www.mofroyo.co cname should return valid ipadress', async function(){
+    it('test callCodeProfiler, test getIpAddress for the www.mofroyo.co cname should return valid ipadress', async function(){
         this.timeout(100000);
        	const cnameAkamai = "e17322.dsca.akamaiedge-staging.net";
             const ipaddress = await codeProfiler.getIPAddress(cnameAkamai,"www.mofroyo.co");
             assert.strictEqual(ipaddress,"23.193.6.69");
 	});
 
-    it('test getIpAddress for the www.mofroyo.co cname should return error with invalid cnameAkami', async function(){
+    it('test callCodeProfiler, test getIpAddress for the www.mofroyo.co cname should return error with invalid cnameAkami', async function(){
         this.timeout(100000);
        	const cnameAkamai = "fake-staging.net";
         try{
@@ -62,22 +56,42 @@ suite('testing code profiler UI ---------------------', () => {
             assert.match(err.toString(), /Falied to get IP address for the host/); 
         }
 	});
-    it('test cname for the www.mofroyo.co cname should return valid cname', async function(){
+    it('test callCodeProfiler, test cname for the www.mofroyo.co cname should return valid cname', async function(){
         this.timeout(100000);
        	const cnameAkamai = "e17322.dsca.akamaiedge-staging.net";
             const ipaddress = await codeProfiler.getIPAddress(cnameAkamai,"www.mofroyo.co");
             assert.strictEqual(ipaddress,"23.193.6.69");
 	});
-    it('test codeProfilerEWTrace  should return error', async function(){
+    it('test callCodeProfiler, test codeProfilerEWTrace  should return error', async function(){
         this.timeout(100000);
         sinon.stub(akamiCLICalls, 'executeAkamaiEdgeWorkerCLICmds').returns(Promise.reject(new Error("error in ewTrace commad")));
         const urlObject = new URL("http://www.mofroyo.co/us/en/?random=$RANDOM");
         const ewTrace = await codeProfiler.codeProfilerEWTrace(urlObject).catch(e => assert.ok(e,'error in ewTrace commad'));
 	});
-    it('test callCodeProfiler  should return error when invalid trace is provided', async function(){
+    it('test callCodeProfiler, test callCodeProfiler  should return error when invalid trace is provided', async function(){
         this.timeout(100000);
         sinon.stub(akamiCLICalls, 'executeAkamaiEdgeWorkerCLICmds').returns(Promise.reject(new Error("error in ewTrace commad")));
         const urlObject = new URL("http://www.mofroyo.co/us/en/?random=$RANDOM");
         const ewTrace = await codeProfiler.codeProfilerEWTrace(urlObject).catch(e => assert.ok(e,'error in ewTrace commad'));
+	});
+    it('test if the cname already is staging', async function(){
+        this.timeout(100000);
+        const check = await codeProfiler.cnanmeIsStagingCname("mofroyo.edgekey-staging.net");
+        assert.strictEqual(check,true);
+	});
+    it('test callCodeProfiler, test if the cname already not staging', async function(){
+        this.timeout(100000);
+        const check = await codeProfiler.cnanmeIsStagingCname("mofroyo.edgekey.net");
+        assert.strictEqual(check,false);
+	});
+    it('test if the cnmae is generated successfully 2 didg commands on hostname will be the result', async function(){
+        this.timeout(100000);
+        const cname = await codeProfiler.cnameLookup("www.mofroyo.co");
+        assert.strictEqual(cname,"e17322.dsca.akamaiedge.net");
+	});
+    it('test callCodeProfiler, test if the cnmae is generated successfully- get this cname just with one dig comamnd', async function(){
+        this.timeout(100000);
+        const cname = await codeProfiler.cnameLookup("stage.mofroyo.co");
+        assert.strictEqual(cname,"mofroyo.edgekey-staging.net");
 	});
 });
