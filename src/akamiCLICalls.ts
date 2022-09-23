@@ -5,9 +5,9 @@ import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamaiCLIConfig from './cliConfigChange';
 import {textForCmd,ErrorMessageExt,textForInfoMsg,systemType } from './textForCLIAndError';
 const exec = require('child_process').exec;
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
+import * as os from 'os';
+import * as fs from 'fs';
+import * as path from 'path';
 const ostype = os.type();
 
 export const isAkamaiCLIInstalled = async function():Promise<boolean>{
@@ -167,14 +167,20 @@ export const getEdgeWorkerValidateCmd = function(type:string,command:string,tarF
     cmd.push(command,tarFilePath);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
-export const getEdgeWorkerListVersions = function(type:string,command:string,edgeworkerID:string,jsonFilePath:string):string[]{
-    let cmd = akamaiEdgeWorkerOptionsCmd(type);
+export const getEdgeWorkerListVersions = function(type:string,command:string,edgeworkerID:string,jsonFilePath:string,akamaiConfigcmd:string[]):string[]{
+    let cmd = akamiTypeCmd(type);
+    akamaiConfigcmd.forEach(async (element: any) => {
+    cmd.push(element);
+    });
     cmd.push(command,edgeworkerID);
     cmd= jsonOutputParams(cmd,jsonFilePath);
     return (cmd);
 };
-export const getEdgeWorkerListIds = function(type:string,command:string,jsonFilePath:string):string[]{
-    let cmd = akamaiEdgeWorkerOptionsCmd(type);
+export const getEdgeWorkerListIds = function(type:string,command:string,jsonFilePath:string,akamaiConfigcmd:string[]):string[]{
+    let cmd = akamiTypeCmd(type);
+    akamaiConfigcmd.forEach(async (element: any) => {
+    cmd.push(element);
+    });
     cmd.push(command);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
@@ -182,6 +188,12 @@ export const getEdgeWorkerListIds = function(type:string,command:string,jsonFile
 export const getUploadEdgeWorkerCmd = function(type:string,command:string,bundlePath:string,edgeWorkerID:string,jsonFilePath:string):string[]{
     let cmd = akamaiEdgeWorkerOptionsCmd(type);
     cmd.push(command,"--bundle",bundlePath,edgeWorkerID);
+    return (jsonOutputParams(cmd,jsonFilePath));
+};
+
+export const getAkamaiEWTraceCmd = function(type:string,command:string,hostname:string,jsonFilePath:string):string[]{
+    let cmd = akamaiEdgeWorkerOptionsCmd(type);
+    cmd.push(command,hostname);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
 

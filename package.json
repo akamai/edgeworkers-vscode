@@ -1,12 +1,12 @@
 {
 	"name": "akamai-edgeworkers-vscode-extension",
-	"displayName": "akamai Edgeworkers VScode Extension",
-	"description": "Akamai EdgeWorkers VSCode Extension",
+	"displayName": "Akamai EdgeWorkers Toolkit",
+	"description": "Akamai EdgeWorkers Toolkit",
 	"publisher": "AkamaiEdgeWorker",
-	"version": "1.0.0",
-	"enableProposedApi": false,
+	"version": "2.0.0",
+	"enabledApiProposals": [],
 	"engines": {
-		"vscode": "^1.59.0"
+		"vscode": "^1.71.0"
 	},
 	"repository": {
 		"type": "git",
@@ -16,7 +16,6 @@
 		"Other"
 	],
 	"activationEvents": [
-		"*",
 		"onCommand:edgeworkers-vscode.edgeworkerBundle",
 		"onCommand:edgeworkers-vscode.refreshEntry",
 		"onCommand:edgeworkers-vscode.downloadEdgeWorker",
@@ -25,11 +24,20 @@
 		"onCommand:edgeworkers-vscode.uploadTarBallToSandBox",
 		"onCommand:edgeworkers-vscode.registerEdgeWorker",
 		"onCommand:edgeworkers-vscode.activateEdgeWorker",
-		"onView:edgeWorkerDetails"
+		"onView:edgeWorkerDetails",
+		"onView:webview",
+		"*"
 	],
-	"main": "./out/extension.js",
+	"main":  "./dist/extension",
 	"contributes": {
 		"viewsContainers": {
+			"panel": [
+				{
+					"id": "myPanel",
+					"title": "Akamai EdgeWorkers",
+					"icon": "fancy.icon"
+				}
+			],
 			"activitybar": [
 				{
 					"id": "package-explorer",
@@ -39,6 +47,13 @@
 			]
 		},
 		"views": {
+			"myPanel": [
+				{
+					"type": "webview",
+					"id": "edgeworkers-vscode.fetchDataView",
+					"name": "Code Profiler"
+				}
+			],
 			"package-explorer": [
 				{
 					"id": "edgeWorkerDetails",
@@ -207,45 +222,63 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
-		"pretest": "npm run compile && npm run lint",
-		"lint": "eslint src --ext ts",
-		"test": "node ./out/test/runTest.js"
+		"vscode:prepublish": "webpack --mode production",
+		"webpack": "webpack --mode development",
+		"webpack-dev": "webpack --mode development --watch",
+		"test-compile": "tsc -p ./",
+		"lint": "eslint . --ext .ts,.tsx"
 	},
 	"devDependencies": {
 		"@types/chai": "^4.2.21",
 		"@types/chai-spies": "^1.0.3",
 		"@types/expect": "^24.3.0",
-		"@types/glob": "^7.1.3",
-		"@types/mocha": "^8.2.3",
-		"@types/node": "^14.17.4",
 		"@types/sinon": "^10.0.2",
-		"@types/vscode": "^1.59.0",
+		"@types/vscode": "^1.71.0",
 		"@types/which": "^2.0.0",
-		"@typescript-eslint/eslint-plugin": "^4.26.0",
-		"@typescript-eslint/parser": "^4.26.0",
 		"chai": "^4.3.4",
-		"eslint": "^7.27.0",
-		"glob": "^7.1.7",
-		"mocha": "^8.4.0",
+		"configparser": "^0.3.9",
+		"esbuild": "^0.15.9",
+		"eslint-import-resolver-node": "^0.3.6",
+		"mocha": "^10.0.0",
+		"ts-loader": "^9.4.0",
 		"typescript": "^4.3.2",
 		"vscode-extension-tester": "^4.1.2",
-		"vscode": "^1.1.37",
-		"vscode-test": "^1.5.2"
+		"vscode-test": "^1.5.2",
+		"webpack": "^5.74.0",
+		"webpack-cli": "^4.10.0"
 	},
 	"dependencies": {
+		"@types/glob": "^8.0.0",
+		"@types/mocha": "^9.1.1",
+		"@types/node": "^18.7.18",
+		"@typescript-eslint/eslint-plugin": "^5.37.0",
+		"@typescript-eslint/parser": "^5.37.0",
+		"assert": "^2.0.0",
+		"axios": "^0.27.2",
 		"chai-spies": "^1.0.0",
+		"child_process": "^1.0.2",
 		"cli-spinner": "^0.2.10",
-		"edgegrid": "^3.0.8",
-		"expect": "^27.5.1",
-		"inquirer": "^8.2.0",
+		"console": "^0.7.2",
+		"edgegrid-no-log4js": "^3.0.6",
+		"eslint": "^8.23.1",
+		"expect": "^29.0.3",
+		"extract-json-from-string": "^1.0.1",
+		"fs": "^0.0.1-security",
+		"glob": "^8.0.3",
+		"https": "^1.0.0",
+		"inquirer": "^9.1.1",
+		"net": "^1.0.2",
+		"npm": "^8.19.2",
 		"nyc": "^15.1.0",
+		"os": "^0.1.2",
+		"path": "^0.12.7",
+		"script-runner": "^0.1.8",
 		"sha256-file": "^1.0.0",
-		"sinon": "^11.1.2",
+		"sinon": "^14.0.0",
+		"stream": "^0.0.2",
 		"tar": "^6.1.11",
 		"untildify": "^4.0.0",
+		"url": "^0.11.0",
 		"vscode-uri": "^3.0.3"
 	}
 }

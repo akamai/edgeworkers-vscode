@@ -16,6 +16,7 @@ export enum systemType{
 }
 
 export enum ErrorMessageExt {
+    downloadFlameExtFail = 'Failed to download extension Flame Chart Visualizer for JavaScript Profiles due to error -',
     akamai_cli_not_installed= "Akamai CLI is not installed. Do you want to install Akamai CLI ?",
     bundle_JSON_not_found= " Mandatory file missing - ",
     create_bundle_fail = " Failed to create EdgeWorker bundle - ",
@@ -46,6 +47,9 @@ export enum ErrorMessageExt {
 }
 
 export enum textForInfoMsg{
+    downloadFlameExtManually = "You can manually download the extension 'Flame Chart Visualizer for JavaScript Profiles' at URL: https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-js-profile-flame (or) Goto  Extensions(shift+cmd+X) in vscode terminal --> search for 'Flame Chart Visualizer for JavaScript Profiles' --> click on install",
+    cpuprofileFileDownloadSuccess = 'Successfully downloaded the extension Flame Chart Visualizer for JavaScript Profiles.',
+    cpuProfileOptionMsg = `To view '.cpuprofile' files you should have extension 'Flame Chart Visualizer for JavaScript Profiles.' Click on 'Download' to automatically download the extension.`,
     file_found = " Mandatory file found ",
     bundle_name = "Enter EdgeWorker bundle name",
     create_bundle_success = "Successfully created the EdgeWorker bundle - ",

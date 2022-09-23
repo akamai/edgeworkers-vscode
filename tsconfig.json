@@ -5,6 +5,7 @@
 		"outDir": "out",
 		"resolveJsonModule": true,
 		"esModuleInterop": true,
+		"moduleResolution":"node",
 		"lib": [
 			"es6"
 		],
@@ -20,5 +21,11 @@
 	"exclude": [
 		"node_modules",
 		".vscode-test",
+	],
+	"include": [
+		"src/**/*.ts",
+		"./node_modules/vscode/vscode.d.ts",
+		"./node_modules/vscode/lib/*",
 	]
 }
+
