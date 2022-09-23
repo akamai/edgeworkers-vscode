@@ -76,9 +76,10 @@ return `<!DOCTYPE html>
 <div class="row">
 	<div class="col-75">
 		<p>Profile the EdgeWorker code active on the Akamai Staging network.</p>
-		<p>(<span style="color:red;">*</span>)Indicated requiered fields</p>
+		<p>(<span style="color:red;">*</span>)Indicated required fields</p>
 	</div>
 	<div class="col-25 submit-container">
+		<input type="reset" value="Reset">
 		<input type="button" value="Run Profiler" id="codeProfiler">
 	</div>
 </div>

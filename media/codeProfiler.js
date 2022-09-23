@@ -86,7 +86,7 @@
         else {
             vscode.postMessage({
                 command: 'alert',
-                msg: "Missing value in the required feilds"
+                msg: "Missing required value"
             });
         }
     });

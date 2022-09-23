@@ -34,7 +34,7 @@ suite('testing Management UI', () => {
 			});
 		}	
 	});
-	it('test the json with wrong data feilds in the management UI', async function(){
+	it('test the json with wrong data fields in the management UI', async function(){
         this.timeout(100000);
 		//the empty json should return a 1 dependency as "no versions found"
 		let obj1 = new EdgeWorkerDetailsProvider('');
