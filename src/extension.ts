@@ -107,14 +107,14 @@ export const activate = async function(context: vscode.ExtensionContext){
                     const folderFSPath = await vscode.window.showOpenDialog({
                         canSelectFolders: true,
                         canSelectFiles: false,
-                        openLabel: 'select folder with bundle files',
+                        openLabel: 'Select folder with bundle files',
                     });
                     if(folderFSPath !== undefined && folderFSPath.length >0){
                         creatBundleFilePath = getFilePathFromInput(folderFSPath[0]);
                         await edgeWorkerCommands.createAndValidateEdgeWorker(creatBundleFilePath);
                     }
                     else{
-                        vscode.window.showErrorMessage("Error:Folder with bundle files is not provided");
+                        vscode.window.showErrorMessage("Error: Folder with bundle files is not provided");
                     }
                 }
                 else{
@@ -172,14 +172,14 @@ export const activate = async function(context: vscode.ExtensionContext){
                         canSelectFolders: false,
                         canSelectFiles: true,
                         filters: {'Tarball': ['tgz', 'tar.gz']},
-                        openLabel: 'Select tar file to upload EdgeWorker Version',
+                        openLabel: 'Select EdgeWorker bundle',
                     });
                     if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
                         filePath = getFilePathFromInput(tarFileFSPath[0]);
                         await uploadEdgeWorker.uploadEdgeWorker(filePath,'');
                     }
                     else{
-                        vscode.window.showErrorMessage("Error:Tar file is not provided to upload edgeworker version");
+                        vscode.window.showErrorMessage("Error: Tar file is not provided to upload EdgeWorker version");
                     }
                 }
                 else{
@@ -210,7 +210,7 @@ export const activate = async function(context: vscode.ExtensionContext){
                     canSelectFiles: true,
                     canSelectMany: false,
                     filters: {'Tarball': ['tgz', 'tar.gz']},
-                    openLabel: 'select the tar file to upload edgeworker',
+                    openLabel: 'Select EdgeWorker bundle',
                 });
                 if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
                     // there should be exactly one result
@@ -218,7 +218,7 @@ export const activate = async function(context: vscode.ExtensionContext){
                     await uploadEdgeWorker.uploadEdgeWorker(filePath, edgeWorkerdetails.version.toString());
                 }
                 else{
-                    vscode.window.showErrorMessage("Error: Tar file is not provided to upload edgeworker version");
+                    vscode.window.showErrorMessage("Error: Tar file is not provided to upload EdgeWorker version");
                 }
             });
         })
@@ -244,14 +244,14 @@ export const activate = async function(context: vscode.ExtensionContext){
                         canSelectFolders: false,
                         canSelectFiles: true,
                         filters: {'Tarball': ['tgz', 'tar.gz']},
-                        openLabel: 'Select tar file to upload EdgeWorker to sandbox',
+                        openLabel: 'Select EdgeWorker bundle',
                     });
                     if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
                         filePathSandbox = getFilePathFromInput(tarFileFSPath[0]);
                         await uploadTarBallToSandbox.uploadEdgeWorkerTarballToSandbox(filePathSandbox);
                     }
                     else{
-                        vscode.window.showErrorMessage("Tar file is not provided to upload edgeworker version to sandbox");
+                        vscode.window.showErrorMessage("Tar file is not provided to upload EdgeWorker version to sandbox");
                     }
                 }
                 else{
@@ -404,7 +404,7 @@ function getFileParentFolderFromInput(commandParam : any) : string {
 
 export const getActivationOutput =  async function(edgeWorker:string,network:string,version:string):Promise<string>{
     if(version === "No Versions"){
-        const msg = "Cannot activate edgeworker id: "+ edgeWorker+" due to no versions for this edgeworker";
+        const msg = "Cannot activate EdgeWorker id: "+ edgeWorker+" due to no versions for this edgeworker";
         vscode.window.showErrorMessage(msg);
         return(msg);
     }
