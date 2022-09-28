@@ -213,7 +213,7 @@ export const getListIds = async function(akamaiConfigcmd:string[]):Promise<strin
 		const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
 		return Promise.resolve(listIds);
 	}catch(e:any){
-		throw new Error(`cannot fetch edgeworker Details due to `+e.toString());
+		throw new Error(`Cannot fetch EdgeWorker Details due to `+e.toString());
 	}
 };
 

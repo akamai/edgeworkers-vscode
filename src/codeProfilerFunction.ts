@@ -9,15 +9,24 @@ import * as dns from 'dns';
 import axios from 'axios';
 import { Agent } from 'https';
 const extract = require('extract-json-from-string');
+import isHTML from 'is-html';
+import * as akamaiCLIConfig from './cliConfigChange';
 const tmpDir = require('os').tmpdir();
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import * as akamiCLICalls from './akamiCLICalls';
 import { URL } from 'url';
+import { Workbench } from 'vscode-extension-tester';
+
 
 export const getCodeProfilerFile = async function(filePath:string,fileName:string,urlValue:string,eventHanler:string,pragmaHeaders:string,otherHeaders:string[]){
+    const dateNow = new Date();
+    const timestamp = dateNow.getTime().toString();
     try{
         if(!fileName){
-            fileName = "codeProfiler";
+            fileName = "codeProfiler"+timestamp;
+        }
+        else{
+            fileName = fileName + timestamp;
         }
         if(!filePath){
             filePath = tmpDir;
@@ -35,6 +44,7 @@ export const getCodeProfilerFile = async function(filePath:string,fileName:strin
         throw Error("Failed to run code profiler."+e);
     }
 };
+
 
 export const checkURLifValid = async function(url:string):Promise<URL>{
     try{
@@ -107,6 +117,7 @@ export const getIPAddress = async function getIPAddress(cnameAkamai:string, host
       });
 };
 export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:string,eventHanler:string,filepath:string,fileName:string,pragmaHeaders?:string,otherheaders?:string[]):Promise<string>{
+    const noEventHandler = `Can't generate code profile for provided event handler: ${eventHanler}. Check EdgeWorker code bundle for implemented event handlers.`;
     const agent = await new Agent({
         servername: url.hostname,
         rejectUnauthorized: false,
@@ -116,12 +127,9 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
     headers['akamai-ew-trace'] = ewtrace;
     headers['user-agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36';
     headers[`${eventHanler}`] = 'asd';
-    if(pragmaHeaders){
-        headers['Pragma'] = pragmaHeaders;
-    }
     if(otherheaders){
         for(var i=0; i<otherheaders.length; i++){
-            headers[`${otherheaders[i][0]}`] =  headers[`${otherheaders[i][1]}`];
+            headers[`${otherheaders[i][0]}`] =  otherheaders[i][1];
         }
     }
     const httpParams:{[key:string]:any}={};
@@ -137,7 +145,7 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
         const textToFile = extract(dataToFile);
         if(textToFile.length === 0)
         {
-            throw `Can't generate code profiler for provided event handler:${eventHanler}. Check Edgeworker code bundle to get right implemented event handler`;
+            throw noEventHandler;
         }
         else{
             fs.writeFile(path.resolve(filepath,fileName), JSON.stringify(textToFile[0]), 'utf8', function (err:any) {
@@ -147,7 +155,22 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
             });
         }
     }).catch((error:any) => {
+    if (error.response) {
+        if(isHTML(error.response.data)){
+            const textToFile = extract(error.response.data);
+            if(textToFile.length === 0)
+            {
+                throw noEventHandler;
+            }
+        }
+        else{
+            throw error.response.data;
+        }
+    } else if (error.request) {
+        throw error;
+    } else {
         throw (`Falied to generate ${fileName} due to - ${error}`);
+    }
     });
     return `Successfully downloaded the ${fileName} at ${filepath}.`;
 };

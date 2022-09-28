@@ -30,7 +30,7 @@ export const createEdgeWorkerBundle = async function(bundleFolder:string):Promis
             const folderFSPath = await vscode.window.showOpenDialog({
                 canSelectFolders: true,
                 canSelectFiles: false,
-                openLabel: 'select folder to create bundle',
+                openLabel: 'Select folder to bundle',
             });
             if(folderFSPath !== undefined && folderFSPath.length >0){
                 creatBundleFilePath = getFilePathFromInput(folderFSPath[0]);
