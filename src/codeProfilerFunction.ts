@@ -117,7 +117,7 @@ export const getIPAddress = async function getIPAddress(cnameAkamai:string, host
       });
 };
 export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:string,eventHanler:string,filepath:string,fileName:string,pragmaHeaders?:string,otherheaders?:string[]):Promise<string>{
-    const noEventHandler = `Can't generate code profiler for provided event handler:${eventHanler}. Check Edgeworker code bundle to get right implemented event handler`;
+    const noEventHandler = `Can't generate code profile for provided event handler: ${eventHanler}. Check EdgeWorker code bundle for implemented event handlers.`;
     const agent = await new Agent({
         servername: url.hostname,
         rejectUnauthorized: false,
