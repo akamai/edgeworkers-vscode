@@ -143,14 +143,14 @@ export const deleteOutputFolder = function(path:string){
     exec(deleteFolder);
 };
 
-export const updateEdgeWorkerToSandboxCmd = function(type:string,command:string,bundlePath:string,edgeWorkerID:string):string[]{
+export const updateEdgeWorkerToSandboxCmd = function(type:string,command:string,bundlePath:string,edgeWorkerId:string):string[]{
     let cmd = akamaiEdgeWorkerOptionsCmd(type);
-    cmd.push(command,edgeWorkerID,bundlePath);
+    cmd.push(command,edgeWorkerId,bundlePath);
     return (cmd);
 };
-export const getEdgeWorkerActivationCmd = function(type:string,command:string,edgeworkerID:string,network:string,edgeworkerVersion:string,jsonFilePath:string,):string[]{
+export const getEdgeWorkerActivationCmd = function(type:string,command:string,edgeWorkerId:string,network:string,edgeworkerVersion:string,jsonFilePath:string,):string[]{
     let cmd = akamaiEdgeWorkerOptionsCmd(type);
-    cmd.push(command,edgeworkerID,network,edgeworkerVersion);
+    cmd.push(command,edgeWorkerId,network,edgeworkerVersion);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
 export const getEdgeWorkerRegisterCmd = function(type:string,command:string,resourceId:string,groupId:string,ewName:string,jsonFilePath:string,):string[]{
@@ -158,9 +158,9 @@ export const getEdgeWorkerRegisterCmd = function(type:string,command:string,reso
     cmd.push(command,"--resourceTierId",resourceId,groupId,ewName);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
-export const getEdgeWorkerDownloadCmd = function(type:string,command:string,edgeworkerID:string,edgeworkerVersion:string,tarFilePath:string, jsonFilePath:string):string[]{
+export const getEdgeWorkerDownloadCmd = function(type:string,command:string,edgeWorkerId:string,edgeworkerVersion:string,tarFilePath:string, jsonFilePath:string):string[]{
     let cmd = akamaiEdgeWorkerOptionsCmd(type);
-    cmd.push(command,edgeworkerID,edgeworkerVersion,"--downloadPath",tarFilePath);
+    cmd.push(command,edgeWorkerId,edgeworkerVersion,"--downloadPath",tarFilePath);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
 export const getEdgeWorkerValidateCmd = function(type:string,command:string,tarFilePath:string,jsonFilePath:string):string[]{
@@ -168,27 +168,33 @@ export const getEdgeWorkerValidateCmd = function(type:string,command:string,tarF
     cmd.push(command,tarFilePath);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
-export const getEdgeWorkerListVersions = function(type:string,command:string,edgeworkerID:string,jsonFilePath:string,akamaiConfigcmd:string[]):string[]{
-    let cmd = akamiTypeCmd(type);
-    akamaiConfigcmd.forEach(async (element: any) => {
-    cmd.push(element);
+export const getEdgeWorkerListVersions = function(type:string,command:string,edgeWorkerId:string,jsonFilePath:string):string[]{
+    let cmd = akamaiTypeCmd(type);
+
+    const akamaiConfigcmd = akamaiCLIConfig.checkAkamaiConfig();
+    akamaiConfigcmd.forEach((element: any) => {
+        cmd.push(element);
     });
-    cmd.push(command,edgeworkerID);
+
+    cmd.push(command,edgeWorkerId);
     cmd= jsonOutputParams(cmd,jsonFilePath);
     return (cmd);
 };
-export const getEdgeWorkerListIds = function(type:string,command:string,jsonFilePath:string,akamaiConfigcmd:string[]):string[]{
-    let cmd = akamiTypeCmd(type);
-    akamaiConfigcmd.forEach(async (element: any) => {
-    cmd.push(element);
+export const getEdgeWorkerListIds = function(type:string,command:string,jsonFilePath:string):string[]{
+    let cmd = akamaiTypeCmd(type);
+
+    const akamaiConfigcmd = akamaiCLIConfig.checkAkamaiConfig();
+    akamaiConfigcmd.forEach((element: any) => {
+        cmd.push(element);
     });
+
     cmd.push(command);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
 
-export const getUploadEdgeWorkerCmd = function(type:string,command:string,bundlePath:string,edgeWorkerID:string,jsonFilePath:string):string[]{
+export const getUploadEdgeWorkerCmd = function(type:string,command:string,bundlePath:string,edgeWorkerId:string,jsonFilePath:string):string[]{
     let cmd = akamaiEdgeWorkerOptionsCmd(type);
-    cmd.push(command,"--bundle",bundlePath,edgeWorkerID);
+    cmd.push(command,"--bundle",bundlePath,edgeWorkerId);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
 
@@ -198,7 +204,7 @@ export const getAkamaiEWTraceCmd = function(type:string,command:string,hostname:
     return (jsonOutputParams(cmd,jsonFilePath));
 };
 
-export const akamiTypeCmd =function(type:string):string[]{
+export const akamaiTypeCmd =function(type:string):string[]{
     if(type==="sandbox"){
         return(["akamai","sandbox"]);
     }
@@ -210,7 +216,7 @@ export const akamiTypeCmd =function(type:string):string[]{
     }
 };
 export const akamaiEdgeWorkerOptionsCmd = function(type:string):string[]{
-    let cmd = akamiTypeCmd(type);
+    let cmd = akamaiTypeCmd(type);
     let accountkey = edgeWorkerCommands.getAccountKeyFromUserConfig();
     let section = edgeWorkerCommands.getSectionNameFromUserConfig();
     let edgerc = edgeWorkerCommands.getEdgercFilePathFromUserConfig();
@@ -241,7 +247,7 @@ export const generateCLICommand = function(cmdArgs: string[]):string{
     let command:string = '';
     if (typeof cmdArgs !== 'undefined' && cmdArgs.length > 0) {
         command = cmdArgs.join(" ").toString();
-        console.log("command:" + command);
+        console.log("command: " + command);
     }
     return command;
 };
@@ -288,51 +294,45 @@ export const checkAndInstallAkamaiCommands = async function(cmd:string,type:stri
         return false;
     }
 };
-export const parseJsonToGetResultAkamaiCLI = async function(filePathForJson:string,msg:string):Promise<string>{
-    const result = await JSON.parse(fs.readFileSync(filePathForJson,'utf8'));
+export const parseJsonToGetResultAkamaiCLI = function(filePathForJson:string,msg:string):string{
+    const result = JSON.parse(fs.readFileSync(filePathForJson,'utf8'));
         if(result !== undefined || result.length !== 0){
-                if(result.cliStatus.toString() === '0' && msg==="msg"){
-                    return(result[msg]);
-                }
-                else if(result.cliStatus.toString() === '0' && msg==="data"){
-                    return(JSON.stringify(result.data));
-                }
-                else if(result.cliStatus.toString() === '1')
-                {   
-                    let msg = `${result.msg}. `;
-                    let errorPathMsg = `View Error JSON at path : ${filePathForJson}`;
-                    if(result.data.length > 0 && result.data !== undefined){
-                        for(var i=0; i<result.data.length;i++){
-                            if(result.data[i].hasOwnProperty("type") && result.data[i]["type"] !== undefined && result.data[i].hasOwnProperty("message") && result.data[i]["message"] !== undefined ){
-                                msg += "Error"+`${i+1}`+": "+"Type - "+`${result.data[i]["type"]} and `+"detail message - "+`${result.data[i]["message"]}. `;
-                            }
-                            else if(result.data[i].hasOwnProperty("detail") && result.data[i]["detail"] !== undefined || result.data[i]["detail"] !== null ){
-                                msg += "Detail error message is: " +  `${result.data[i]["detail"]}. `;
-                            }
+            if(result.cliStatus.toString() === '0' && msg==="msg"){
+                return(result[msg]);
+            }
+            else if(result.cliStatus.toString() === '0' && msg==="data"){
+                return(JSON.stringify(result.data));
+            }
+            else if(result.cliStatus.toString() === '1')
+            {   
+                let msg = `${result.msg}. `;
+                let errorPathMsg = `View Error JSON at path : ${filePathForJson}`;
+                if(result.data.length > 0 && result.data !== undefined){
+                    for(var i=0; i<result.data.length;i++){
+                        if(result.data[i].hasOwnProperty("type") && result.data[i]["type"] !== undefined && result.data[i].hasOwnProperty("message") && result.data[i]["message"] !== undefined ){
+                            msg += "Error"+`${i+1}`+": "+"Type - "+`${result.data[i]["type"]} and `+"detail message - "+`${result.data[i]["message"]}. `;
+                        }
+                        else if(result.data[i].hasOwnProperty("detail") && result.data[i]["detail"] !== undefined || result.data[i]["detail"] !== null ){
+                            msg += "Detail error message is: " +  `${result.data[i]["detail"]}. `;
                         }
                     }
-                    throw new Error(msg+errorPathMsg);
                 }
+                throw new Error(msg+errorPathMsg);
+            }
         }
         throw new Error("Error: Failed to execute The command");
 };
-export const executeAkamaiEdgeWorkerCLICmds = async function(cmd : string, jsonFilePath:string,msg:string) : Promise<string> {
-    // wrap exec in a promise
-    return new Promise(async (resolve, reject) => {
-        await exec(cmd, async (error : Error, stdout : string, stderr : string) => {
+export const executeAkamaiEdgeWorkerCLICmds = function(cmd : string, jsonFilePath:string,msg:string) : Promise<string> {
+    return new Promise((resolve,reject) => {
+        exec(cmd, (error : Error, stdout : string, stderr : string) => {
             if(stdout) {
-                try{
-                    const output = await parseJsonToGetResultAkamaiCLI(jsonFilePath,msg);
-                    resolve(output); 
-                }catch(e){
-                    reject(e);
-                }
+                resolve(parseJsonToGetResultAkamaiCLI(jsonFilePath,msg));
             }
             else if (error) {
                 if (stderr) {
                     reject(stderr);
                 } else {
-                    reject('failure');
+                    reject(error);
                 }
             } 
         });

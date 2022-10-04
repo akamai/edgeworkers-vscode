@@ -13,7 +13,7 @@ import isHTML from 'is-html';
 import * as akamaiCLIConfig from './cliConfigChange';
 const tmpDir = require('os').tmpdir();
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
-import * as akamiCLICalls from './akamiCLICalls';
+import * as akamaiCLICalls from './akamaiCLICalls';
 import { URL } from 'url';
 import { Workbench } from 'vscode-extension-tester';
 
@@ -57,8 +57,8 @@ export const checkURLifValid = async function(url:string):Promise<URL>{
 
 export const codeProfilerEWTrace = async function(url:URL):Promise<string>{
     try{
-        const cmd = await akamiCLICalls.getAkamaiEWTraceCmd("edgeworkers","auth",url.hostname,path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfiler.json"));
-        const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfiler.json"),"msg");
+        const cmd = await akamaiCLICalls.getAkamaiEWTraceCmd("edgeworkers","auth",url.hostname,path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfiler.json"));
+        const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfiler.json"),"msg");
         const akamaiEWValue = await  getAkamaiEWTraceValueFromCLIMsg(status);
         return akamaiEWValue;
     }catch(e:any){
@@ -68,7 +68,7 @@ export const codeProfilerEWTrace = async function(url:URL):Promise<string>{
 export const getAkamaiEWTraceValueFromCLIMsg = async function(ewTraceMsg:string):Promise<string>{
     try{
         const index = ewTraceMsg.indexOf("Akamai-EW-Trace:");   // 8
-        const length = ("Akamai-EW-Trace:").length;			// 7
+        const length = ("Akamai-EW-Trace:").length;            // 7
         return ewTraceMsg.slice(index + length).trim();
     }catch(e:any){
         throw e;
@@ -102,8 +102,8 @@ export const getStagingCname = async function(cnameBefore:string):Promise<string
     if (before_.endsWith("-staging")) {
         return cnameBefore;
     } else {
-        const akamiStaging = before_+"-staging"+".net";
-        return akamiStaging;
+        const akamaiStaging = before_+"-staging"+".net";
+        return akamaiStaging;
     }
 };
 export const getIPAddress = async function getIPAddress(cnameAkamai:string, hostName:string):Promise<string> {

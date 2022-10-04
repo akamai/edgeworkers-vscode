@@ -5,7 +5,7 @@ import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
 
-export const setAkamaiCLIConfig = async function():Promise<boolean>{
+export const setAkamaiCLIConfig = function():boolean{
     const cliStatistics = edgeWorkerCommands.getCLIStatisticsEnable();
     const cliUpdateCheck = edgeWorkerCommands.getCLIUpdateCheckEnable();
     const config = new ConfigParser();
@@ -22,7 +22,7 @@ export const setAkamaiCLIConfig = async function():Promise<boolean>{
     }
 };
 
-export const checkAkamaiConfig = async function():Promise<string[]>{
+export const checkAkamaiConfig = function():string[]{
     let cmd = [];
     let accountkey = edgeWorkerCommands.getAccountKeyFromUserConfig();
     let section = edgeWorkerCommands.getSectionNameFromUserConfig();
