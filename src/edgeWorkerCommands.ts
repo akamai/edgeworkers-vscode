@@ -2,12 +2,11 @@
 import * as vscode from 'vscode';
 import {workspace}from 'vscode';
 import * as akamiCLICalls from './akamiCLICalls';
+import {getFilePathFromInput} from './extension';
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
-const cp = require('child_process');
-const exec = require('child_process').exec;
-const path = require('path');
-const os = require('os');
-const fs = require("fs");
+import * as os from 'os';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export const createAndValidateEdgeWorker = async function(folder:string){
     try{
@@ -26,8 +25,20 @@ export const createEdgeWorkerBundle = async function(bundleFolder:string):Promis
     return new Promise(async (resolve, reject) => {
         try{
             const defaultFilename:string = 'edgeworkerBundle';
+            let creatBundleFilePath;
             const tarFileName:string = await askUserForUserInput(textForInfoMsg.bundle_name,defaultFilename);
-            const bundlepath = path.resolve(bundleFolder,`${tarFileName}.tgz`);
+            const folderFSPath = await vscode.window.showOpenDialog({
+                canSelectFolders: true,
+                canSelectFiles: false,
+                openLabel: 'Select folder to bundle',
+            });
+            if(folderFSPath !== undefined && folderFSPath.length >0){
+                creatBundleFilePath = getFilePathFromInput(folderFSPath[0]);
+            }
+            else{
+                throw new Error("Error: No folder path to create bundle provied");
+            }
+            const bundlepath = path.resolve(creatBundleFilePath,`${tarFileName}.tgz`);
             const tarballExists = await checkFile(bundlepath);
             if (tarballExists) {
                 const resp = await vscode.window.showErrorMessage(
@@ -37,7 +48,7 @@ export const createEdgeWorkerBundle = async function(bundleFolder:string):Promis
                 if(resp === 'yes'){
                     // there might be an exception thrown below but if so it will bubble out to the calling function
                     await akamiCLICalls.deleteOutput(bundlepath);
-                    const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(bundleFolder, bundlepath,`${tarFileName}`);
+                    const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(creatBundleFilePath, bundlepath,`${tarFileName}`);
                     vscode.window.showInformationMessage(createBundleCmd);
                     resolve (`${tarFileName}`);
                 }
@@ -46,7 +57,7 @@ export const createEdgeWorkerBundle = async function(bundleFolder:string):Promis
                 }
             } else {
                 // again there might be an exception thrown below but if so it will bubble out to the calling function
-                const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(bundleFolder, bundlepath,`${tarFileName}`);
+                const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(creatBundleFilePath, bundlepath,`${tarFileName}`);
                 vscode.window.showInformationMessage(createBundleCmd);
                 resolve (`${tarFileName}`);
             }
@@ -60,8 +71,8 @@ export const validateEdgeWorkerBundle = async function( work_space_folder:string
     return new Promise(async (resolve, reject) => {
         try{
             let tarFilePath = path.resolve(work_space_folder, `${tarfile}.tgz`);
-            const cmd = await akamiCLICalls.getEdgeWorkerValidateCmd("edgeworkers","validate",tarFilePath,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-            const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
+            const cmd = await akamiCLICalls.getEdgeWorkerValidateCmd("edgeworkers","validate",tarFilePath,path.resolve(os.tmpdir(),"akamaiCLIOutputValidate.json"));
+            const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOutputValidate.json"),"msg");
             resolve(textForInfoMsg.validate_bundle_success+`${tarfile}.tgz`);
         }catch(e:any){
             reject(ErrorMessageExt.validate_bundle_fail+`${tarfile}.tgz`+ErrorMessageExt.display_original_error+e.toString());

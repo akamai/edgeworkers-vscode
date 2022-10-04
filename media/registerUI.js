@@ -32,7 +32,7 @@
         else{
             vscode.postMessage({
                 command: 'alert',
-                text:"Missing value in the requiered feild"
+                text:"Missing required value"
             });
         }
     });

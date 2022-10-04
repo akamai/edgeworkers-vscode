@@ -1,25 +1,35 @@
+/* eslint-disable no-throw-literal */
 /* eslint-disable @typescript-eslint/naming-convention */
 'use strict';
 import * as vscode from 'vscode';
 import * as downloadEdgeWorker from './downloadEdgeWorker';
 import * as uploadEdgeWorker from './uploadEdgeWorker';
-import { EdgeWorkerDetails, EdgeWorkerDetailsProvider,getListArrayOfEdgeWorker } from './managementUI';
+import { EdgeWorkerDetails, EdgeWorkerDetailsProvider } from './managementUI';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamiCLICalls from './akamiCLICalls';
 import * as managementUI from './managementUI';
 import * as uploadTarBallToSandbox from './uploadTarBallToSandbox';
 import * as akamaiCLIConfig from './cliConfigChange';
+import * as codeProfiler from './codeProfilerFunction';
+import {CodeProfilerTerminal} from './codeProfilerUI';
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import { Utils } from 'vscode-uri';
+
 import * as activationUI from './activationUI';
 import * as registerUI from './registerUI';
 import console from 'console';
-import { throws } from 'assert';
-const path = require('path');
-const os = require('os');
-const fs = require('fs');
+import * as os from 'os';
+import * as path from 'path';
 
 export const activate = async function(context: vscode.ExtensionContext){
+    akamiCLICalls.checkEnvBeforeEachCommand()
+    .then(async ()=> {
+        const provider = new CodeProfilerTerminal(context.extensionUri);
+        context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(CodeProfilerTerminal.viewType, provider));
+    }).catch((err:any)=> {
+        vscode.window.showErrorMessage(err.toString());
+    });
     // management UI class initilization
     await akamaiCLIConfig.setAkamaiCLIConfig();
     akamiCLICalls.checkEnvBeforeEachCommand()
@@ -32,7 +42,8 @@ export const activate = async function(context: vscode.ExtensionContext){
             token.onCancellationRequested(() => {
                 console.log("User canceled the long running operation");
             });
-            const listIdsAndVersion = await managementUI.getListIdsAndVersions();
+            const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
+            const listIdsAndVersion = await managementUI.getListIdsAndVersions(akamaiConfigcmd);
             const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider(listIdsAndVersion);
             vscode.window.createTreeView('edgeWorkerDetails', {
                 treeDataProvider: edgeWorkerDetailsProvider,
@@ -51,16 +62,17 @@ export const activate = async function(context: vscode.ExtensionContext){
     //refresh the tree view in management UI
     context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.refreshEntry', async function() {
         akamiCLICalls.checkEnvBeforeEachCommand()
-        .then(async ()=> {     
+        .then(async ()=> {    
         await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Refreshing EdgeWorker Details",
                 cancellable: true
             }, async (progress, token) => {
                 token.onCancellationRequested(() => {
-                    console.log("User canceled the long running operation");
+                    throw "Fetching Edgeworkers cancelled";
                 });
-                const listIdsAndVersion = await managementUI.getListIdsAndVersions();
+                const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
+                const listIdsAndVersion = await managementUI.getListIdsAndVersions(akamaiConfigcmd);
                 const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider(listIdsAndVersion);
                 vscode.window.createTreeView('edgeWorkerDetails', {
                     treeDataProvider: edgeWorkerDetailsProvider,
@@ -69,6 +81,11 @@ export const activate = async function(context: vscode.ExtensionContext){
                 });
         })
         .catch((err:any)=> {
+            const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider('');
+            vscode.window.createTreeView('edgeWorkerDetails', {
+                treeDataProvider: edgeWorkerDetailsProvider,
+                showCollapseAll: true
+            });  
             vscode.window.showErrorMessage(err.toString());
         });
     }));
@@ -90,14 +107,14 @@ export const activate = async function(context: vscode.ExtensionContext){
                     const folderFSPath = await vscode.window.showOpenDialog({
                         canSelectFolders: true,
                         canSelectFiles: false,
-                        openLabel: 'select folder with bundle files',
+                        openLabel: 'Select folder with bundle files',
                     });
                     if(folderFSPath !== undefined && folderFSPath.length >0){
                         creatBundleFilePath = getFilePathFromInput(folderFSPath[0]);
                         await edgeWorkerCommands.createAndValidateEdgeWorker(creatBundleFilePath);
                     }
                     else{
-                        vscode.window.showErrorMessage("Error:Folder with bundle files is not provided");
+                        vscode.window.showErrorMessage("Error: Folder with bundle files is not provided");
                     }
                 }
                 else{
@@ -155,14 +172,14 @@ export const activate = async function(context: vscode.ExtensionContext){
                         canSelectFolders: false,
                         canSelectFiles: true,
                         filters: {'Tarball': ['tgz', 'tar.gz']},
-                        openLabel: 'Select tar file to upload EdgeWorker Version',
+                        openLabel: 'Select EdgeWorker bundle',
                     });
                     if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
                         filePath = getFilePathFromInput(tarFileFSPath[0]);
                         await uploadEdgeWorker.uploadEdgeWorker(filePath,'');
                     }
                     else{
-                        vscode.window.showErrorMessage("Error:Tar file is not provided to upload edgeworker version");
+                        vscode.window.showErrorMessage("Error: Tar file is not provided to upload EdgeWorker version");
                     }
                 }
                 else{
@@ -193,7 +210,7 @@ export const activate = async function(context: vscode.ExtensionContext){
                     canSelectFiles: true,
                     canSelectMany: false,
                     filters: {'Tarball': ['tgz', 'tar.gz']},
-                    openLabel: 'select the tar file to upload edgeworker',
+                    openLabel: 'Select EdgeWorker bundle',
                 });
                 if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
                     // there should be exactly one result
@@ -201,7 +218,7 @@ export const activate = async function(context: vscode.ExtensionContext){
                     await uploadEdgeWorker.uploadEdgeWorker(filePath, edgeWorkerdetails.version.toString());
                 }
                 else{
-                    vscode.window.showErrorMessage("Error: Tar file is not provided to upload edgeworker version");
+                    vscode.window.showErrorMessage("Error: Tar file is not provided to upload EdgeWorker version");
                 }
             });
         })
@@ -227,14 +244,14 @@ export const activate = async function(context: vscode.ExtensionContext){
                         canSelectFolders: false,
                         canSelectFiles: true,
                         filters: {'Tarball': ['tgz', 'tar.gz']},
-                        openLabel: 'Select tar file to upload EdgeWorker to sandbox',
+                        openLabel: 'Select EdgeWorker bundle',
                     });
                     if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
                         filePathSandbox = getFilePathFromInput(tarFileFSPath[0]);
                         await uploadTarBallToSandbox.uploadEdgeWorkerTarballToSandbox(filePathSandbox);
                     }
                     else{
-                        vscode.window.showErrorMessage("Tar file is not provided to upload edgeworker version to sandbox");
+                        vscode.window.showErrorMessage("Tar file is not provided to upload EdgeWorker version to sandbox");
                     }
                 }
                 else{
@@ -261,9 +278,11 @@ export const activate = async function(context: vscode.ExtensionContext){
                     console.log("User canceled the long running operation");
                 });
                 try{
-                    const listIds = await managementUI.getListIds();
+                    const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
+                    const listIds = await managementUI.getListIds(akamaiConfigcmd);
                     if(listIds !== ""){
-                        const versions = await managementUI.getListIdsAndVersions();
+                        const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
+                        const versions = await managementUI.getListIdsAndVersions(akamaiConfigcmd);
                         const panel = vscode.window.createWebviewPanel(
                             'Activate EdgeWorker',
                             'Activate EdgeWorker',
@@ -312,7 +331,8 @@ export const activate = async function(context: vscode.ExtensionContext){
                 });
                
                 try{
-                    const groupIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-groups",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+                    const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
+                    const groupIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-groups",path.resolve(os.tmpdir(),"akamaiCLIOput.json"),akamaiConfigcmd);
                     const groupIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(groupIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
                     const panel = vscode.window.createWebviewPanel(
                         'Register EdgeWorker',
@@ -384,15 +404,15 @@ function getFileParentFolderFromInput(commandParam : any) : string {
 
 export const getActivationOutput =  async function(edgeWorker:string,network:string,version:string):Promise<string>{
     if(version === "No Versions"){
-        const msg = "Cannot activate edgeworker id: "+ edgeWorker+" due to no versions for this edgeworker";
+        const msg = "Cannot activate EdgeWorker id: "+ edgeWorker+" due to no versions for this edgeworker";
         vscode.window.showErrorMessage(msg);
         return(msg);
     }
     else{
         let msg ="Activating Edgeowrker ID:"+edgeWorker+" in network "+network + " for version "+version + " failed";
         try{
-            const cmd = await akamiCLICalls.getEdgeWorkerActivationCmd("edgeworkers","activate",edgeWorker,network,version,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-            const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
+            const cmd = await akamiCLICalls.getEdgeWorkerActivationCmd("edgeworkers","activate",edgeWorker,network,version,path.resolve(os.tmpdir(),"akamaiCLIOutputActivate.json"));
+            const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOutputActivate.json"),"msg");
             msg = status;
             vscode.window.showInformationMessage(msg);
             return(msg);
@@ -405,8 +425,8 @@ export const getActivationOutput =  async function(edgeWorker:string,network:str
 export const getRegisterEWOutput =  async function(groupId:string,ewName:string,resourceId:string):Promise<string>{
     let msg ="Error Registering Edgeowrker:"+ewName+" for Group ID"+groupId + " for resource Tier ID"+resourceId +" failed";
     try{
-        const cmd = await akamiCLICalls.getEdgeWorkerRegisterCmd("edgeworkers","register",resourceId,groupId,ewName,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-        const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"msg");
+        const cmd = await akamiCLICalls.getEdgeWorkerRegisterCmd("edgeworkers","register",resourceId,groupId,ewName,path.resolve(os.tmpdir(),"akamaiCLIOutputRegister.json"));
+        const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOutputRegister.json"),"msg");
         msg = status+ewName+" for groupID: "+groupId+" and for resource ID: "+resourceId;
         vscode.window.showInformationMessage(msg);
         return(msg);

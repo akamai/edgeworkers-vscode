@@ -4,10 +4,11 @@ import * as vscode from 'vscode';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamaiCLIConfig from './cliConfigChange';
 import {textForCmd,ErrorMessageExt,textForInfoMsg,systemType } from './textForCLIAndError';
+import { type } from 'os';
 const exec = require('child_process').exec;
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
+import * as os from 'os';
+import * as fs from 'fs';
+import * as path from 'path';
 const ostype = os.type();
 
 export const isAkamaiCLIInstalled = async function():Promise<boolean>{
@@ -167,14 +168,20 @@ export const getEdgeWorkerValidateCmd = function(type:string,command:string,tarF
     cmd.push(command,tarFilePath);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
-export const getEdgeWorkerListVersions = function(type:string,command:string,edgeworkerID:string,jsonFilePath:string):string[]{
-    let cmd = akamaiEdgeWorkerOptionsCmd(type);
+export const getEdgeWorkerListVersions = function(type:string,command:string,edgeworkerID:string,jsonFilePath:string,akamaiConfigcmd:string[]):string[]{
+    let cmd = akamiTypeCmd(type);
+    akamaiConfigcmd.forEach(async (element: any) => {
+    cmd.push(element);
+    });
     cmd.push(command,edgeworkerID);
     cmd= jsonOutputParams(cmd,jsonFilePath);
     return (cmd);
 };
-export const getEdgeWorkerListIds = function(type:string,command:string,jsonFilePath:string):string[]{
-    let cmd = akamaiEdgeWorkerOptionsCmd(type);
+export const getEdgeWorkerListIds = function(type:string,command:string,jsonFilePath:string,akamaiConfigcmd:string[]):string[]{
+    let cmd = akamiTypeCmd(type);
+    akamaiConfigcmd.forEach(async (element: any) => {
+    cmd.push(element);
+    });
     cmd.push(command);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
@@ -182,6 +189,12 @@ export const getEdgeWorkerListIds = function(type:string,command:string,jsonFile
 export const getUploadEdgeWorkerCmd = function(type:string,command:string,bundlePath:string,edgeWorkerID:string,jsonFilePath:string):string[]{
     let cmd = akamaiEdgeWorkerOptionsCmd(type);
     cmd.push(command,"--bundle",bundlePath,edgeWorkerID);
+    return (jsonOutputParams(cmd,jsonFilePath));
+};
+
+export const getAkamaiEWTraceCmd = function(type:string,command:string,hostname:string,jsonFilePath:string):string[]{
+    let cmd = akamaiEdgeWorkerOptionsCmd(type);
+    cmd.push(command,hostname);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
 
@@ -284,14 +297,21 @@ export const parseJsonToGetResultAkamaiCLI = async function(filePathForJson:stri
                 else if(result.cliStatus.toString() === '0' && msg==="data"){
                     return(JSON.stringify(result.data));
                 }
-                else
-                {
-                    if(result.data[0]["detail"] === undefined || result.data[0]["detail"] === null ){
-                        throw new Error(`${result.msg}`);
+                else if(result.cliStatus.toString() === '1')
+                {   
+                    let msg = `${result.msg}. `;
+                    let errorPathMsg = `View Error JSON at path : ${filePathForJson}`;
+                    if(result.data.length > 0 && result.data !== undefined){
+                        for(var i=0; i<result.data.length;i++){
+                            if(result.data[i].hasOwnProperty("type") && result.data[i]["type"] !== undefined && result.data[i].hasOwnProperty("message") && result.data[i]["message"] !== undefined ){
+                                msg += "Error"+`${i+1}`+": "+"Type - "+`${result.data[i]["type"]} and `+"detail message - "+`${result.data[i]["message"]}. `;
+                            }
+                            else if(result.data[i].hasOwnProperty("detail") && result.data[i]["detail"] !== undefined || result.data[i]["detail"] !== null ){
+                                msg += "Detail error message is: " +  `${result.data[i]["detail"]}. `;
+                            }
+                        }
                     }
-                    else{
-                        throw new Error(`${result.msg}`+ " due to "+ `${result.data[0]["detail"]}`);
-                    }
+                    throw new Error(msg+errorPathMsg);
                 }
         }
         throw new Error("Error: Failed to execute The command");

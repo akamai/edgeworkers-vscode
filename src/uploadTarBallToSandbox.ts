@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 'use strict';
 import * as vscode from 'vscode';
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+import * as os from 'os';
+import * as fs from 'fs';
+import * as path from 'path';
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
-import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as uploadEdgeWorker from './uploadEdgeWorker';
+import * as akamaiCLIConfig from './cliConfigChange';
 import * as akamiCLICalls from './akamiCLICalls';
 
 export const uploadEdgeWorkerTarballToSandbox = async function(bundlePath:string):Promise<boolean>{
@@ -19,7 +19,8 @@ export const uploadEdgeWorkerTarballToSandbox = async function(bundlePath:string
         if(edgeWorkerversion === ''){
             throw new Error(ErrorMessageExt.version_missing_bundleJSON);
         }
-        const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+        const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
+        const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"),akamaiConfigcmd);
         const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
         let edgeWorkerID = await uploadEdgeWorker.quickPickItem(textForInfoMsg.get_edgeWorker_id_User,listIds).catch((e:any) => {throw new Error(`failed to Test Edgeworker in Sandbox due to :`+e.toString());});
         edgeWorkerID = edgeWorkerID.substring(edgeWorkerID.lastIndexOf('|')+2);
