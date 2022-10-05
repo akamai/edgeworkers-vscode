@@ -201,6 +201,7 @@ export const getUploadEdgeWorkerCmd = function(type:string,command:string,bundle
 export const getAkamaiEWTraceCmd = function(type:string,command:string,hostname:string,jsonFilePath:string):string[]{
     let cmd = akamaiEdgeWorkerOptionsCmd(type);
     cmd.push(command,hostname);
+    cmd.push('--expiry','120');
     return (jsonOutputParams(cmd,jsonFilePath));
 };
 

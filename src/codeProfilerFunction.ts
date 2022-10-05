@@ -36,6 +36,7 @@ export const getCodeProfilerFile = async function(filePath:string,fileName:strin
         }
         const validUrl = checkURLifValid(urlValue);
         const ewTrace = await codeProfilerEWTrace(validUrl);
+
         const ipAddressForStaging = await getIPAddressForStaging(validUrl);
         const successCodeProfiler = await callCodeProfiler(validUrl,ipAddressForStaging,ewTrace,eventHanler,filePath,cpuProfileName,pragmaHeaders,otherHeaders);
         await flameVisualizerExtension(successCodeProfiler, filePath, cpuProfileName);
@@ -53,20 +54,33 @@ export const checkURLifValid = function(url:string):URL{
     }
 };
 
+
+let authCache : Map<string, any> = new Map();
 export const codeProfilerEWTrace = async function(url:URL):Promise<string>{
+    if (authCache.has(url.hostname)) {
+        let result = authCache.get(url.hostname);
+
+        // +500 to give a buffer
+        if (result.expiry < Date.now() - 500) {
+            return result.auth;
+        }
+    }
     try{
         const cmd = await akamaiCLICalls.getAkamaiEWTraceCmd("edgeworkers","auth",url.hostname,path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfile.json"));
         const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfile.json"),"msg");
         const akamaiEWValue = getAkamaiEWTraceValueFromCLIMsg(status);
+
+        authCache.set(url.hostname, {expiry: Date.now(), auth: akamaiEWValue});
         return akamaiEWValue;
     }catch(e:any){
         throw (` Can't generate EW-trace for the provided URL: ${url} due to - ${e}`);
     }
 };
+
 export const getAkamaiEWTraceValueFromCLIMsg = function(ewTraceMsg:string):string{
     try{
-        const index = ewTraceMsg.indexOf("Akamai-EW-Trace:");   // 8
-        const length = ("Akamai-EW-Trace:").length;            // 7
+        const index = ewTraceMsg.indexOf("Akamai-EW-Trace:");
+        const length = ("Akamai-EW-Trace:").length;
         return ewTraceMsg.slice(index + length).trim();
     }catch(e:any){
         throw e;
