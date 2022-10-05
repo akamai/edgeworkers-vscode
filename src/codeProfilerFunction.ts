@@ -35,7 +35,26 @@ export const getCodeProfilerFile = async function(filePath:string,fileName:strin
             throw Error(`Provided file path: ${filePath} does not exists.`);
         }
         const validUrl = checkURLifValid(urlValue);
-        const ewTrace = await codeProfilerEWTrace(validUrl);
+
+        let ewTrace : string = '';
+
+        // allow specifying trace as a request header
+        if (otherHeaders.length > 0) {
+            // let's first make the input headers sane to access
+            let headerMap : Map<string, string> = new Map<string, string>();
+            for (let index = 0; index < otherHeaders.length; index++) {
+                headerMap.set(otherHeaders[index][0].toLowerCase(), otherHeaders[index][1]);
+            }
+
+            if (headerMap.has('akamai-ew-trace')) {
+                ewTrace = headerMap.get('akamai-ew-trace')!;
+            }
+        }
+
+        // if we didn't find a trace above go and get one :)
+        if (ewTrace === '') {
+            ewTrace = await codeProfilerEWTrace(validUrl);
+        }
 
         const ipAddressForStaging = await getIPAddressForStaging(validUrl);
         const successCodeProfiler = await callCodeProfiler(validUrl,ipAddressForStaging,ewTrace,eventHanler,filePath,cpuProfileName,pragmaHeaders,otherHeaders);
@@ -90,19 +109,40 @@ export const getAkamaiEWTraceValueFromCLIMsg = function(ewTraceMsg:string):strin
 let stagingIpCache : Map<string, string> =  new Map();
 export const getIPAddressForStaging = async function(url:URL):Promise<string>{
     try{
-        if (stagingIpCache.has(url.hostname)) {
-            let cacheValue : string|undefined = stagingIpCache.get(url.hostname);
+        let hostname = url.hostname;
+        if (stagingIpCache.has(hostname)) {
+            let cacheValue : string|undefined = stagingIpCache.get(hostname);
 
             if (cacheValue != undefined) {
                 return cacheValue;
             }
         }
 
-        const cname = await cnameLookup(url.hostname);
-        const cnameAkamaiStaging = await getStagingCname(cname);
-        const ipAddress = await getIPAddress(cnameAkamaiStaging,url.hostname);
+        let edgeHostEndings:string[] = [
+            '.edgekey.net',
+            '.edgesuite.net',
+            '.akamaiedge.net',
+            '.akamaized.net'
+        ];
 
-        stagingIpCache.set(url.hostname, ipAddress);
+        let cname:string = '';
+        for (let end of edgeHostEndings) {
+            if (hostname.endsWith(end)) {
+                // we already have an edge cname input
+                cname = hostname;
+                break;
+            }
+        }
+
+        // if we didn't identify a cname above, check DNS
+        if (cname === '') {
+            cname = await cnameLookup(hostname);
+        }
+        
+        const cnameAkamaiStaging = await getStagingCname(cname);
+        const ipAddress = await getIPAddress(cnameAkamaiStaging,hostname);
+
+        stagingIpCache.set(hostname, ipAddress);
 
         return ipAddress;
     }catch(e:any){
@@ -141,7 +181,7 @@ export const getIPAddress = async function getIPAddress(cnameAkamai:string, host
       });
 };
 export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:string,eventHanler:string,filepath:string,fileName:string,pragmaHeaders?:string,otherheaders?:string[]):Promise<string>{
-    const noEventHandler = `Can't generate code profile for provided event handler: ${eventHanler}. Check EdgeWorker code bundle for implemented event handlers.`;
+    const noEventHandler = `Couldn't generate code profile for provided event handler: ${eventHanler}. Check EdgeWorker code bundle for implemented event handlers.`;
     const agent = new Agent({
         servername: url.hostname,
         rejectUnauthorized: false,
@@ -163,7 +203,11 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
     const httpCallString = url.toString().replace(url.hostname,ipAddress);
     
     let extractProfileFromBody = function(response:any) {
-        if (response.headers['content-type'].includes('multipart/form-data')) {
+        let foundJson = '';
+        if (typeof response.data === 'object') {
+            // axios auto deserialized json to string...
+            foundJson = JSON.stringify(response.data);
+        } else if (response.headers['content-type'].includes('multipart/form-data')) {
             // extract the boundary
             let boundary = response.headers['content-type'].split('; ')[1].split('boundary=')[1];
             let responseLines:string[] = response.data.split("\r\n");
@@ -190,39 +234,33 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
                 }
             }
 
-            return profileString;
-        } else {
-            // body is the profile
-            return response.data;
+            foundJson = profileString;
+        } else if (typeof response.data === 'string') {
+            if (isHTML(response.data)){
+                throw noEventHandler;
+            } else {
+                // body is probably the profile
+                foundJson = response.data;
+            }
+        }
+
+        if (foundJson.startsWith('{"nodes')) {
+            // smells like a cpu profile, return as such
+            return foundJson;
+        } else { 
+            throw noEventHandler;
         }
     }
 
-    let profileStringResult : string|object = '';
+    let response;
     try {
-        let response = await axios.get(url.toString(),httpParams);
-        profileStringResult = extractProfileFromBody(response);
+        response = await axios.get(url.toString(),httpParams);
     } catch(error:any) {
         // axios treats non-200 responses by throwing an exception
         // why is there no way to override this?
         if (error.response) {
-            if(isHTML(error.response.data)){
-                const textToFile = extract(error.response.data);
-                if(textToFile.length === 0)
-                {
-                    throw noEventHandler;
-                }
-            }
-            else {
-                // there may be a usable profile present
-                let profile = extractProfileFromBody(error.response)
-
-                if (profile !== '') {
-                    profileStringResult = profile;
-                } else {
-                    // throw out the error
-                    throw error.response.data;
-                }
-            }
+            // there may be a usable profile present
+            response = error.response;
         } else if (error.request) {
             throw error;
         } else {
@@ -231,6 +269,8 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
     }
 
     try {
+        let profileStringResult = extractProfileFromBody(response);
+
         if (typeof profileStringResult === 'object'){
             profileStringResult = JSON.stringify(profileStringResult);
         }
