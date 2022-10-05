@@ -325,16 +325,15 @@ export const parseJsonToGetResultAkamaiCLI = function(filePathForJson:string,msg
 export const executeAkamaiEdgeWorkerCLICmds = function(cmd : string, jsonFilePath:string,msg:string) : Promise<string> {
     return new Promise((resolve,reject) => {
         exec(cmd, (error : Error, stdout : string, stderr : string) => {
-            if(stdout) {
-                resolve(parseJsonToGetResultAkamaiCLI(jsonFilePath,msg));
-            }
-            else if (error) {
+            if (error) {
                 if (stderr) {
                     reject(stderr);
                 } else {
                     reject(error);
                 }
-            } 
+            } else if(stdout) {
+                resolve(parseJsonToGetResultAkamaiCLI(jsonFilePath,msg));
+            }
         });
     });
 };

@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
 import { Utils } from 'vscode-uri';
 import * as codeProfiler from './codeProfilerFunction';
-export class CodeProfilerTerminal implements vscode.WebviewViewProvider {
-
+export class CodeProfilerPanel implements vscode.WebviewViewProvider {
     public static readonly viewType = 'edgeworkers-vscode.fetchDataView';
 
     private _view?: vscode.WebviewView;
@@ -35,7 +34,7 @@ export class CodeProfilerTerminal implements vscode.WebviewViewProvider {
                     try{
                         await vscode.window.withProgress({
                             location: vscode.ProgressLocation.Notification,
-                            title: "Running Code Profiler",
+                            title: "Profiling EdgeWorker",
                             cancellable: false
                             }, async () => {
                             await codeProfiler.getCodeProfilerFile(message.filePath, message.fileName, message.url, message.eventHandler, message.pragmaHeaders, message.otherHeaders);
@@ -75,8 +74,8 @@ return `<!DOCTYPE html>
 <form id="form">
 <div class="row">
     <div class="col-75">
-        <p>Profile the EdgeWorker code active on the Akamai Staging network.</p>
-        <p>(<span style="color:red;">*</span>)Indicates required fields</p>
+        <p>Profile EdgeWorkers code active on the Akamai staging network.</p>
+        <p>(<span style="color:red;">*</span>) indicates required field.</p>
     </div>
     <div class="col-25 submit-container">
         <input type="reset" value="Reset">
@@ -85,7 +84,7 @@ return `<!DOCTYPE html>
 </div>
 <div class="row">
    <div class="col-25">
-   <label for="URL" class="required">URL to profile </label>
+   <label for="URL" class="required">EdgeWorkers URL </label>
    </div>
    <div class="col-75">
        <input type="text" id="codeProfilerURL" name="codeProfilerUrl"  placeholder="For example, https://www.example.com" required />
@@ -93,7 +92,7 @@ return `<!DOCTYPE html>
 </div>
 <div class="row">
    <div class="col-25">
-       <label for="eventHandler" class="required">Event handler to profile</label>
+       <label for="eventHandler" class="required">Event handler </label>
    </div>
    <div class="col-75">
        <div class="eventhandlerOptions">
@@ -112,7 +111,7 @@ return `<!DOCTYPE html>
 </div>
 <div class="row">
    <div class="col-25">
-   <label for="Path">File path (optional)</label>
+   <label for="Path">File path</label>
    </div>
    <div class="col-75">
        <input type="text" id="filePath" name="filePath"  placeholder="For example, /Users/$USERID/Downloads" />
@@ -120,7 +119,7 @@ return `<!DOCTYPE html>
 </div>
 <div class="row">
    <div class="col-25">
-   <label for="File" >File name (optional)</label>
+   <label for="File" >File name</label>
    </div>
    <div class="col-75">
        <input type="text" id="fileName" name="fileName" />
@@ -137,10 +136,10 @@ return `<!DOCTYPE html>
 </div> -->
 <div class="row">
    <div class="col-25">
-       <label for="otherHeaders">Add headers</label>
+       <label for="otherHeaders">Add request headers</label>
    </div>
    <div class="col-75 header-container">
-       <button type="button" id="add">ADD</button>
+       <button type="button" id="add">Add</button>
        <div></div>
        <div id="boxContainer"></div>
     </div>

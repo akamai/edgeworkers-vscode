@@ -11,7 +11,7 @@ import * as managementUI from './managementUI';
 import * as uploadTarBallToSandbox from './uploadTarBallToSandbox';
 import * as akamaiCLIConfig from './cliConfigChange';
 import * as codeProfiler from './codeProfilerFunction';
-import {CodeProfilerTerminal} from './codeProfilerUI';
+import {CodeProfilerPanel} from './codeProfilerUI';
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import { Utils } from 'vscode-uri';
 
@@ -22,16 +22,17 @@ import * as os from 'os';
 import * as path from 'path';
 
 export const activate = async function(context: vscode.ExtensionContext){
-    akamaiCLICalls.checkEnvBeforeEachCommand()
-    .then(async ()=> {
-        const provider = new CodeProfilerTerminal(context.extensionUri);
+    akamaiCLICalls.checkEnvBeforeEachCommand().then(async ()=> {
+        const provider = new CodeProfilerPanel(context.extensionUri);
         context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider(CodeProfilerTerminal.viewType, provider));
+        vscode.window.registerWebviewViewProvider(CodeProfilerPanel.viewType, provider));
     }).catch((err:any)=> {
         vscode.window.showErrorMessage(err.toString());
     });
+
     // management UI class initilization
     await akamaiCLIConfig.setAkamaiCLIConfig();
+
 
     akamaiCLICalls.checkEnvBeforeEachCommand()
     .then(async ()=> { 

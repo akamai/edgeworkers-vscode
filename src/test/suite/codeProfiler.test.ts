@@ -2,16 +2,13 @@
 import { afterEach, beforeEach, describe, it } from "mocha";
 import * as assert from 'assert';
 import * as sinon from 'sinon';
-import { CodeProfilerTerminal} from '../../codeProfilerUI';
+import { CodeProfilerPanel} from '../../codeProfilerUI';
 import * as jsonSample from './sampleTest.json';
 import * as akamaiCLICalls from '../../akamaiCLICalls';
 import * as jsonSamplemal from './malfuncJSON.json';
 import * as codeProfiler from '../../codeProfilerFunction';
 import { expect } from "chai";
 import { URL } from "url";
-
-
-
 
 suite('testing code profiler UI ---------------------', () => {
     afterEach(function () {

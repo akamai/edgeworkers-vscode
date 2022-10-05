@@ -25,7 +25,8 @@
         "onCommand:edgeworkers-vscode.registerEdgeWorker",
         "onCommand:edgeworkers-vscode.activateEdgeWorker",
         "onView:edgeWorkerDetails",
-        "onView:webview"
+        "onView:webview",
+        "*"
     ],
     "main": "./dist/extension",
     "contributes": {
