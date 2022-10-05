@@ -13,17 +13,22 @@ import isHTML from 'is-html';
 import * as akamaiCLIConfig from './cliConfigChange';
 const tmpDir = require('os').tmpdir();
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
-import * as akamiCLICalls from './akamiCLICalls';
+import * as akamaiCLICalls from './akamaiCLICalls';
 import { URL } from 'url';
 import { Workbench } from 'vscode-extension-tester';
 
-
-export const getCodeProfilerFile = async function(filePath:string,fileName:string,urlValue:string,eventHanler:string,pragmaHeaders:string,otherHeaders:string[]){
+let lastRequestTime:number = 0;
+export const getCodeProfilerFile = async function(filePath:string,fileName:string,urlValue:string,eventHanler:string,pragmaHeaders:string,otherHeaders:string[][]){
     const dateNow = new Date();
+    const timeSinceEpoch = dateNow.getTime();
+    if (lastRequestTime + 1000 > timeSinceEpoch) {
+        throw ('Please wait at least 1 second between profiling requests.');
+    }
+
     const timestamp = dateNow.getTime().toString();
     try{
         if(!fileName){
-            fileName = "codeProfiler"+timestamp;
+            fileName = "codeProfile-"+timestamp;
         }
         else{
             fileName = fileName + timestamp;
@@ -35,18 +40,45 @@ export const getCodeProfilerFile = async function(filePath:string,fileName:strin
         if(!fs.existsSync(filePath)){
             throw Error(`Provided file path: ${filePath} does not exists.`);
         }
-        const validUrl = await checkURLifValid(urlValue);
-        const ewTrace = await codeProfilerEWTrace(validUrl);
-        const ipAddressForStaging = await getIPAddressForStaging(validUrl);
-        const successCodeProfiler = await callCodeProfiler(validUrl,ipAddressForStaging,ewTrace,eventHanler,filePath,cpuProfileName,pragmaHeaders,otherHeaders);
+        const validUrl = checkURLifValid(urlValue);
+
+        let ewTrace : string = '';
+
+        // allow specifying trace as a request header
+        if (otherHeaders.length > 0) {
+            // let's first make the input headers sane to access
+            let headerMap : Map<string, string> = new Map<string, string>();
+            for (let index = 0; index < otherHeaders.length; index++) {
+                headerMap.set(otherHeaders[index][0].toLowerCase(), otherHeaders[index][1]);
+            }
+
+            if (headerMap.has('akamai-ew-trace')) {
+                ewTrace = headerMap.get('akamai-ew-trace')!;
+            }
+        }
+
+        // if we didn't find a trace above go and get one :)
+        if (ewTrace === '') {
+            let hostHeader:string|undefined = getHostHeader(otherHeaders);
+            
+            let hostToCallAuthWith = validUrl.hostname;
+            if (hostHeader) {
+                hostToCallAuthWith = hostHeader;
+            }
+
+            ewTrace = await codeProfilerEWTrace(hostToCallAuthWith);
+        }
+
+        const ipAddress = await getIPAddressForStaging(validUrl);
+        const successCodeProfiler = await callCodeProfiler(validUrl,ipAddress,ewTrace,eventHanler,filePath,cpuProfileName,pragmaHeaders,otherHeaders);
+        lastRequestTime = timeSinceEpoch;
         await flameVisualizerExtension(successCodeProfiler, filePath, cpuProfileName);
     }catch(e:any){
-        throw Error("Failed to run code profiler."+e);
+        throw Error("Failed to profile code: " +e);
     }
 };
 
-
-export const checkURLifValid = async function(url:string):Promise<URL>{
+export const checkURLifValid = function(url:string):URL{
     try{
         const urlObject = new URL(url);
         return urlObject;
@@ -55,31 +87,89 @@ export const checkURLifValid = async function(url:string):Promise<URL>{
     }
 };
 
-export const codeProfilerEWTrace = async function(url:URL):Promise<string>{
+
+let authCache : Map<string, any> = new Map();
+export const codeProfilerEWTrace = async function(hostname:string):Promise<string>{
+    if (authCache.has(hostname)) {
+        let result = authCache.get(hostname);
+
+        // +500 to give a buffer
+        if (result.expiry < Date.now() - 500) {
+            return result.auth;
+        }
+    }
     try{
-        const cmd = await akamiCLICalls.getAkamaiEWTraceCmd("edgeworkers","auth",url.hostname,path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfiler.json"));
-        const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfiler.json"),"msg");
-        const akamaiEWValue = await  getAkamaiEWTraceValueFromCLIMsg(status);
+        const cmd = await akamaiCLICalls.getAkamaiEWTraceCmd("edgeworkers","auth",hostname,path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfile.json"));
+        const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfile.json"),"msg");
+        const akamaiEWValue = getAkamaiEWTraceValueFromCLIMsg(status);
+
+        authCache.set(hostname, {expiry: Date.now(), auth: akamaiEWValue});
         return akamaiEWValue;
     }catch(e:any){
-        throw (` Can't generate EW-trace for the provided URL: ${url} due to - ${e}`);
+        throw (`Cannot generate enhanced debug header for hostname: ${hostname}; check that you have permissions to do so with Akamai CLI and try again.`);
     }
 };
-export const getAkamaiEWTraceValueFromCLIMsg = async function(ewTraceMsg:string):Promise<string>{
+
+export const getAkamaiEWTraceValueFromCLIMsg = function(ewTraceMsg:string):string{
     try{
-        const index = ewTraceMsg.indexOf("Akamai-EW-Trace:");   // 8
-        const length = ("Akamai-EW-Trace:").length;			// 7
+        const index = ewTraceMsg.indexOf("Akamai-EW-Trace:");
+        const length = ("Akamai-EW-Trace:").length;
         return ewTraceMsg.slice(index + length).trim();
     }catch(e:any){
         throw e;
     }
 };
-export const getIPAddressForStaging =  async function(url:URL):Promise<string>{
+
+let stagingIpCache : Map<string, string> =  new Map();
+export const getIPAddressForStaging = async function(url:URL):Promise<string>{
     try{
-    const cnameFinal = await cnameLookup(url.hostname);
-    const CNAMEAkamaiStaging = await getStagingCname(cnameFinal);
-    const ipAddress = await getIPAddress(CNAMEAkamaiStaging,url.hostname);
-    return ipAddress;
+        let hostname = url.hostname;
+
+        let localhost:string[] = [
+            '127.0.0.1',
+            '0.0.0.0',
+            'localhost'
+        ]
+
+        if (localhost.includes(hostname)) {
+            return '127.0.0.1';
+        }
+
+        if (stagingIpCache.has(hostname)) {
+            let cacheValue : string|undefined = stagingIpCache.get(hostname);
+
+            if (cacheValue != undefined) {
+                return cacheValue;
+            }
+        }
+
+        let edgeHostEndings:string[] = [
+            '.edgekey.net',
+            '.edgesuite.net',
+            '.akamaiedge.net',
+            '.akamaized.net'
+        ];
+
+        let cname:string = '';
+        for (let end of edgeHostEndings) {
+            if (hostname.endsWith(end)) {
+                // we already have an edge cname input
+                cname = hostname;
+                break;
+            }
+        }
+
+        // if we didn't identify a cname above, check DNS
+        if (cname === '') {
+            cname = await cnameLookup(hostname);
+        }
+        
+        const cnameAkamaiStaging = await getStagingCname(cname);
+        const ipAddress = await getIPAddress(cnameAkamaiStaging,hostname);
+
+        stagingIpCache.set(hostname, ipAddress);
+
+        return ipAddress;
     }catch(e:any){
         throw e;
     }
@@ -87,28 +177,27 @@ export const getIPAddressForStaging =  async function(url:URL):Promise<string>{
 
 export const getCNAME = async function(hostName:string):Promise<string>{
     return new Promise(async (resolve, reject) => {
-        await dns.resolveCname(hostName,(err:any, cname:any) => {
+        dns.resolveCname(hostName,(err:any, cname:any) => {
           if (err) {
-            reject(`Can't fetch CNAME for the Host:${hostName} due to - ${err}`);
+            reject(`Cannot find cname for staging IP lookup for the Host:${hostName} due to - ${err}`);
           }
           resolve(cname);
         });
       });
 };
 
-
 export const getStagingCname = async function(cnameBefore:string):Promise<string>{
     const before_ = cnameBefore.substring(0, cnameBefore.indexOf(".net"));
     if (before_.endsWith("-staging")) {
         return cnameBefore;
     } else {
-        const akamiStaging = before_+"-staging"+".net";
-        return akamiStaging;
+        const akamaiStaging = before_+"-staging"+".net";
+        return akamaiStaging;
     }
 };
 export const getIPAddress = async function getIPAddress(cnameAkamai:string, hostName:string):Promise<string> {
     return new Promise(async (resolve, reject) => {
-       await dns.lookup(cnameAkamai,(err:any, ipAddress:any) => {
+        dns.lookup(cnameAkamai,(err:any, ipAddress:any) => {
           if (err) {
             reject(`Falied to get IP address for the host: ${hostName} due to - ${err}`);
           }
@@ -116,19 +205,36 @@ export const getIPAddress = async function getIPAddress(cnameAkamai:string, host
         });
       });
 };
-export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:string,eventHanler:string,filepath:string,fileName:string,pragmaHeaders?:string,otherheaders?:string[]):Promise<string>{
-    const noEventHandler = `Can't generate code profile for provided event handler: ${eventHanler}. Check EdgeWorker code bundle for implemented event handlers.`;
-    const agent = await new Agent({
+
+const getHostHeader = function(otherheaders?:string[][]):string|undefined {
+    if (typeof otherheaders === 'object') {
+        let hostHeader = otherheaders.find((element) => {return element[0].toLowerCase() === 'host'});
+        if (hostHeader) {
+            return hostHeader[1];
+        }
+    }
+    
+    return undefined;
+}
+
+export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:string,eventHanler:string,filepath:string,fileName:string,pragmaHeaders?:string,otherheaders?:string[][]):Promise<string>{
+    const noEventHandler = `Couldn't generate code profile for provided event handler: ${eventHanler}. Check EdgeWorker code bundle for implemented event handlers.`;
+    const agent = new Agent({
         servername: url.hostname,
         rejectUnauthorized: false,
     });
     const headers: { [key: string]: any } = {};
-    headers.Host = url.hostname;
+
+    // only specify the host header if it wasn't provided by user
+    let hostHeader:string|undefined = getHostHeader(otherheaders);
+    if (!hostHeader) {
+        headers.Host = url.hostname;
+    }
     headers['akamai-ew-trace'] = ewtrace;
     headers['user-agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36';
-    headers[`${eventHanler}`] = 'asd';
+    headers[`${eventHanler}`] = 'true';
     if(otherheaders){
-        for(var i=0; i<otherheaders.length; i++){
+        for(let i=0; i<otherheaders.length; i++){
             headers[`${otherheaders[i][0]}`] =  otherheaders[i][1];
         }
     }
@@ -137,41 +243,96 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
     httpParams['httpsAgent'] = agent;
     httpParams['responseType'] = 'text';
     const httpCallString = url.toString().replace(url.hostname,ipAddress);
-    await axios.get(httpCallString,httpParams).then((body) => {
-        var dataToFile:string|object = body.data;
-        if(typeof dataToFile === 'object'){
-            dataToFile = JSON.stringify(dataToFile);
+    
+    let extractProfileFromBody = function(response:any) {
+        let foundJson = '';
+        if (typeof response.data === 'object') {
+            // axios auto deserialized json to string...
+            foundJson = JSON.stringify(response.data);
+        } else if (response.headers['content-type'].includes('multipart/form-data')) {
+            // extract the boundary
+            let boundary = response.headers['content-type'].split('; ')[1].split('boundary=')[1];
+            let responseLines:string[] = response.data.split("\r\n");
+
+            let sectionIsCpuProfile = false;
+            let recordProfile = false;
+            let profileString = '';
+            for (const line of responseLines) {
+
+                // this will need to be updated to include memory profile when that's available
+                if (line.includes('content-disposition: form-data; name="cpu-profile"')) { 
+                    sectionIsCpuProfile = true;
+                } else if (line === '' && sectionIsCpuProfile) {
+                    // this is the break between header and body of the section
+                    recordProfile = true;
+                } else if (recordProfile) {
+                    if (line.startsWith('--' + boundary)) {
+                        // section is done
+                        break;
+                    } else {
+                        // recording across multiple lines in case profile data is changed to be multi line
+                        profileString += line + '\r\n';
+                    }
+                }
+            }
+
+            foundJson = profileString;
+        } else if (typeof response.data === 'string') {
+            if (isHTML(response.data)){
+                throw noEventHandler;
+            } else {
+                // body is probably the profile
+                foundJson = response.data;
+            }
         }
-        const textToFile = extract(dataToFile);
-        if(textToFile.length === 0)
+
+        if (foundJson.startsWith('{"nodes')) {
+            // smells like a cpu profile, return as such
+            return foundJson;
+        } else { 
+            throw noEventHandler;
+        }
+    }
+
+    let response;
+    try {
+        response = await axios.get(url.toString(),httpParams);
+    } catch(error:any) {
+        // axios treats non-200 responses by throwing an exception
+        // why is there no way to override this?
+        if (error.response) {
+            // there may be a usable profile present
+            response = error.response;
+        } else if (error.request) {
+            throw error;
+        } else {
+            throw (`Falied to generate ${fileName} due to - ${error}`);
+        }
+    }
+
+    try {
+        let profileStringResult = extractProfileFromBody(response);
+
+        if (typeof profileStringResult === 'object'){
+            profileStringResult = JSON.stringify(profileStringResult);
+        }
+
+        
+        if (profileStringResult === '' || profileStringResult === '{}')
         {
             throw noEventHandler;
         }
-        else{
-            fs.writeFile(path.resolve(filepath,fileName), JSON.stringify(textToFile[0]), 'utf8', function (err:any) {
+        else {
+            fs.writeFile(path.resolve(filepath,fileName), profileStringResult, 'utf8', function (err:any) {
                 if (err) {
                     throw err;
                 }
             });
         }
-    }).catch((error:any) => {
-    if (error.response) {
-        if(isHTML(error.response.data)){
-            const textToFile = extract(error.response.data);
-            if(textToFile.length === 0)
-            {
-                throw noEventHandler;
-            }
-        }
-        else{
-            throw error.response.data;
-        }
-    } else if (error.request) {
-        throw error;
-    } else {
+    } catch(error:any) {
         throw (`Falied to generate ${fileName} due to - ${error}`);
     }
-    });
+
     return `Successfully downloaded the ${fileName} at ${filepath}.`;
 };
 
@@ -206,15 +367,22 @@ export const openCpuProfileFile = async function(fileName:string, filePath:strin
         vscode.window.showErrorMessage(`Can't open the ${fileName} at ${filePath} automatically due to - ${e}. Open ${fileName} file at path ${filePath}`);
     }
 };
+
+const edgeHostnameEndings = [
+    'edgekey.net',
+    'edgesuite.net',
+    'akamaiedge.net'
+]
 export const cnameLookup = async function(hostName:string):Promise<string>{
     const cname = await getCNAME(hostName);
-    if(! await cnanmeIsStagingCname(cname[0])){
+    if(!cnanmeIsStagingCname(cname[0])){
         const cnameFinal = await getCNAME(cname[0]);
         return cnameFinal[0];
     }
     return cname[0];
 };
-export const cnanmeIsStagingCname = async function(cname:string):Promise<boolean>{
+
+export const cnanmeIsStagingCname = function(cname:string):boolean{
     const before_ = cname.substring(0, cname.indexOf(".net"));
     if (before_.endsWith("-staging")) {
         return true;

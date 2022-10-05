@@ -7,30 +7,30 @@ import * as path from 'path';
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import * as uploadEdgeWorker from './uploadEdgeWorker';
 import * as akamaiCLIConfig from './cliConfigChange';
-import * as akamiCLICalls from './akamiCLICalls';
+import * as akamaiCLICalls from './akamaiCLICalls';
 
 export const uploadEdgeWorkerTarballToSandbox = async function(bundlePath:string):Promise<boolean>{
     try{
         const tarFileName = path.parse(bundlePath).base;
         const edgeworkerBundle =  tarFileName.substr(0,tarFileName.lastIndexOf('.'));
-        const unTar= await akamiCLICalls.untarTarballToTempDir(bundlePath,edgeworkerBundle);
+        const unTar= await akamaiCLICalls.untarTarballToTempDir(bundlePath,edgeworkerBundle);
         const edgeWorkerversion = await getVersionIdFromBundleJSON(unTar);
-        akamiCLICalls.deleteOutputFolder(unTar);
+        akamaiCLICalls.deleteOutputFolder(unTar);
         if(edgeWorkerversion === ''){
             throw new Error(ErrorMessageExt.version_missing_bundleJSON);
         }
         const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
-        const listIdsCmd= await akamiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"),akamaiConfigcmd);
-        const listIds = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
-        let edgeWorkerID = await uploadEdgeWorker.quickPickItem(textForInfoMsg.get_edgeWorker_id_User,listIds).catch((e:any) => {throw new Error(`failed to Test Edgeworker in Sandbox due to :`+e.toString());});
-        edgeWorkerID = edgeWorkerID.substring(edgeWorkerID.lastIndexOf('|')+2);
-        if(edgeWorkerID === '' || edgeWorkerID === undefined){
-            throw new Error(ErrorMessageExt.empty_edgeWorkerID);
+        const listIdsCmd= await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+        const listIds = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+        let edgeWorkerId = await uploadEdgeWorker.quickPickItem(textForInfoMsg.get_edgeWorker_id_User,listIds).catch((e:any) => {throw new Error(`failed to Test Edgeworker in Sandbox due to :`+e.toString());});
+        edgeWorkerId = edgeWorkerId.substring(edgeWorkerId.lastIndexOf('|')+2);
+        if(edgeWorkerId === '' || edgeWorkerId === undefined){
+            throw new Error(ErrorMessageExt.empty_edgeWorkerId);
         }
-        const updateCmd = await akamiCLICalls.updateEdgeWorkerToSandboxCmd("sandbox","update-edgeworker",bundlePath,edgeWorkerID);
+        const updateCmd = await akamaiCLICalls.updateEdgeWorkerToSandboxCmd("sandbox","update-edgeworker",bundlePath,edgeWorkerId);
         try{
-            await akamiCLICalls.executeCLICommandExceptTarCmd(await akamiCLICalls.generateCLICommand(updateCmd));
-            vscode.window.showInformationMessage(`EdgeWorker: ${edgeWorkerID} and Version: ${edgeWorkerversion} ` + textForInfoMsg.success_upload_ew_to_sandbox);
+            await akamaiCLICalls.executeCLICommandExceptTarCmd(await akamaiCLICalls.generateCLICommand(updateCmd));
+            vscode.window.showInformationMessage(`EdgeWorker: ${edgeWorkerId} and Version: ${edgeWorkerversion} ` + textForInfoMsg.success_upload_ew_to_sandbox);
             vscode.window.showInformationMessage(textForInfoMsg.info_to_test_edgeWorker_curl,{ modal: true }); 
         }catch(e){
             let errorString = e as string;
@@ -40,7 +40,7 @@ export const uploadEdgeWorkerTarballToSandbox = async function(bundlePath:string
                 throw new Error(ErrorMessageExt.upload_ew_tosandbox_fail+jsonError.detail);
             }
             else{
-                throw new Error(ErrorMessageExt.Fail_to_upload_EW_sandbox+`EdgeWorker : ${edgeWorkerID} and Version: ${edgeWorkerversion}`+'to sandbox'+ ErrorMessageExt.display_original_error+ e);
+                throw new Error(ErrorMessageExt.Fail_to_upload_EW_sandbox+`EdgeWorker : ${edgeWorkerId} and Version: ${edgeWorkerversion}`+'to sandbox'+ ErrorMessageExt.display_original_error+ e);
             } 
         }
     return true;

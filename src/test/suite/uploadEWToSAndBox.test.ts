@@ -4,7 +4,7 @@ import * as sinon from 'sinon';
 const chai    = require("chai");
 import * as assert from 'assert';
 import * as edgeWorkerCommands from '../../edgeWorkerCommands';
-import * as akamiCLICalls from '../../akamiCLICalls';
+import * as akamaiCLICalls from '../../akamaiCLICalls';
 import * as uploadTarBallToSandbox from '../../uploadTarBallToSandbox';
 const path = require("path");
 
@@ -16,7 +16,7 @@ suite('testing edgeworker vscode extension', () => {
     it('check if akamai sandbox is not installed and returns error uploadEdgeWorkerTarballToSandbox() return false ', async function(){
         this.timeout(100000);
         let tarFilePath= path.resolve(__dirname,'../../../src/test/testSpace/bundle.tgz');
-        sinon.stub(akamiCLICalls, 'checkAkamaiSandbox').rejects("error");
+        sinon.stub(akamaiCLICalls, 'checkAkamaiSandbox').rejects("error");
         const status = await uploadTarBallToSandbox.uploadEdgeWorkerTarballToSandbox(tarFilePath);
         assert.strictEqual(status,false);
     });
@@ -30,7 +30,7 @@ suite('testing edgeworker vscode extension', () => {
     it('check if the uploadEdgeWorkerTarballToSandbox returns false when executeAkamaiEdgeWorkerCLICmds() return a error', async function(){
         this.timeout(100000);
         let tarFilePath= path.resolve(__dirname,'../../../src/test/testSpace/bundle.tgz');
-        sinon.stub(akamiCLICalls, 'executeAkamaiEdgeWorkerCLICmds').rejects("error");
+        sinon.stub(akamaiCLICalls, 'executeAkamaiEdgeWorkerCLICmds').rejects("error");
         const status = await uploadTarBallToSandbox.uploadEdgeWorkerTarballToSandbox(tarFilePath);
         assert.strictEqual(status,false);
     });

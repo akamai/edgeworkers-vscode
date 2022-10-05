@@ -5,12 +5,12 @@ import { Utils } from 'vscode-uri';
 
 export function getWebviewContent(context:vscode.ExtensionContext,webview: vscode.Webview,groupIds:string){
     // Local path to main script run in the webview
-		const scriptPathOnDisk = Utils.joinPath(context.extensionUri, 'media', 'registerUI.js');
-		// And the uri we use to load this script in the webview
-		const scriptUri =  webview.asWebviewUri(scriptPathOnDisk);
-    		// Local path to css styles
-		const stylesPathMainPath =  Utils.joinPath(context.extensionUri, 'media', 'style.css');
-		const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
+        const scriptPathOnDisk = Utils.joinPath(context.extensionUri, 'media', 'registerUI.js');
+        // And the uri we use to load this script in the webview
+        const scriptUri =  webview.asWebviewUri(scriptPathOnDisk);
+            // Local path to css styles
+        const stylesPathMainPath =  Utils.joinPath(context.extensionUri, 'media', 'style.css');
+        const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
 return `<!DOCTYPE html>
 <html>
 <head>

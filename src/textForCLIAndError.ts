@@ -34,7 +34,7 @@ export enum ErrorMessageExt {
     edgworkerDetails_fail= "Failed to fetch the EdgeWorker details ",
     bundle_download_fail= "Failed to download the EdgeWorker Bundle",
     bundle_files_fail = "Failed to fetch files",
-    empty_edgeWorkerID = "Unable to upload tar ball without the EdgeWorker ID",
+    empty_edgeWorkerId = "Unable to upload tar ball without the EdgeWorker ID",
     edgeWorkerId_notFound= "Error: The edgeWorker ID is not linked to your account. Please try with another EdgeWorker ID",
     id_not_found= " :Id not Found",
     version_missing_bundleJSON = 'The version is not provided in Bundle.json file',
