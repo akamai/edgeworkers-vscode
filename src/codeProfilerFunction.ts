@@ -197,10 +197,10 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
         }
     }
 
-    let dataToFile:string|object = '';
+    let profileStringResult : string|object = '';
     try {
         let response = await axios.get(url.toString(),httpParams);
-        dataToFile = extractProfileFromBody(response);
+        profileStringResult = extractProfileFromBody(response);
     } catch(error:any) {
         // axios treats non-200 responses by throwing an exception
         // why is there no way to override this?
@@ -217,7 +217,7 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
                 let profile = extractProfileFromBody(error.response)
 
                 if (profile !== '') {
-                    dataToFile = profile;
+                    profileStringResult = profile;
                 } else {
                     // throw out the error
                     throw error.response.data;
@@ -231,16 +231,17 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
     }
 
     try {
-        if (typeof dataToFile === 'object'){
-            dataToFile = JSON.stringify(dataToFile);
+        if (typeof profileStringResult === 'object'){
+            profileStringResult = JSON.stringify(profileStringResult);
         }
-        const textToFile = extract(dataToFile);
-        if (textToFile.length === 0)
+
+        
+        if (profileStringResult === '' || profileStringResult === '{}')
         {
             throw noEventHandler;
         }
         else {
-            fs.writeFile(path.resolve(filepath,fileName), JSON.stringify(textToFile[0]), 'utf8', function (err:any) {
+            fs.writeFile(path.resolve(filepath,fileName), profileStringResult, 'utf8', function (err:any) {
                 if (err) {
                     throw err;
                 }
