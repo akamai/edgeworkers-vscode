@@ -17,8 +17,14 @@ import * as akamaiCLICalls from './akamaiCLICalls';
 import { URL } from 'url';
 import { Workbench } from 'vscode-extension-tester';
 
+let lastRequestTime:number = 0;
 export const getCodeProfilerFile = async function(filePath:string,fileName:string,urlValue:string,eventHanler:string,pragmaHeaders:string,otherHeaders:string[][]){
     const dateNow = new Date();
+    const timeSinceEpoch = dateNow.getTime();
+    if (lastRequestTime + 1000 > timeSinceEpoch) {
+        throw ('Please wait at least 1 second between profiling requests.');
+    }
+
     const timestamp = dateNow.getTime().toString();
     try{
         if(!fileName){
@@ -65,6 +71,7 @@ export const getCodeProfilerFile = async function(filePath:string,fileName:strin
 
         const ipAddress = await getIPAddressForStaging(validUrl);
         const successCodeProfiler = await callCodeProfiler(validUrl,ipAddress,ewTrace,eventHanler,filePath,cpuProfileName,pragmaHeaders,otherHeaders);
+        lastRequestTime = timeSinceEpoch;
         await flameVisualizerExtension(successCodeProfiler, filePath, cpuProfileName);
     }catch(e:any){
         throw Error("Failed to profile code: " +e);
