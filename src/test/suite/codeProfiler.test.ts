@@ -16,12 +16,12 @@ suite('testing code profiler UI ---------------------', () => {
     });
     it('test callCodeProfiler --- return error when the invalid URL is provided', async function(){
         this.timeout(100000);
-        sinon.stub(codeProfiler, 'checkURLifValid').throws("Failed to run code profiler due to url invalid");
+        sinon.stub(codeProfiler, 'checkURLifValid').throws("Failed run profile code due to url invalid");
         await codeProfiler.getCodeProfilerFile('/users/hkambham','sample','http://www.mofroyo.co/us/en/?random=$RANDOM','x-ew-code-profile-onclientresponse','',[]).catch(e => assert.ok(e,'Failed to run code profiler due to url invalid'));
     });
     it('test callCodeProfiler --- return error when error is generted during getting ewTrace', async function(){
         this.timeout(100000);
-        sinon.stub(codeProfiler, 'codeProfilerEWTrace').throws("Failed to run code profiler due to ewtrace failure");
+        sinon.stub(codeProfiler, 'codeProfilerEWTrace').throws("Failed to profile code due to ewtrace failure");
         try{
             await codeProfiler.getCodeProfilerFile('/users/hkambham','sample','http://www.mofroyo.co/us/en/?random=$RANDOM','x-ew-code-profile-onclientresponse','',[]);
         }catch(err:any){

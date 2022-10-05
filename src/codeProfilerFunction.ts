@@ -41,7 +41,7 @@ export const getCodeProfilerFile = async function(filePath:string,fileName:strin
         const successCodeProfiler = await callCodeProfiler(validUrl,ipAddressForStaging,ewTrace,eventHanler,filePath,cpuProfileName,pragmaHeaders,otherHeaders);
         await flameVisualizerExtension(successCodeProfiler, filePath, cpuProfileName);
     }catch(e:any){
-        throw Error("Failed to run code profiler."+e);
+        throw Error("Failed to profile code: " +e);
     }
 };
 
@@ -162,25 +162,48 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
     httpParams['responseType'] = 'text';
     const httpCallString = url.toString().replace(url.hostname,ipAddress);
     
-    try {
-        let body = await axios.get(httpCallString,httpParams);
-        let dataToFile:string|object = body.data;
-        if(typeof dataToFile === 'object'){
-            dataToFile = JSON.stringify(dataToFile);
-        }
-        const textToFile = extract(dataToFile);
-        if(textToFile.length === 0)
-        {
-            throw noEventHandler;
-        }
-        else{
-            fs.writeFile(path.resolve(filepath,fileName), JSON.stringify(textToFile[0]), 'utf8', function (err:any) {
-                if (err) {
-                    throw err;
+    let extractProfileFromBody = function(response:any) {
+        if (response.headers['content-type'].includes('multipart/form-data')) {
+            // extract the boundary
+            let boundary = response.headers['content-type'].split('; ')[1].split('boundary=')[1];
+            let responseLines:string[] = response.data.split("\r\n");
+
+            let sectionIsCpuProfile = false;
+            let recordProfile = false;
+            let profileString = '';
+            for (const line of responseLines) {
+
+                // this will need to be updated to include memory profile when that's available
+                if (line.includes('content-disposition: form-data; name="cpu-profile"')) { 
+                    sectionIsCpuProfile = true;
+                } else if (line === '' && sectionIsCpuProfile) {
+                    // this is the break between header and body of the section
+                    recordProfile = true;
+                } else if (recordProfile) {
+                    if (line.startsWith('--' + boundary)) {
+                        // section is done
+                        break;
+                    } else {
+                        // recording across multiple lines in case profile data is changed to be multi line
+                        profileString += line + '\r\n';
+                    }
                 }
-            });
+            }
+
+            return profileString;
+        } else {
+            // body is the profile
+            return response.data;
         }
+    }
+
+    let dataToFile:string|object = '';
+    try {
+        let response = await axios.get(url.toString(),httpParams);
+        dataToFile = extractProfileFromBody(response);
     } catch(error:any) {
+        // axios treats non-200 responses by throwing an exception
+        // why is there no way to override this?
         if (error.response) {
             if(isHTML(error.response.data)){
                 const textToFile = extract(error.response.data);
@@ -189,14 +212,42 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
                     throw noEventHandler;
                 }
             }
-            else{
-                throw error.response.data;
+            else {
+                // there may be a usable profile present
+                let profile = extractProfileFromBody(error.response)
+
+                if (profile !== '') {
+                    dataToFile = profile;
+                } else {
+                    // throw out the error
+                    throw error.response.data;
+                }
             }
         } else if (error.request) {
             throw error;
         } else {
             throw (`Falied to generate ${fileName} due to - ${error}`);
         }
+    }
+
+    try {
+        if (typeof dataToFile === 'object'){
+            dataToFile = JSON.stringify(dataToFile);
+        }
+        const textToFile = extract(dataToFile);
+        if (textToFile.length === 0)
+        {
+            throw noEventHandler;
+        }
+        else {
+            fs.writeFile(path.resolve(filepath,fileName), JSON.stringify(textToFile[0]), 'utf8', function (err:any) {
+                if (err) {
+                    throw err;
+                }
+            });
+        }
+    } catch(error:any) {
+        throw (`Falied to generate ${fileName} due to - ${error}`);
     }
 
     return `Successfully downloaded the ${fileName} at ${filepath}.`;
