@@ -63,13 +63,13 @@ suite('testing code profiler UI ---------------------', () => {
         this.timeout(100000);
         sinon.stub(akamaiCLICalls, 'executeAkamaiEdgeWorkerCLICmds').returns(Promise.reject(new Error("error in ewTrace commad")));
         const urlObject = new URL("http://www.mofroyo.co/us/en/?random=$RANDOM");
-        const ewTrace = await codeProfiler.codeProfilerEWTrace(urlObject).catch(e => assert.ok(e,'error in ewTrace commad'));
+        const ewTrace = await codeProfiler.codeProfilerEWTrace(urlObject.hostname).catch(e => assert.ok(e,'error in ewTrace commad'));
     });
     it('test callCodeProfiler, test callCodeProfiler  should return error when invalid trace is provided', async function(){
         this.timeout(100000);
         sinon.stub(akamaiCLICalls, 'executeAkamaiEdgeWorkerCLICmds').returns(Promise.reject(new Error("error in ewTrace commad")));
         const urlObject = new URL("http://www.mofroyo.co/us/en/?random=$RANDOM");
-        const ewTrace = await codeProfiler.codeProfilerEWTrace(urlObject).catch(e => assert.ok(e,'error in ewTrace commad'));
+        const ewTrace = await codeProfiler.codeProfilerEWTrace(urlObject.hostname).catch(e => assert.ok(e,'error in ewTrace commad'));
     });
     it('test if the cname already is staging', async function(){
         this.timeout(100000);

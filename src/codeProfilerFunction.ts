@@ -17,7 +17,7 @@ import * as akamaiCLICalls from './akamaiCLICalls';
 import { URL } from 'url';
 import { Workbench } from 'vscode-extension-tester';
 
-export const getCodeProfilerFile = async function(filePath:string,fileName:string,urlValue:string,eventHanler:string,pragmaHeaders:string,otherHeaders:string[]){
+export const getCodeProfilerFile = async function(filePath:string,fileName:string,urlValue:string,eventHanler:string,pragmaHeaders:string,otherHeaders:string[][]){
     const dateNow = new Date();
     const timestamp = dateNow.getTime().toString();
     try{
@@ -53,11 +53,18 @@ export const getCodeProfilerFile = async function(filePath:string,fileName:strin
 
         // if we didn't find a trace above go and get one :)
         if (ewTrace === '') {
-            ewTrace = await codeProfilerEWTrace(validUrl);
+            let hostHeader:string|undefined = getHostHeader(otherHeaders);
+            
+            let hostToCallAuthWith = validUrl.hostname;
+            if (hostHeader) {
+                hostToCallAuthWith = hostHeader;
+            }
+
+            ewTrace = await codeProfilerEWTrace(hostToCallAuthWith);
         }
 
-        const ipAddressForStaging = await getIPAddressForStaging(validUrl);
-        const successCodeProfiler = await callCodeProfiler(validUrl,ipAddressForStaging,ewTrace,eventHanler,filePath,cpuProfileName,pragmaHeaders,otherHeaders);
+        const ipAddress = await getIPAddressForStaging(validUrl);
+        const successCodeProfiler = await callCodeProfiler(validUrl,ipAddress,ewTrace,eventHanler,filePath,cpuProfileName,pragmaHeaders,otherHeaders);
         await flameVisualizerExtension(successCodeProfiler, filePath, cpuProfileName);
     }catch(e:any){
         throw Error("Failed to profile code: " +e);
@@ -75,9 +82,9 @@ export const checkURLifValid = function(url:string):URL{
 
 
 let authCache : Map<string, any> = new Map();
-export const codeProfilerEWTrace = async function(url:URL):Promise<string>{
-    if (authCache.has(url.hostname)) {
-        let result = authCache.get(url.hostname);
+export const codeProfilerEWTrace = async function(hostname:string):Promise<string>{
+    if (authCache.has(hostname)) {
+        let result = authCache.get(hostname);
 
         // +500 to give a buffer
         if (result.expiry < Date.now() - 500) {
@@ -85,14 +92,14 @@ export const codeProfilerEWTrace = async function(url:URL):Promise<string>{
         }
     }
     try{
-        const cmd = await akamaiCLICalls.getAkamaiEWTraceCmd("edgeworkers","auth",url.hostname,path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfile.json"));
+        const cmd = await akamaiCLICalls.getAkamaiEWTraceCmd("edgeworkers","auth",hostname,path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfile.json"));
         const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfile.json"),"msg");
         const akamaiEWValue = getAkamaiEWTraceValueFromCLIMsg(status);
 
-        authCache.set(url.hostname, {expiry: Date.now(), auth: akamaiEWValue});
+        authCache.set(hostname, {expiry: Date.now(), auth: akamaiEWValue});
         return akamaiEWValue;
     }catch(e:any){
-        throw (` Can't generate EW-trace for the provided URL: ${url} due to - ${e}`);
+        throw (`Cannot generate enhanced debug header for hostname: ${hostname}; check that you have permissions to do so with Akamai CLI and try again.`);
     }
 };
 
@@ -110,6 +117,17 @@ let stagingIpCache : Map<string, string> =  new Map();
 export const getIPAddressForStaging = async function(url:URL):Promise<string>{
     try{
         let hostname = url.hostname;
+
+        let localhost:string[] = [
+            '127.0.0.1',
+            '0.0.0.0',
+            'localhost'
+        ]
+
+        if (localhost.includes(hostname)) {
+            return '127.0.0.1';
+        }
+
         if (stagingIpCache.has(hostname)) {
             let cacheValue : string|undefined = stagingIpCache.get(hostname);
 
@@ -154,7 +172,7 @@ export const getCNAME = async function(hostName:string):Promise<string>{
     return new Promise(async (resolve, reject) => {
         dns.resolveCname(hostName,(err:any, cname:any) => {
           if (err) {
-            reject(`Can't fetch CNAME for the Host:${hostName} due to - ${err}`);
+            reject(`Cannot find cname for staging IP lookup for the Host:${hostName} due to - ${err}`);
           }
           resolve(cname);
         });
@@ -180,14 +198,31 @@ export const getIPAddress = async function getIPAddress(cnameAkamai:string, host
         });
       });
 };
-export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:string,eventHanler:string,filepath:string,fileName:string,pragmaHeaders?:string,otherheaders?:string[]):Promise<string>{
+
+const getHostHeader = function(otherheaders?:string[][]):string|undefined {
+    if (typeof otherheaders === 'object') {
+        let hostHeader = otherheaders.find((element) => {return element[0].toLowerCase() === 'host'});
+        if (hostHeader) {
+            return hostHeader[1];
+        }
+    }
+    
+    return undefined;
+}
+
+export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:string,eventHanler:string,filepath:string,fileName:string,pragmaHeaders?:string,otherheaders?:string[][]):Promise<string>{
     const noEventHandler = `Couldn't generate code profile for provided event handler: ${eventHanler}. Check EdgeWorker code bundle for implemented event handlers.`;
     const agent = new Agent({
         servername: url.hostname,
         rejectUnauthorized: false,
     });
     const headers: { [key: string]: any } = {};
-    headers.Host = url.hostname;
+
+    // only specify the host header if it wasn't provided by user
+    let hostHeader:string|undefined = getHostHeader(otherheaders);
+    if (!hostHeader) {
+        headers.Host = url.hostname;
+    }
     headers['akamai-ew-trace'] = ewtrace;
     headers['user-agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36';
     headers[`${eventHanler}`] = 'true';
