@@ -246,10 +246,12 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
     
     let extractProfileFromBody = function(response:any) {
         let foundJson = '';
+
+        let contentType:string|undefined = response.headers['content-type'];
         if (typeof response.data === 'object') {
             // axios auto deserialized json to string...
             foundJson = JSON.stringify(response.data);
-        } else if (response.headers['content-type'].includes('multipart/form-data')) {
+        } else if (contentType && contentType.includes('multipart/form-data')) {
             // extract the boundary
             let boundary = response.headers['content-type'].split('; ')[1].split('boundary=')[1];
             let responseLines:string[] = response.data.split("\r\n");
