@@ -296,7 +296,7 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
 
     let response;
     try {
-        response = await axios.get(url.toString(),httpParams);
+        response = await axios.get(httpCallString,httpParams);
     } catch(error:any) {
         // axios treats non-200 responses by throwing an exception
         // why is there no way to override this?
