@@ -83,12 +83,12 @@ suite('testing code profiler UI ---------------------', () => {
     });
     it('test if the cnmae is generated successfully 2 didg commands on hostname will be the result', async function(){
         this.timeout(100000);
-        const cname = await codeProfiler.cnameLookup("www.mofroyo.co");
+        const cname = await codeProfiler.getCNAME("www.mofroyo.co");
         assert.strictEqual(cname,"e17322.dsca.akamaiedge.net");
     });
     it('test callCodeProfiler, test if the cnmae is generated successfully- get this cname just with one dig comamnd', async function(){
         this.timeout(100000);
-        const cname = await codeProfiler.cnameLookup("stage.mofroyo.co");
+        const cname = await codeProfiler.getCNAME("stage.mofroyo.co");
         assert.strictEqual(cname,"mofroyo.edgekey-staging.net");
     });
 });

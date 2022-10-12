@@ -75,7 +75,7 @@ return `<!DOCTYPE html>
 <div class="row">
     <div class="col-75">
         <p>Profile EdgeWorkers code active on the Akamai staging network.</p>
-        <p>(<span style="color:red;">*</span>) indicates required field.</p>
+        <p>(<span style="color:red;">*</span>) Indicates required field.</p>
     </div>
     <div class="col-25 submit-container">
         <input type="reset" value="Reset">

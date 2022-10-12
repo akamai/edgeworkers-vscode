@@ -161,7 +161,7 @@ export const getIPAddressForStaging = async function(url:URL):Promise<string>{
 
         // if we didn't identify a cname above, check DNS
         if (cname === '') {
-            cname = await cnameLookup(hostname);
+            cname = await getCNAME(hostname);
         }
         
         const cnameAkamaiStaging = await getStagingCname(cname);
@@ -175,13 +175,13 @@ export const getIPAddressForStaging = async function(url:URL):Promise<string>{
     }
 };
 
-export const getCNAME = async function(hostName:string):Promise<string>{
-    return new Promise(async (resolve, reject) => {
-        dns.resolveCname(hostName,(err:any, cname:any) => {
+export const getCNAME = function(hostName:string):Promise<string>{
+    return new Promise<string>((resolve, reject) => {
+        dns.resolveCname(hostName,(err:any, cnameArr:string[]) => {
           if (err) {
             reject(`Cannot find cname for staging IP lookup for the Host:${hostName} due to - ${err}`);
           }
-          resolve(cname);
+          resolve(cnameArr[0]);
         });
       });
 };
@@ -246,10 +246,12 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
     
     let extractProfileFromBody = function(response:any) {
         let foundJson = '';
+
+        let contentType:string|undefined = response.headers['content-type'];
         if (typeof response.data === 'object') {
             // axios auto deserialized json to string...
             foundJson = JSON.stringify(response.data);
-        } else if (response.headers['content-type'].includes('multipart/form-data')) {
+        } else if (contentType && contentType.includes('multipart/form-data')) {
             // extract the boundary
             let boundary = response.headers['content-type'].split('; ')[1].split('boundary=')[1];
             let responseLines:string[] = response.data.split("\r\n");
@@ -296,7 +298,7 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
 
     let response;
     try {
-        response = await axios.get(url.toString(),httpParams);
+        response = await axios.get(httpCallString,httpParams);
     } catch(error:any) {
         // axios treats non-200 responses by throwing an exception
         // why is there no way to override this?
@@ -366,20 +368,6 @@ export const openCpuProfileFile = async function(fileName:string, filePath:strin
     }catch(e:any){
         vscode.window.showErrorMessage(`Can't open the ${fileName} at ${filePath} automatically due to - ${e}. Open ${fileName} file at path ${filePath}`);
     }
-};
-
-const edgeHostnameEndings = [
-    'edgekey.net',
-    'edgesuite.net',
-    'akamaiedge.net'
-]
-export const cnameLookup = async function(hostName:string):Promise<string>{
-    const cname = await getCNAME(hostName);
-    if(!cnanmeIsStagingCname(cname[0])){
-        const cnameFinal = await getCNAME(cname[0]);
-        return cnameFinal[0];
-    }
-    return cname[0];
 };
 
 export const cnanmeIsStagingCname = function(cname:string):boolean{

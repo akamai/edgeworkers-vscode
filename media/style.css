@@ -21,7 +21,8 @@ label {
   display: inline-block;
 }
 input[type=button], input[type=reset]{
-  background-color: #04AA6D;
+  background-color: #f93;
+  color: white;
   padding: 12px;
   border: none;
   border-radius: 4px;
@@ -30,7 +31,8 @@ input[type=button], input[type=reset]{
   margin: 2px;
 }
 input[type=button]:hover, input[type=reset]:hover {
-  background-color: #45a049;
+  background-color: rgb(255, 178, 100);
+  color: white;
 }
 .required:after {
   content:" *";
@@ -38,7 +40,8 @@ input[type=button]:hover, input[type=reset]:hover {
 }
 
 button {
-  background-color: #04AA6D;
+  background-color: #f93;
+  color: white;
   padding: 12px;
   border: none;
   border-radius: 4px;
@@ -53,7 +56,8 @@ button {
 }
 
 button:hover {
-  background-color: #45a049;
+  background-color: rgb(255, 178, 100);
+  color: white;
 }
 
 .container {
