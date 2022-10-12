@@ -20,8 +20,9 @@ export const uploadEdgeWorkerTarballToSandbox = async function(bundlePath:string
             throw new Error(ErrorMessageExt.version_missing_bundleJSON);
         }
         const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
-        const listIdsCmd= await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-        const listIds = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+        const tempFile = `akamaiCLIOutput-${Date.now()}.json`;
+        const listIdsCmd= await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),tempFile));
+        const listIds = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),tempFile),"data");
         let edgeWorkerId = await uploadEdgeWorker.quickPickItem(textForInfoMsg.get_edgeWorker_id_User,listIds).catch((e:any) => {throw new Error(`failed to Test Edgeworker in Sandbox due to :`+e.toString());});
         edgeWorkerId = edgeWorkerId.substring(edgeWorkerId.lastIndexOf('|')+2);
         if(edgeWorkerId === '' || edgeWorkerId === undefined){

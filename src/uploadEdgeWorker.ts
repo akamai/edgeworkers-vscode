@@ -14,8 +14,9 @@ export const uploadEdgeWorker = async function(tarFilePath: string,edgeWorkerId:
     const tarFileName = path.parse(tarFilePath).base;
     try{
         const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
-        const listIdsCmd= await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-        const listIds = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+        const tempFile = `akamaiCLIOutput-${Date.now()}.json`;
+        const listIdsCmd= await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),tempFile));
+        const listIds = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),tempFile),"data");
         if(useredgeWorkerId === '' || useredgeWorkerId === undefined){
         useredgeWorkerId = await quickPickItem("Select EdgeWorker ID",listIds);
             useredgeWorkerId = useredgeWorkerId.substring(useredgeWorkerId.lastIndexOf('|')+2);
@@ -46,8 +47,9 @@ export const validateEgdeWorkerID = async function(edgeWorkerId: string):Promise
         try{
             let found:boolean=false;
             const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
-            const listIdsCmd= await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-            const edgeWorkerIdsString= await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+            const tempFile = `akamaiCLIOutput-${Date.now()}.json`;
+            const listIdsCmd= await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),tempFile));
+            const edgeWorkerIdsString= await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),tempFile),"data");
             const edgeWorkerIdsJson = JSON.parse(edgeWorkerIdsString);
             edgeWorkerIdsJson.find((element:any) => {
                 if(edgeWorkerId === element.edgeWorkerId.toString()){

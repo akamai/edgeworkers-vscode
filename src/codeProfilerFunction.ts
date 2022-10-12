@@ -99,8 +99,9 @@ export const codeProfilerEWTrace = async function(hostname:string):Promise<strin
         }
     }
     try{
-        const cmd = await akamaiCLICalls.getAkamaiEWTraceCmd("edgeworkers","auth",hostname,path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfile.json"));
-        const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOputCodeProfile.json"),"msg");
+        const tempFile = `akamaiCLIOutputAuth-${Date.now()}.json`;
+        const cmd = await akamaiCLICalls.getAkamaiEWTraceCmd("edgeworkers","auth",hostname,path.resolve(os.tmpdir(),tempFile));
+        const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),tempFile),"msg");
         const akamaiEWValue = getAkamaiEWTraceValueFromCLIMsg(status);
 
         authCache.set(hostname, {expiry: Date.now(), auth: akamaiEWValue});

@@ -140,8 +140,9 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
             let files = new Array();
             let fileNames = new Array();
             try{
-                const cmd = await akamaiCLICalls.getEdgeWorkerDownloadCmd("edgeworkers","download",edgeWorkerId,edgeworkerVersion,tarFilePath,path.resolve(os.tmpdir(),"akamaiCLIOutputDownloadBundle.json"));
-                const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOutputDownloadBundle.json"),"msg");
+                const tempFile = `akamaiCLIOutputBundle-${Date.now()}.json`;
+                const cmd = await akamaiCLICalls.getEdgeWorkerDownloadCmd("edgeworkers","download",edgeWorkerId,edgeworkerVersion,tarFilePath,path.resolve(os.tmpdir(),tempFile));
+                const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),tempFile),"msg");
                 console.log(status);
                 const tarFile = await status.substring(status.indexOf('@') + 1);
                 const tarFileName = path.parse(tarFile).base;
@@ -171,8 +172,9 @@ export const getVersions = async function(edgeWorker:EdgeWorkers):Promise<any[]>
 
 export const getVersionsById = async function(ewId:string):Promise<any[]> {
     try {
-        const getVersionCmd = akamaiCLICalls.getEdgeWorkerListVersions("edgeworkers","list-versions",`${ewId}`,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-        const data : string = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(getVersionCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data")
+        const tempFile = `akamaiCLIOutput-${Date.now()}.json`;
+        const getVersionCmd = akamaiCLICalls.getEdgeWorkerListVersions("edgeworkers","list-versions",`${ewId}`,path.resolve(os.tmpdir(),tempFile));
+        const data : string = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(getVersionCmd),path.resolve(os.tmpdir(),tempFile),"data")
 
         if (data.length===0|| data.length=== undefined||data ===""){
             return [];
@@ -189,8 +191,9 @@ export const getVersionsById = async function(ewId:string):Promise<any[]> {
 export const getListIds = function():Promise<string> {
     return new Promise<string>(async (resolve, reject) => {
         try{
-            const listIdsCmd = await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-            const listIds = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+            const tempFile = `akamaiCLIOutput-${Date.now()}.json`;
+            const listIdsCmd = await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),tempFile));
+            const listIds = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),tempFile),"data");
             resolve(listIds);
         }catch(e:any){
             reject(`Cannot fetch EdgeWorker Details due to ` +e.toString());
@@ -198,7 +201,7 @@ export const getListIds = function():Promise<string> {
     });
 };
 
-// this function is very slow and should only be used for the registration UI
+// this function is very slow and should only be used for the activation UI
 export const getListIdsAndVersions = async function():Promise<string> {
     let listIdsAndVersions = [];
     try{
@@ -206,12 +209,10 @@ export const getListIdsAndVersions = async function():Promise<string> {
         let listIds = JSON.parse(await getListIds());
         let arr = Object.keys(listIds).map(function(k) { return listIds[k];});
         for(let i=0;i<arr.length;i+=1){
-            let results = await Promise.all(
-                arr
-                .slice(i,i+1)
-                .map((obj: any) => getVersionsById(obj.edgeWorkerId))
-            );
-            listIdsAndVersions.push(...results);
+            let thisEwId = arr[i].edgeWorkerId;
+            let results = (await getVersionsById(thisEwId)).map((el:any) => {return el.version});
+
+            listIdsAndVersions.push({edgeWorkerId: thisEwId, versions: results});
         }
         return Promise.resolve(JSON.stringify(listIdsAndVersions));
     }catch(e:any){

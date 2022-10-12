@@ -71,8 +71,9 @@ export const validateEdgeWorkerBundle = async function( work_space_folder:string
     return new Promise(async (resolve, reject) => {
         try{
             let tarFilePath = path.resolve(work_space_folder, `${tarfile}.tgz`);
-            const cmd = await akamaiCLICalls.getEdgeWorkerValidateCmd("edgeworkers","validate",tarFilePath,path.resolve(os.tmpdir(),"akamaiCLIOutputValidate.json"));
-            const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOutputValidate.json"),"msg");
+            const tempFile = `akamaiCLIOutputValidate-${Date.now()}.json`;
+            const cmd = await akamaiCLICalls.getEdgeWorkerValidateCmd("edgeworkers","validate",tarFilePath,path.resolve(os.tmpdir(),tempFile));
+            const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),tempFile),"msg");
             resolve(textForInfoMsg.validate_bundle_success+`${tarfile}.tgz`);
         }catch(e:any){
             reject(ErrorMessageExt.validate_bundle_fail+`${tarfile}.tgz`+ErrorMessageExt.display_original_error+e.toString());

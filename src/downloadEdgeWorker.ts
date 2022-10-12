@@ -19,8 +19,9 @@ export const downloadEdgeWorker = async function(edgeWorkerId: string, edgeworke
         if(tarFileFSPath !== undefined && tarFileFSPath.length >0){
              tarFilePath= getFilePathFromInput(tarFileFSPath[0]);
         }
-        const cmd = await akamaiCLICalls.getEdgeWorkerDownloadCmd("edgeworkers","download",edgeWorkerId,edgeworkerVersion,tarFilePath,path.resolve(os.tmpdir(),"akamaiCLIOutputDownload.json"));
-        const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOutputDownload.json"),"msg");
+        const tempFile = `akamaiCLIOutputDownload-${Date.now()}.json`;
+        const cmd = await akamaiCLICalls.getEdgeWorkerDownloadCmd("edgeworkers","download",edgeWorkerId,edgeworkerVersion,tarFilePath,path.resolve(os.tmpdir(),tempFile));
+        const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),tempFile),"msg");
         const tarFile = await status.substring(status.indexOf('@') + 1);
         const tarFileName = path.parse(tarFile).base;
         const edgeworkerBundle =  tarFileName.substr(0,tarFileName.lastIndexOf('.'));

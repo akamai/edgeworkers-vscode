@@ -320,8 +320,9 @@ export const activate = async function(context: vscode.ExtensionContext){
                 });
                
                 try{
-                    const groupIdsCmd= await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers","list-groups",path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
-                    const groupIds = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(groupIdsCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data");
+                    const tempFile = `akamaiCLIOutput-${Date.now()}.json`;
+                    const groupIdsCmd= await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers","list-groups",path.resolve(os.tmpdir(),tempFile));
+                    const groupIds = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(groupIdsCmd),path.resolve(os.tmpdir(),tempFile),"data");
                     const panel = vscode.window.createWebviewPanel(
                         'Register EdgeWorker',
                         'Register EdgeWorker',
@@ -399,8 +400,9 @@ export const getActivationOutput =  async function(edgeWorker:string,network:str
     else{
         let msg ="Activating Edgeowrker ID:"+edgeWorker+" in network "+network + " for version "+version + " failed";
         try{
-            const cmd = await akamaiCLICalls.getEdgeWorkerActivationCmd("edgeworkers","activate",edgeWorker,network,version,path.resolve(os.tmpdir(),"akamaiCLIOutputActivate.json"));
-            const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOutputActivate.json"),"msg");
+            const tempFile = `akamaiCLIOutputActivate-${Date.now()}.json`;
+            const cmd = await akamaiCLICalls.getEdgeWorkerActivationCmd("edgeworkers","activate",edgeWorker,network,version,path.resolve(os.tmpdir(),tempFile));
+            const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),tempFile),"msg");
             msg = status;
             vscode.window.showInformationMessage(msg);
             return(msg);
@@ -413,8 +415,9 @@ export const getActivationOutput =  async function(edgeWorker:string,network:str
 export const getRegisterEWOutput =  async function(groupId:string,ewName:string,resourceId:string):Promise<string>{
     let msg ="Error Registering Edgeowrker:"+ewName+" for Group ID"+groupId + " for resource Tier ID"+resourceId +" failed";
     try{
-        const cmd = await akamaiCLICalls.getEdgeWorkerRegisterCmd("edgeworkers","register",resourceId,groupId,ewName,path.resolve(os.tmpdir(),"akamaiCLIOutputRegister.json"));
-        const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOutputRegister.json"),"msg");
+        const tempFile = `akamaiCLIOutputRegister-${Date.now()}.json`;
+        const cmd = await akamaiCLICalls.getEdgeWorkerRegisterCmd("edgeworkers","register",resourceId,groupId,ewName,path.resolve(os.tmpdir(),tempFile));
+        const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),tempFile),"msg");
         msg = status+ewName+" for groupID: "+groupId+" and for resource ID: "+resourceId;
         vscode.window.showInformationMessage(msg);
         return(msg);
