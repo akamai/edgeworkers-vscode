@@ -166,8 +166,12 @@ export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWo
 }
 
 export const getVersions = async function(edgeWorker:EdgeWorkers):Promise<any[]> {
+    return getVersionsById(edgeWorker.ewId);
+}
+
+export const getVersionsById = async function(ewId:string):Promise<any[]> {
     try {
-        const getVersionCmd = akamaiCLICalls.getEdgeWorkerListVersions("edgeworkers","list-versions",`${edgeWorker.ewId}`,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
+        const getVersionCmd = akamaiCLICalls.getEdgeWorkerListVersions("edgeworkers","list-versions",`${ewId}`,path.resolve(os.tmpdir(),"akamaiCLIOput.json"));
         const data : string = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(getVersionCmd),path.resolve(os.tmpdir(),"akamaiCLIOput.json"),"data")
 
         if (data.length===0|| data.length=== undefined||data ===""){
@@ -177,7 +181,7 @@ export const getVersions = async function(edgeWorker:EdgeWorkers):Promise<any[]>
             return JSON.parse(data);
         }
     } catch(e:any) {
-        vscode.window.showErrorMessage(`Cannot fetch versions for id :${edgeWorker.ewId} due to `+e.toString());
+        vscode.window.showErrorMessage(`Cannot fetch versions for id :${ewId} due to `+e.toString());
         return [];
     }
 }
@@ -205,7 +209,7 @@ export const getListIdsAndVersions = async function():Promise<string> {
             let results = await Promise.all(
                 arr
                 .slice(i,i+1)
-                .map((obj: any) => getVersions(obj))
+                .map((obj: any) => getVersionsById(obj.edgeWorkerId))
             );
             listIdsAndVersions.push(...results);
         }
