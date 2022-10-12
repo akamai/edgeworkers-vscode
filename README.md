@@ -4,7 +4,7 @@
     
 1.  Install the latest [VS Code](https://code.visualstudio.com/)
 
-2. From the VS Code Extensions Marketplace, search for "EdgeWorkers" and hit the Install button.
+2.  Install the [Akamai EdgeWorkers Toolkit for VSCode from the Visual Studio Code Marketplace](https://marketplace.visualstudio.com/items?itemName=akamaiEdgeworker.akamai-edgeworkers-vscode-extension)
 
 
 ## Dependencies / Usage
