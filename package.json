@@ -265,7 +265,7 @@
         "eslint": "^8.23.1",
         "expect": "^29.0.3",
         "extract-json-from-string": "^1.0.1",
-        "fs": "^0.0.1-security",
+        "fs": "^0.0.2",
         "glob": "^8.0.3",
         "https": "^1.0.0",
         "inquirer": "^9.1.1",
