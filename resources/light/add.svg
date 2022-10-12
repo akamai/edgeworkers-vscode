@@ -1,3 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
-  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z" ill="#424242"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1000" height="1000" viewBox="0 0 1000 1000" xml:space="preserve">
+<desc>Created with Fabric.js 3.5.0</desc>
+<defs>
+</defs>
+<rect x="0" y="0" width="100%" height="100%" fill="#ffffff"/>
+<g transform="matrix(2.8291 0 0 2.8291 499.9965 499.9968)" id="749982">
+<g style="" vector-effect="non-scaling-stroke">
+		<g transform="matrix(0.1333 0 0 -0.1333 -56.9668 -124.7849)">
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(43,40,46); fill-rule: nonzero; opacity: 1;" transform=" translate(-777.7762, -2100.835)" d="M 695 2285 c -14 -13 -25 -32 -25 -41 c 0 -22 56 -235 76 -290 c 27 -76 113 -83 138 -12 c 13 38 -59 314 -91 346 c -29 29 -68 28 -98 -3 z" stroke-linecap="round"/>
+</g>
+		<g transform="matrix(0.1333 0 0 -0.1333 -10.9954 -124.9074)">
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(43,40,46); fill-rule: nonzero; opacity: 1;" transform=" translate(-1122.5616, -2101.7539)" d="M 1122 2303 c -21 -8 -39 -53 -77 -197 c -31 -117 -35 -142 -25 -166 c 22 -53 103 -61 128 -13 c 15 28 82 287 82 316 c 0 44 -62 79 -108 60 z" stroke-linecap="round"/>
+</g>
+		<g transform="matrix(0.1333 0 0 -0.1333 -95.8086 -102.0057)">
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(43,40,46); fill-rule: nonzero; opacity: 1;" transform=" translate(-486.4788, -1930)" d="M 330 2073 c -15 -19 -19 -35 -15 -53 c 3 -14 59 -78 123 -142 c 100 -102 121 -118 149 -118 c 22 0 38 8 52 26 c 39 50 30 67 -97 195 c -107 109 -120 119 -154 119 c -28 0 -42 -6 -58 -27 z" stroke-linecap="round"/>
+</g>
+		<g transform="matrix(0.1333 0 0 -0.1333 28.3118 -101.9483)">
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(43,40,46); fill-rule: nonzero; opacity: 1;" transform=" translate(-1417.3811, -1929.5699)" d="M 1369 1983 c -64 -65 -119 -126 -123 -136 c -7 -22 17 -72 39 -81 c 49 -18 67 -7 187 112 c 98 98 118 124 118 148 c 0 41 -33 74 -73 74 c -28 0 -48 -16 -148 -117 z" stroke-linecap="round"/>
+</g>
+		<g transform="matrix(0.1333 0 0 -0.1333 -118.5788 -63.0933)">
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(43,40,46); fill-rule: nonzero; opacity: 1;" transform=" translate(-315.7102, -1638.1713)" d="M 136 1729 c -29 -23 -35 -72 -13 -103 c 16 -22 318 -108 345 -99 c 52 18 72 92 34 126 c -15 14 -296 97 -328 97 c -6 0 -23 -9 -38 -21 z" stroke-linecap="round"/>
+</g>
+		<g transform="matrix(0.1333 0 0 -0.1333 50.9456 -63.1351)">
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(43,40,46); fill-rule: nonzero; opacity: 1;" transform=" translate(-1587.1442, -1638.4857)" d="M 1570 1711 c -74 -21 -145 -43 -157 -50 c -48 -25 -42 -104 9 -125 c 28 -12 45 -10 173 24 c 78 21 151 43 164 49 c 47 26 47 92 -1 125 c -29 21 -30 21 -188 -23 z" stroke-linecap="round"/>
+</g>
+		<g transform="matrix(0.1333 0 0 -0.1333 59.2398 53.3102)">
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(43,40,46); fill-rule: nonzero; opacity: 1;" transform=" translate(-1649.4713, -765)" d="M 1216 814 c 144 -355 264 -648 267 -650 c 2 -2 46 100 97 228 c 51 128 95 235 97 238 c 2 2 131 -123 286 -278 l 282 -282 l 48 48 c 26 26 47 52 47 57 c 0 6 -124 134 -275 285 c -151 151 -271 278 -267 281 c 4 4 103 46 221 93 c 118 48 220 90 226 94 c 11 6 -1263 532 -1286 532 c -3 0 112 -291 257 -646 z" stroke-linecap="round"/>
+</g>
+		<g transform="matrix(0.1333 0 0 -0.1333 -118.5781 -17.3271)">
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(43,40,46); fill-rule: nonzero; opacity: 1;" transform=" translate(-315.7158, -1294.9267)" d="M 359 1383 c -176 -45 -228 -63 -239 -83 c -27 -50 3 -111 55 -112 c 28 0 174 35 278 68 c 65 21 87 71 52 121 c -22 31 -44 33 -146 6 z" stroke-linecap="round"/>
+</g>
+		<g transform="matrix(0.1333 0 0 -0.1333 -95.9307 22.0977)">
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(43,40,46); fill-rule: nonzero; opacity: 1;" transform=" translate(-485.5628, -999.2247)" d="M 431 1046 c -113 -115 -123 -127 -116 -153 c 10 -43 34 -63 73 -63 c 31 0 47 12 148 113 c 70 69 115 123 120 140 c 10 41 -22 81 -67 85 c -32 3 -43 -6 -158 -122 z" stroke-linecap="round"/>
+</g>
+		<g transform="matrix(0.1333 0 0 -0.1333 -56.324 44.7926)">
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(43,40,46); fill-rule: nonzero; opacity: 1;" transform=" translate(-782.5964, -829.0027)" d="M 782 1033 c -21 -8 -39 -53 -76 -195 c -23 -86 -34 -146 -30 -163 c 7 -30 39 -55 70 -55 c 47 0 64 30 105 180 c 21 80 39 155 39 168 c 0 46 -62 84 -108 65 z" stroke-linecap="round"/>
+</g>
+</g>
+</g>
 </svg>
