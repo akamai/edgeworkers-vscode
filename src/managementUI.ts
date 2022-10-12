@@ -208,13 +208,25 @@ export const getListIdsAndVersions = async function():Promise<string> {
         let batchSize:number = Number(config.settings.EW_DETAILS_BATCH_SIZE)||5;
         let listIds = JSON.parse(await getListIds());
         let arr = Object.keys(listIds).map(function(k) { return listIds[k];});
+        let results: any[] = [];
         for(let i=0;i<arr.length;i+=1){
-            let thisEwId = arr[i].edgeWorkerId;
-            let results = (await getVersionsById(thisEwId)).map((el:any) => {return el.version});
-
-            listIdsAndVersions.push({edgeWorkerId: thisEwId, versions: results});
+            results.push(new Promise((resolve, reject) => {
+                try {
+                    let thisEwId = arr[i].edgeWorkerId;
+                    getVersionsById(thisEwId).then((response) => {
+                        let versions = response.map((el:any) => {return el.version});
+            
+                        resolve({edgeWorkerId: thisEwId, versions: versions});
+                    });
+                } catch (e) {
+                    reject(e);
+                }
+            }));
         }
-        return Promise.resolve(JSON.stringify(listIdsAndVersions));
+
+        listIdsAndVersions = await Promise.all(results);
+
+        return JSON.stringify(listIdsAndVersions);
     }catch(e:any){
         throw new Error("Failed to fetch the Edgeworker details due to " + e.toString());
     }
