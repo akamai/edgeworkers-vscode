@@ -263,7 +263,7 @@
         "console": "^0.7.2",
         "edgegrid-no-log4js": "^3.0.6",
         "eslint": "^8.23.1",
-        "expect": "^29.1.0",
+        "expect": "^29.1.2",
         "extract-json-from-string": "^1.0.1",
         "fs": "^0.0.2",
         "glob": "^8.0.3",
