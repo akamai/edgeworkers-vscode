@@ -93,8 +93,7 @@ export const codeProfilerEWTrace = async function(hostname:string):Promise<strin
     if (authCache.has(hostname)) {
         let result = authCache.get(hostname);
 
-        // +500 to give a buffer
-        if (result.expiry < Date.now() - 500) {
+        if (result.expiry > Date.now()) {
             return result.auth;
         }
     }
@@ -104,7 +103,8 @@ export const codeProfilerEWTrace = async function(hostname:string):Promise<strin
         const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),tempFile),"msg");
         const akamaiEWValue = getAkamaiEWTraceValueFromCLIMsg(status);
 
-        authCache.set(hostname, {expiry: Date.now(), auth: akamaiEWValue});
+        // 120 min auth token validity, we'll cache for 100mins
+        authCache.set(hostname, {expiry: Date.now() + (100 * 60 * 1000), auth: akamaiEWValue});
         return akamaiEWValue;
     }catch(e:any){
         throw (`Cannot generate enhanced debug header for hostname: ${hostname}; check that you have permissions to do so with Akamai CLI and try again.`);
@@ -121,7 +121,7 @@ export const getAkamaiEWTraceValueFromCLIMsg = function(ewTraceMsg:string):strin
     }
 };
 
-let stagingIpCache : Map<string, string> =  new Map();
+let stagingIpCache : Map<string, any> =  new Map();
 export const getIPAddressForStaging = async function(url:URL):Promise<string>{
     try{
         let hostname = url.hostname;
@@ -137,10 +137,10 @@ export const getIPAddressForStaging = async function(url:URL):Promise<string>{
         }
 
         if (stagingIpCache.has(hostname)) {
-            let cacheValue : string|undefined = stagingIpCache.get(hostname);
-
-            if (cacheValue != undefined) {
-                return cacheValue;
+            let result = stagingIpCache.get(hostname);
+    
+            if (result.expiry > Date.now()) {
+                return result.ip;
             }
         }
 
@@ -168,7 +168,8 @@ export const getIPAddressForStaging = async function(url:URL):Promise<string>{
         const cnameAkamaiStaging = await getStagingCname(cname);
         const ipAddress = await getIPAddress(cnameAkamaiStaging,hostname);
 
-        stagingIpCache.set(hostname, ipAddress);
+        // we'll cache staging IPs for 15 mins
+        stagingIpCache.set(hostname, {expiry: Date.now() + (15 * 60 * 1000), ip: ipAddress});
 
         return ipAddress;
     }catch(e:any){
