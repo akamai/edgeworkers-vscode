@@ -12,10 +12,15 @@ import * as path from 'path';
 const ostype = os.type();
 
 export const isAkamaiCLIInstalled = async function():Promise<boolean>{
-    try{
-        const cmd:string[]= [`${textForCmd.akamai_version}`];
+    const cmd:string[]= [`${textForCmd.akamai_version}`];
+    try  {
         await akamaiCLIConfig.setAkamaiCLIConfig();
-        const process = await executeCLICommandExceptTarCmd(generateCLICommand(cmd));
+    } catch(e) {
+        // ignore if there's an issue checking the config
+    }
+
+    try{
+        await executeCLICommandExceptTarCmd(generateCLICommand(cmd));
         return true;
     } catch(e){
         return false;
