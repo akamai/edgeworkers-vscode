@@ -204,11 +204,6 @@
                     "default": "",
                     "description": ".edgerc file path apart from home directory"
                 },
-                "edgeworkers-vscode.enableCLIStatistics": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Enable CLI Statistics for Akamai CLI"
-                },
                 "edgeworkers-vscode.enableUpdateCheck": {
                     "type": "boolean",
                     "default": false,
