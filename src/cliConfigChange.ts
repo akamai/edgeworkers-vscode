@@ -6,14 +6,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export const setAkamaiCLIConfig = function():boolean{
-    const cliStatistics = edgeWorkerCommands.getCLIStatisticsEnable();
     const cliUpdateCheck = edgeWorkerCommands.getCLIUpdateCheckEnable();
     const config = new ConfigParser();
     const configPath = path.resolve(os.homedir(),".akamai-cli","config");
     if(fs.existsSync(configPath)){
         config.read(configPath);
         config.set('cli', 'last-upgrade-check','ignore');
-        config.set('cli', 'enable-cli-statistics',false);
         config.write(configPath);
         return true;
     }
