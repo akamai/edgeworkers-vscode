@@ -62,4 +62,4 @@
 
 <img src="https://lh3.googleusercontent.com/zyxQgxFybeyo6sM5ry0Kz_6wkAAmAZZvt7H_iJd4YaMmen3w73HLA_b7uAR-1EgqEkxwCMuSg_Y7V2LT5vs79vePGutJo1JIMGbSlUx-1wPso5cP3DWMXQ0UIUCrPue2i2mkjexi=s0" width="300px">
 
-10.  Code profiling is available by bringing up the bottom panel. More info on profiling code with the EdgeWorkers Toolkit for VSCode, check out [Akamai Techdocs page on the EdgeWorkers Code Profiler](https://techdocs.akamai.com/edgeworkers/docs/edgeworkers-code-profiler).
+10.  Code profiling is available by bringing up the bottom panel or terminal window. More info on profiling code with the EdgeWorkers Toolkit for VSCode, check out [Akamai Techdocs page on the EdgeWorkers Code Profiler](https://techdocs.akamai.com/edgeworkers/docs/edgeworkers-code-profiler).
