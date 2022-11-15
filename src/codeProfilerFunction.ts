@@ -36,7 +36,8 @@ export const getCodeProfilerFile = async function(filePath:string,fileName:strin
         if(!filePath){
             filePath = tmpDir;
         }
-        const cpuProfileName = fileName+'.cpuprofile';
+        let cpuProfileName : string = fileName+'.cpuprofile';
+
         if(!fs.existsSync(filePath)){
             throw Error(`Provided file path: ${filePath} does not exists.`);
         }
@@ -55,6 +56,9 @@ export const getCodeProfilerFile = async function(filePath:string,fileName:strin
             if (headerMap.has('akamai-ew-trace')) {
                 ewTrace = headerMap.get('akamai-ew-trace')!;
             }
+            if(headerMap.has('x-ew-code-profile-memory')) {
+                cpuProfileName = fileName+'.heapprofile';
+            }
         }
 
         // if we didn't find a trace above go and get one :)
@@ -69,7 +73,11 @@ export const getCodeProfilerFile = async function(filePath:string,fileName:strin
             ewTrace = await codeProfilerEWTrace(hostToCallAuthWith);
         }
 
+        //use IP to test at the lab, use HOST header to set host name
+        //const ipAddress = validUrl.hostname;
+        
         const ipAddress = await getIPAddressForStaging(validUrl);
+
         const successCodeProfiler = await callCodeProfiler(validUrl,ipAddress,ewTrace,eventHanler,filePath,cpuProfileName,pragmaHeaders,otherHeaders);
         lastRequestTime = timeSinceEpoch;
         await flameVisualizerExtension(successCodeProfiler, filePath, cpuProfileName);
@@ -292,6 +300,9 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
 
         if (foundJson.startsWith('{"nodes')) {
             // smells like a cpu profile, return as such
+            return foundJson;
+        } else if (foundJson.startsWith('{"head')) {
+            // smells like a memory profile, return as such
             return foundJson;
         } else { 
             throw noEventHandler;

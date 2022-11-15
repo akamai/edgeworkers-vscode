@@ -61,11 +61,22 @@
                 eventHandlerButton = e.value;
             }
         });
+        //get the profileType radio button value
+        elements = document.getElementsByName('profileType');
+        console.log(elements);
+        var headers = new Array;
+        elements.forEach(e => {
+            if (e.checked) {
+                //if radio button is checked, and it is for memory profile, add header
+                if (e.value === 'memory-profile') {
+                    headers[0] = ['x-ew-code-profile-memory', '1'];
+                }
+            }
+        });
         //pragma headers
         const pragmaHeaders = undefined;// document.getElementById("pragmaHeader").value;
-        var headers = new Array;
         // get the other headers values
-        let index = 0;
+        let index = headers.length;
             document.getElementById("boxContainer").childNodes.forEach((item) => {
                 if(item.childNodes[0].value && item.childNodes[1].value){
                     headers[index]= [`${item.childNodes[0].value}`, `${item.childNodes[1].value}`];
