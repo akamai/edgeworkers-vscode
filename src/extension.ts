@@ -22,6 +22,7 @@ import * as os from 'os';
 import * as path from 'path';
 
 export const activate = async function(context: vscode.ExtensionContext){
+    // management UI class initilization
     akamaiCLICalls.checkEnvBeforeEachCommand().then(async ()=> {
         const provider = new CodeProfilerPanel(context.extensionUri);
         context.subscriptions.push(
@@ -29,11 +30,7 @@ export const activate = async function(context: vscode.ExtensionContext){
     }).catch((err:any)=> {
         vscode.window.showErrorMessage(err.toString());
     });
-
-    // management UI class initilization
-    await akamaiCLIConfig.setAkamaiCLIConfig();
-
-
+    
     akamaiCLICalls.checkEnvBeforeEachCommand()
     .then(async ()=> { 
         const listIds = managementUI.getListIds();
@@ -44,7 +41,7 @@ export const activate = async function(context: vscode.ExtensionContext){
         });
     }).catch((err:any)=> {
         vscode.window.showErrorMessage(err.toString());
-        const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider(new Promise<string>((resolve) =>{resolve('')}));
+        const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider(new Promise<string>((resolve) =>{resolve('');}));
             vscode.window.createTreeView('edgeWorkerDetails', {
                 treeDataProvider: edgeWorkerDetailsProvider,
                 showCollapseAll: true
@@ -72,7 +69,7 @@ export const activate = async function(context: vscode.ExtensionContext){
             });
         })
         .catch((err:any)=> {
-            const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider(new Promise<string>((resolve) =>{resolve('')}));
+            const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider(new Promise<string>((resolve) =>{resolve('');}));
             vscode.window.createTreeView('edgeWorkerDetails', {
                 treeDataProvider: edgeWorkerDetailsProvider,
                 showCollapseAll: true
@@ -82,9 +79,7 @@ export const activate = async function(context: vscode.ExtensionContext){
     }));
 
     // command activation for creating bundle
-    context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.edgeworkerBundle', async function (uri:any) {
-        akamaiCLICalls.checkEnvBeforeEachCommand()
-        .then(async ()=> {     
+    context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.edgeworkerBundle', async function (uri:any) {    
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Creating and validating the Bundle",
@@ -114,16 +109,10 @@ export const activate = async function(context: vscode.ExtensionContext){
                     await edgeWorkerCommands.createAndValidateEdgeWorker(bundleFileInput);
                 }
             });
-        })
-        .catch((err:any)=> {
-            vscode.window.showErrorMessage(err.toString());
-        });
     }));
 
     // command activation for downloading edgeworker
     context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.downloadEdgeWorker',  async (edgeWorkerdetails: EdgeWorkerDetails) => {
-        akamaiCLICalls.checkEnvBeforeEachCommand()
-        .then(async ()=> {
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Downloading EdgeWorker Bundle",
@@ -140,15 +129,9 @@ export const activate = async function(context: vscode.ExtensionContext){
                     vscode.window.showErrorMessage("No EdgeWorker versions are available to download");
                 }
             });
-        })
-        .catch((err:any)=>{
-            vscode.window.showErrorMessage(err.toString());
-        });
     }));
     //command for the upload EdgeWorker Tar ball file in file explorer
     context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.uploadEdgeWorker',  async (uploadCommandInput:any)=>{
-        akamaiCLICalls.checkEnvBeforeEachCommand()
-        .then(async ()=> {
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Uploading EdgeWorker",
@@ -178,16 +161,10 @@ export const activate = async function(context: vscode.ExtensionContext){
                     await uploadEdgeWorker.uploadEdgeWorker(filePath,'');
                 }
             });
-        })
-        .catch((err:any)=>{
-            vscode.window.showErrorMessage(err.toString());
-        });
     }));
 
     //command for the upload EdgeWorker Tar ball from mangement UI add button
     context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.uploadEdgeWorkerFromMangementUI',  async (edgeWorkerdetails: EdgeWorkerDetails)=>{
-        akamaiCLICalls.checkEnvBeforeEachCommand()
-        .then(async ()=> {
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Uploading EdgeWorker",
@@ -212,15 +189,9 @@ export const activate = async function(context: vscode.ExtensionContext){
                     vscode.window.showErrorMessage("Error: Tar file is not provided to upload EdgeWorker version");
                 }
             });
-        })
-        .catch((err:any)=>{
-            vscode.window.showErrorMessage(err.toString());
-        });
     }));
 
    context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.uploadTarBallToSandBox',  async (sandboxCommandInput:any)=>{
-        akamaiCLICalls.checkAkamaiSandbox()
-        .then(async ()=> {
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Uploading TarBall to SandBox",
@@ -250,16 +221,10 @@ export const activate = async function(context: vscode.ExtensionContext){
                     await uploadTarBallToSandbox.uploadEdgeWorkerTarballToSandbox(filePathSandbox);
                 }
             });
-        })
-        .catch((err:any)=>{
-            vscode.window.showErrorMessage(err.toString());
-        });
     }));
 
     //Activation UI for edgeworker
     context.subscriptions.push(vscode.commands.registerCommand("edgeworkers-vscode.activateEdgeWorker", async function() {
-        akamaiCLICalls.checkEnvBeforeEachCommand()
-        .then(async ()=> {
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Opening Activation EdgeWorker Window",
@@ -302,14 +267,8 @@ export const activate = async function(context: vscode.ExtensionContext){
                     vscode.window.showErrorMessage("Failed to open activation window due : "+err.toString());
                 }
             });
-        })
-        .catch((err:any)=>{
-            vscode.window.showErrorMessage("Failed to open activation window due : "+err.toString());
-        });
     }));
     context.subscriptions.push(vscode.commands.registerCommand("edgeworkers-vscode.registerEdgeWorker", async function() {
-        akamaiCLICalls.checkEnvBeforeEachCommand()
-        .then(async ()=> {
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Opening Registration EdgeWorker Window",
@@ -355,10 +314,6 @@ export const activate = async function(context: vscode.ExtensionContext){
                     vscode.window.showErrorMessage("Failed to open Registration page due to "+ e.toString());
                 }
             });
-        })
-        .catch((err:any)=>{
-            vscode.window.showErrorMessage("Failed to open Registration page due to "+ err.toString());
-        });
     }));
 };
 
