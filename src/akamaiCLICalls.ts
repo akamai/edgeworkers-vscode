@@ -4,7 +4,6 @@ import * as vscode from 'vscode';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamaiCLIConfig from './cliConfigChange';
 import {textForCmd,ErrorMessageExt,textForInfoMsg,systemType } from './textForCLIAndError';
-import { type } from 'os';
 const exec = require('child_process').exec;
 import * as os from 'os';
 import * as fs from 'fs';
@@ -12,38 +11,40 @@ import * as path from 'path';
 const ostype = os.type();
 
 export const isAkamaiCLIInstalled = async function():Promise<boolean>{
+    
     const cmd:string[]= [`${textForCmd.akamai_version}`];
-    try  {
-        await akamaiCLIConfig.setAkamaiCLIConfig();
-    } catch(e) {
-        // ignore if there's an issue checking the config
-    }
-
     try{
         await executeCLICommandExceptTarCmd(generateCLICommand(cmd));
         return true;
-    } catch(e){
+    } catch(e:any){
+        await vscode.window.showErrorMessage(`Akamai CLI might not be properly installed or configured. The error occurred due to - ${e.toString()}`);
         return false;
     }
 };
+
 export const checkEnvBeforeEachCommand = async function():Promise<string>{
         if (!await isAkamaiCLIInstalled()) {
             const resp = await vscode.window.showErrorMessage(ErrorMessageExt.akamai_cli_not_installed, 'Install');
             if (resp === 'Install') {
                 vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(ErrorMessageExt.akamai_download_URI));
             }
-            throw new Error(`Install Akamai CLI using the refernce:${ErrorMessageExt.akamai_download_URI}`);
+            throw new Error(`Install Akamai CLI using the reference:${ErrorMessageExt.akamai_download_URI}`);
         }
         else{
+            try{
+                await akamaiCLIConfig.writeConfig();
+            }catch(e:any){
+                throw e;
+            }
             if (!await checkAndInstallAkamaiCommands(textForCmd.akamai_help,"edgeworkers")) {
                 const resp = await vscode.window.showErrorMessage(ErrorMessageExt.edgeWorkers_cli_to_install, 'Install');
                 if (resp === 'Install') {
                 if(!await checkAndInstallAkamaiCommands(textForCmd.install_akamai_edgeworkers,"install")){
-                    throw new Error(`Akamai Edgeworkers install faled! .Install Akamai Edgeworkers using the refernce:${ErrorMessageExt.edgeworker_download_URI}`);
+                    throw new Error(`Akamai EdgeWorkers command install failed! Install Akamai EdgeWorkers command from CLI using: ${ErrorMessageExt.edgeworker_download_URI}`);
                 }
                 }
                 else{
-                    throw new Error(`Install Akamai Edgeworkers using the refernce:${ErrorMessageExt.edgeworker_download_URI}`);
+                    throw new Error(`Install Akamai Edgeworkers using the reference:${ErrorMessageExt.edgeworker_download_URI}`);
                 }
             } 
         }
@@ -55,14 +56,21 @@ export const executeCLICommandExceptTarCmd = function(cmd : string, jsonFile?:st
         await exec(cmd, (error : Error, stdout : string, stderr : string) => {
             if (error) {
                 if (stderr) {
+                    if(stderr.toString().toLowerCase().includes("command not found")){
+                        reject(stderr.toString()+`.Install or Check if Akamai CLI is installed properly uisng the reference:${ErrorMessageExt.akamai_download_URI}`);
+                    }
                     reject(stderr);
                 } else {
                     reject('failure');
                 }
             } else {
                 if (stdout){
+                    if(stdout.toString().toLowerCase().includes("command not found")){
+                        reject(stdout);
+                    }
                     resolve(stdout);
-                } else {
+                }
+                else {
                     resolve('done');
                 }
             }
@@ -90,6 +98,9 @@ export const executeCLIOnlyForTarCmd = async function(bundleFolder:string, bundl
     await new Promise((resolve, reject) => {
         exec(cmd,{}, (error:Error,stdout:string, stderr:string)=>{
             if (error) {
+                if(stderr.toString().toLowerCase().includes("command not found")){
+                    reject(stderr.toString()+`.Install or Check if Akamai CLI is installed properly from link:${ErrorMessageExt.akamai_download_URI}`);
+                }
                 const status = stderr.toString();
                 reject(`${ErrorMessageExt.create_bundle_fail} ${tarFileName}.tgz ${ErrorMessageExt.display_original_error} ${status}`);
             } else {
@@ -266,18 +277,18 @@ export const checkAkamaiSandbox = async function():Promise<string>{
         if (resp === 'Install') {
             vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(ErrorMessageExt.akamai_sanbox_download));
         }
-        throw new Error(`Install Akamai CLI using the refernce:${ErrorMessageExt.akamai_download_URI}`);
+        throw new Error(`Install Akamai CLI using the reference:${ErrorMessageExt.akamai_download_URI}`);
         }
     else{
         if (!await checkAndInstallAkamaiCommands(textForCmd.akamai_help,"sandbox")) {
             const resp = await vscode.window.showErrorMessage(ErrorMessageExt.edgeWorkers_cli_to_install, 'Install');
             if (resp === 'Install') {
             if(!await checkAndInstallAkamaiCommands(textForCmd.install_akamai_sandbox,"install")){
-                throw new Error(`Akamai Sandbox install faled! .Install Akamai Sandbox using the refernce:${ErrorMessageExt.akamai_sanbox_download}`);
+                throw new Error(`Akamai Sandbox install failed! .Install Akamai Sandbox using the reference:${ErrorMessageExt.akamai_sanbox_download}`);
             }
             }
             else{
-                throw new Error(`Install Akamai Sandbox using the refernce:${ErrorMessageExt.akamai_sanbox_download} `);
+                throw new Error(`Install Akamai Sandbox using the reference:${ErrorMessageExt.akamai_sanbox_download} `);
             }
         } 
     }
@@ -333,6 +344,9 @@ export const executeAkamaiEdgeWorkerCLICmds = function(cmd : string, jsonFilePat
         exec(cmd, (error : Error, stdout : string, stderr : string) => {
             if (error) {
                 if (stderr) {
+                    if(stderr.toString().toLowerCase().includes("command not found")){
+                        reject(stderr.toString()+`.Install or Check if Akamai CLI is installed properly from link:${ErrorMessageExt.akamai_download_URI}`);
+                    }
                     reject(stderr);
                 } else {
                     reject(error);

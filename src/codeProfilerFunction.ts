@@ -8,14 +8,11 @@ import * as path from 'path';
 import * as dns from 'dns';
 import axios from 'axios';
 import { Agent } from 'https';
-const extract = require('extract-json-from-string');
 import isHTML from 'is-html';
-import * as akamaiCLIConfig from './cliConfigChange';
 const tmpDir = require('os').tmpdir();
-import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
+import {ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import * as akamaiCLICalls from './akamaiCLICalls';
 import { URL } from 'url';
-import { Workbench } from 'vscode-extension-tester';
 
 let lastRequestTime:number = 0;
 export const getCodeProfilerFile = async function(filePath:string,fileName:string,urlValue:string,eventHanler:string,pragmaHeaders:string,otherHeaders:string[][]){
