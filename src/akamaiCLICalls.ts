@@ -253,6 +253,7 @@ export const akamaiEdgeWorkerOptionsCmd = function(type:string):string[]{
         accountkey= accountkey.trim();
         cmd.push("--accountkey",`${accountkey}`);
     }
+    cmd.push("--ideExtension","VSCODE");
     return cmd;
 };
 

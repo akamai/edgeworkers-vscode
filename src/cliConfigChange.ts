@@ -94,6 +94,7 @@ export const checkAkamaiConfig = function():string[]{
         accountkey= accountkey.trim();
         cmd.push("--accountkey",`${accountkey}`);
     }
+    cmd.push("--ideExtension","VSCODE");
     return cmd;
 };
 
