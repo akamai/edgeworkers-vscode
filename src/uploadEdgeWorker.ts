@@ -13,7 +13,6 @@ export const uploadEdgeWorker = async function(tarFilePath: string,edgeWorkerId:
     let useredgeWorkerId :string = edgeWorkerId;
     const tarFileName = path.parse(tarFilePath).base;
     try{
-        const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
         const tempFile = `akamaiCLIOutput-${Date.now()}.json`;
         const listIdsCmd= await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),tempFile));
         const listIds = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),tempFile),"data");
@@ -46,7 +45,6 @@ export const validateEgdeWorkerID = async function(edgeWorkerId: string):Promise
     return new Promise(async (resolve, reject) => {
         try{
             let found:boolean=false;
-            const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
             const tempFile = `akamaiCLIOutput-${Date.now()}.json`;
             const listIdsCmd= await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),tempFile));
             const edgeWorkerIdsString= await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),tempFile),"data");
