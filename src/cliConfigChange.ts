@@ -5,6 +5,10 @@ import * as vscode from 'vscode';
 import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
+import {textForCmd } from './textForCLIAndError';
+import * as akamaiCLIConfig from './cliConfigChange';
+import * as akamaiCLICalls from './akamaiCLICalls';
+var parseVersionString = require("parse-version-string").default;
 
 export const setAkamaiCLIConfig = function(configPath:string):boolean{
     const config = new ConfigParser();
@@ -73,7 +77,7 @@ export const writeConfig = async function(){
     }
 };
 
-export const checkAkamaiConfig = function():string[]{
+export const checkAkamaiConfig = async function():Promise<string[]>{
     let cmd = [];
     let accountkey = edgeWorkerCommands.getAccountKeyFromUserConfig();
     let section = edgeWorkerCommands.getSectionNameFromUserConfig();
@@ -94,7 +98,19 @@ export const checkAkamaiConfig = function():string[]{
         accountkey= accountkey.trim();
         cmd.push("--accountkey",`${accountkey}`);
     }
-    cmd.push("--ideExtension","VSCODE");
+    let values = await akamaiCLIConfig.addIdeOptionWhenCorrectCliVersion(cmd);
+    console.log(values);
+    return values;
+};
+
+export const addIdeOptionWhenCorrectCliVersion = async function(cmd:string[]):Promise<string[]>{
+    let akamaiCmd:string[]= [`${textForCmd.akamai_edgeWorker_version}`];
+    let akamaiVersion = await akamaiCLICalls.executeCLICommandExceptTarCmd(akamaiCLICalls.generateCLICommand(akamaiCmd));
+    const versionObject = parseVersionString(akamaiVersion.toString());
+    const versionString = versionObject.major + "."+ versionObject.minor+ "."+ versionObject.patch;
+    if(versionString > "1.6.1"){
+        cmd.push("--ideExtension","VSCODE");
+    }
     return cmd;
 };
 

@@ -9,6 +9,7 @@ import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
 const ostype = os.type();
+const parseVersionString  = require('parse-version-string');
 
 export const isAkamaiCLIInstalled = async function():Promise<boolean>{
     
@@ -159,35 +160,35 @@ export const deleteOutputFolder = function(path:string){
     exec(deleteFolder);
 };
 
-export const updateEdgeWorkerToSandboxCmd = function(type:string,command:string,bundlePath:string,edgeWorkerId:string):string[]{
-    let cmd = akamaiEdgeWorkerOptionsCmd(type);
+export const updateEdgeWorkerToSandboxCmd = async function(type:string,command:string,bundlePath:string,edgeWorkerId:string):Promise<string[]>{
+    let cmd = await akamaiEdgeWorkerOptionsCmd(type);
     cmd.push(command,edgeWorkerId,bundlePath);
     return (cmd);
 };
-export const getEdgeWorkerActivationCmd = function(type:string,command:string,edgeWorkerId:string,network:string,edgeworkerVersion:string,jsonFilePath:string,):string[]{
-    let cmd = akamaiEdgeWorkerOptionsCmd(type);
+export const getEdgeWorkerActivationCmd = async function(type:string,command:string,edgeWorkerId:string,network:string,edgeworkerVersion:string,jsonFilePath:string,):Promise<string[]>{
+    let cmd = await akamaiEdgeWorkerOptionsCmd(type);
     cmd.push(command,edgeWorkerId,network,edgeworkerVersion);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
-export const getEdgeWorkerRegisterCmd = function(type:string,command:string,resourceId:string,groupId:string,ewName:string,jsonFilePath:string,):string[]{
-    let cmd = akamaiEdgeWorkerOptionsCmd(type);
+export const getEdgeWorkerRegisterCmd = async function(type:string,command:string,resourceId:string,groupId:string,ewName:string,jsonFilePath:string,):Promise<string[]>{
+    let cmd = await akamaiEdgeWorkerOptionsCmd(type);
     cmd.push(command,"--resourceTierId",resourceId,groupId,ewName);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
-export const getEdgeWorkerDownloadCmd = function(type:string,command:string,edgeWorkerId:string,edgeworkerVersion:string,tarFilePath:string, jsonFilePath:string):string[]{
-    let cmd = akamaiEdgeWorkerOptionsCmd(type);
+export const getEdgeWorkerDownloadCmd = async function(type:string,command:string,edgeWorkerId:string,edgeworkerVersion:string,tarFilePath:string, jsonFilePath:string):Promise<string[]>{
+    let cmd =  await akamaiEdgeWorkerOptionsCmd(type);
     cmd.push(command,edgeWorkerId,edgeworkerVersion,"--downloadPath",tarFilePath);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
-export const getEdgeWorkerValidateCmd = function(type:string,command:string,tarFilePath:string,jsonFilePath:string):string[]{
-    let cmd = akamaiEdgeWorkerOptionsCmd(type);
+export const getEdgeWorkerValidateCmd = async function(type:string,command:string,tarFilePath:string,jsonFilePath:string):Promise<string[]>{
+    let cmd = await akamaiEdgeWorkerOptionsCmd(type);
     cmd.push(command,tarFilePath);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
-export const getEdgeWorkerListVersions = function(type:string,command:string,edgeWorkerId:string,jsonFilePath:string):string[]{
+export const getEdgeWorkerListVersions = async function(type:string,command:string,edgeWorkerId:string,jsonFilePath:string):Promise<string[]>{
     let cmd = akamaiTypeCmd(type);
 
-    const akamaiConfigcmd = akamaiCLIConfig.checkAkamaiConfig();
+    const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
     akamaiConfigcmd.forEach((element: any) => {
         cmd.push(element);
     });
@@ -196,10 +197,10 @@ export const getEdgeWorkerListVersions = function(type:string,command:string,edg
     cmd= jsonOutputParams(cmd,jsonFilePath);
     return (cmd);
 };
-export const getEdgeWorkerListIds = function(type:string,command:string,jsonFilePath:string):string[]{
+export const getEdgeWorkerListIds = async function(type:string,command:string,jsonFilePath:string):Promise<string[]>{
     let cmd = akamaiTypeCmd(type);
 
-    const akamaiConfigcmd = akamaiCLIConfig.checkAkamaiConfig();
+    const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
     akamaiConfigcmd.forEach((element: any) => {
         cmd.push(element);
     });
@@ -208,14 +209,14 @@ export const getEdgeWorkerListIds = function(type:string,command:string,jsonFile
     return (jsonOutputParams(cmd,jsonFilePath));
 };
 
-export const getUploadEdgeWorkerCmd = function(type:string,command:string,bundlePath:string,edgeWorkerId:string,jsonFilePath:string):string[]{
-    let cmd = akamaiEdgeWorkerOptionsCmd(type);
+export const getUploadEdgeWorkerCmd = async function(type:string,command:string,bundlePath:string,edgeWorkerId:string,jsonFilePath:string):Promise<string[]>{
+    let cmd = await akamaiEdgeWorkerOptionsCmd(type);
     cmd.push(command,"--bundle",bundlePath,edgeWorkerId);
     return (jsonOutputParams(cmd,jsonFilePath));
 };
 
-export const getAkamaiEWTraceCmd = function(type:string,command:string,hostname:string,jsonFilePath:string):string[]{
-    let cmd = akamaiEdgeWorkerOptionsCmd(type);
+export const getAkamaiEWTraceCmd = async function(type:string,command:string,hostname:string,jsonFilePath:string):Promise<string[]>{
+    let cmd = await akamaiEdgeWorkerOptionsCmd(type);
     cmd.push(command,hostname);
     cmd.push('--expiry','120');
     return (jsonOutputParams(cmd,jsonFilePath));
@@ -232,7 +233,7 @@ export const akamaiTypeCmd =function(type:string):string[]{
         return(["akamai"]);
     }
 };
-export const akamaiEdgeWorkerOptionsCmd = function(type:string):string[]{
+export const akamaiEdgeWorkerOptionsCmd = async function(type:string):Promise<string[]>{
     let cmd = akamaiTypeCmd(type);
     let accountkey = edgeWorkerCommands.getAccountKeyFromUserConfig();
     let section = edgeWorkerCommands.getSectionNameFromUserConfig();
@@ -253,8 +254,9 @@ export const akamaiEdgeWorkerOptionsCmd = function(type:string):string[]{
         accountkey= accountkey.trim();
         cmd.push("--accountkey",`${accountkey}`);
     }
-    cmd.push("--ideExtension","VSCODE");
-    return cmd;
+    let values = await akamaiCLIConfig.addIdeOptionWhenCorrectCliVersion(cmd);
+    console.log(values);
+    return values;
 };
 
 export const jsonOutputParams = function(cmd:string[],jsonFilePath:string):string[]{
@@ -267,6 +269,7 @@ export const generateCLICommand = function(cmdArgs: string[]):string{
         command = cmdArgs.join(" ").toString();
         console.log("command: " + command);
     }
+    console.log("--------------------The comamnd--------------------------------------------"+ command);
     return command;
 };
 export const checkAkamaiSandbox = async function():Promise<string>{

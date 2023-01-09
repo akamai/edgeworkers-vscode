@@ -19,7 +19,6 @@ export const uploadEdgeWorkerTarballToSandbox = async function(bundlePath:string
         if(edgeWorkerversion === ''){
             throw new Error(ErrorMessageExt.version_missing_bundleJSON);
         }
-        const akamaiConfigcmd = await akamaiCLIConfig.checkAkamaiConfig();
         const tempFile = `akamaiCLIOutput-${Date.now()}.json`;
         const listIdsCmd= await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers","list-ids",path.resolve(os.tmpdir(),tempFile));
         const listIds = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(listIdsCmd),path.resolve(os.tmpdir(),tempFile),"data");

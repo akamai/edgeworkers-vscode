@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 export enum textForCmd{
     akamai_version = "akamai --version",
-    akamai_edgeWorker_version = "akamai edgewo --version",
+    akamai_edgeWorker_version = "akamai edgeworkers --version",
     akamai_sandbox_version = "akamai sandbox --version",
     install_akamai_edgeworkers = "akamai install edgeworkers",
     install_akamai_sandbox = "akamai install sandbox",
