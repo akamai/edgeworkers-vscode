@@ -173,8 +173,8 @@ export const getVersions = async function(edgeWorker:EdgeWorkers):Promise<any[]>
 export const getVersionsById = async function(ewId:string):Promise<any[]> {
     try {
         const tempFile = `akamaiCLIOutput-${Date.now()}.json`;
-        const getVersionCmd = akamaiCLICalls.getEdgeWorkerListVersions("edgeworkers","list-versions",`${ewId}`,path.resolve(os.tmpdir(),tempFile));
-        const data : string = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(getVersionCmd),path.resolve(os.tmpdir(),tempFile),"data")
+        const getVersionCmd = await akamaiCLICalls.getEdgeWorkerListVersions("edgeworkers","list-versions",`${ewId}`,path.resolve(os.tmpdir(),tempFile));
+        const data : string = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(getVersionCmd),path.resolve(os.tmpdir(),tempFile),"data");
 
         if (data.length===0|| data.length=== undefined||data ===""){
             return [];
