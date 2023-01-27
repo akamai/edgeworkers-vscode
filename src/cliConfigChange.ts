@@ -104,7 +104,7 @@ export const checkAkamaiConfig = async function():Promise<string[]>{
 };
 
 export const addIdeOptionWhenCorrectCliVersion = async function(cmd:string[]):Promise<string[]>{
-    let akamaiCmd:string[]= [`${textForCmd.akamai_version}`];
+    let akamaiCmd:string[]= [`${textForCmd.akamai_edgeWorker_version}`];
     let akamaiVersion = await akamaiCLICalls.executeCLICommandExceptTarCmd(akamaiCLICalls.generateCLICommand(akamaiCmd));
     const versionObject = parseVersionString(akamaiVersion.toString());
     const versionString = versionObject.major + "."+ versionObject.minor+ "."+ versionObject.patch;
