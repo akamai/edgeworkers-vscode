@@ -26,13 +26,7 @@
                 }
                 else{
                     listVersion[j].versions.forEach((element) => {
-                        if(element["version"] === undefined || element["version"] === ""|| element["version"]=== null)
-                        {
-                            catOptions += "<option>" +"No Versions"+"</option>";
-                        }
-                        else{
-                            catOptions += "<option>" +  element["version"] + "</option>";
-                        }
+                        catOptions += "<option>" +  element + "</option>";
                     });
                 }
                 }

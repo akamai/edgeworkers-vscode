@@ -17,7 +17,7 @@ export enum systemType{
 
 export enum ErrorMessageExt {
     downloadFlameExtFail = 'Failed to download extension Flame Chart Visualizer for JavaScript Profiles due to error -',
-    akamai_cli_not_installed= "Akamai CLI is not installed. Do you want to install Akamai CLI ?",
+    akamai_cli_not_installed= "Akamai CLI or EdgeWorkers command is not installed. Do you want to install Akamai CLI ?",
     bundle_JSON_not_found= " Mandatory file missing - ",
     create_bundle_fail = " Failed to create EdgeWorker bundle - ",
     validate_bundle_fail = "  Failed to validate EdgeWorker bundle - ",
@@ -25,7 +25,7 @@ export enum ErrorMessageExt {
     display_original_error = " ---due to --- ",
     file_replace_error= "Cannot Replace the file - ",
     edgeworker_download_URI = 'https://github.com/akamai/cli-edgeworkers',
-    akamai_download_URI = 'https://developer.akamai.com/cli/docs/getting-started',
+    akamai_download_URI = 'https://techdocs.akamai.com/developer/docs/about-clis',
     akamai_sanbox_download= 'https://learn.akamai.com/en-us/webhelp/sandbox/sandbox-user-guide/GUID-0D12845D-255E-4054-8A1D-59D11B931B81.html',
     edgeWorkers_cli_to_install = "Akamai edgeworkers CLI is not installed. Click INSTALL to proceed",
     akamai_edgeworkers_cli_install_error = "Failed to install Akamai Edgeworkers. To manually install refer the below link: ",
@@ -34,7 +34,7 @@ export enum ErrorMessageExt {
     edgworkerDetails_fail= "Failed to fetch the EdgeWorker details ",
     bundle_download_fail= "Failed to download the EdgeWorker Bundle",
     bundle_files_fail = "Failed to fetch files",
-    empty_edgeWorkerID = "Unable to upload tar ball without the EdgeWorker ID",
+    empty_edgeWorkerId = "Unable to upload tar ball without the EdgeWorker ID",
     edgeWorkerId_notFound= "Error: The edgeWorker ID is not linked to your account. Please try with another EdgeWorker ID",
     id_not_found= " :Id not Found",
     version_missing_bundleJSON = 'The version is not provided in Bundle.json file',

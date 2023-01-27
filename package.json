@@ -1,287 +1,282 @@
 {
-	"name": "akamai-edgeworkers-vscode-extension",
-	"displayName": "Akamai EdgeWorkers Toolkit",
-	"description": "Akamai EdgeWorkers Toolkit",
-	"publisher": "AkamaiEdgeWorker",
-	"version": "2.0.0",
-	"enabledApiProposals": [],
-	"engines": {
-		"vscode": "^1.71.0"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/akamai/edgeworkers-vscode"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"onCommand:edgeworkers-vscode.edgeworkerBundle",
-		"onCommand:edgeworkers-vscode.refreshEntry",
-		"onCommand:edgeworkers-vscode.downloadEdgeWorker",
-		"onCommand:edgeworkers-vscode.uploadEdgeWorker",
-		"onCommand:edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
-		"onCommand:edgeworkers-vscode.uploadTarBallToSandBox",
-		"onCommand:edgeworkers-vscode.registerEdgeWorker",
-		"onCommand:edgeworkers-vscode.activateEdgeWorker",
-		"onView:edgeWorkerDetails",
-		"onView:webview",
-		"*"
-	],
-	"main": "./dist/extension",
-	"contributes": {
-		"viewsContainers": {
-			"panel": [
-				{
-					"id": "myPanel",
-					"title": "Akamai EdgeWorkers",
-					"icon": "fancy.icon"
-				}
-			],
-			"activitybar": [
-				{
-					"id": "package-explorer",
-					"title": "Akamai EdgeWorkers",
-					"icon": "media/dep.svg"
-				}
-			]
-		},
-		"views": {
-			"myPanel": [
-				{
-					"type": "webview",
-					"id": "edgeworkers-vscode.fetchDataView",
-					"name": "Code Profiler"
-				}
-			],
-			"package-explorer": [
-				{
-					"id": "edgeWorkerDetails",
-					"name": "EdgeWorkers Details",
-					"contextualTitle": "Details"
-				}
-			],
-			"explorer": [
-				{
-					"id": "jsonOutline",
-					"name": "Json Outline",
-					"when": "jsonOutlineEnabled"
-				}
-			]
-		},
-		"commands": [
-			{
-				"command": "edgeworkers-vscode.edgeworkerBundle",
-				"title": "Create and Validate Bundle"
-			},
-			{
-				"command": "edgeworkers-vscode.refreshEntry",
-				"title": "Refresh",
-				"icon": {
-					"light": "resources/light/refresh.svg",
-					"dark": "resources/dark/refresh.svg"
-				}
-			},
-			{
-				"command": "edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
-				"title": "Upload EdgeWorker Version",
-				"icon": {
-					"light": "resources/light/add.svg",
-					"dark": "resources/dark/add.svg"
-				}
-			},
-			{
-				"command": "edgeworkers-vscode.uploadEdgeWorker",
-				"title": "Upload EdgeWorker Version",
-				"icon": {
-					"light": "resources/light/add.svg",
-					"dark": "resources/dark/add.svg"
-				}
-			},
-			{
-				"command": "edgeworkers-vscode.downloadEdgeWorker",
-				"title": "Download EdgeWorker",
-				"icon": {
-					"light": "resources/light/download.svg",
-					"dark": "resources/dark/download.svg"
-				}
-			},
-			{
-				"command": "edgeworkers-vscode.uploadTarBallToSandBox",
-				"title": "Test EdgeWorker in Sandbox"
-			},
-			{
-				"command": "edgeworkers-vscode.activateEdgeWorker",
-				"title": "Activate EdgeWorker",
-				"icon": {
-					"light": "resources/light/activate.svg",
-					"dark": "resources/dark/activate.svg"
-				}
-			},
-			{
-				"command": "edgeworkers-vscode.registerEdgeWorker",
-				"title": "Register EdgeWorker",
-				"icon": {
-					"light": "resources/light/register.svg",
-					"dark": "resources/dark/register.svg"
-				}
-			}
-		],
-		"menus": {
-			"view/title": [
-				{
-					"command": "edgeworkers-vscode.activateEdgeWorker",
-					"when": "view == edgeWorkerDetails",
-					"group": "navigation"
-				},
-				{
-					"command": "edgeworkers-vscode.registerEdgeWorker",
-					"when": "view == edgeWorkerDetails",
-					"group": "navigation"
-				},
-				{
-					"command": "edgeworkers-vscode.refreshEntry",
-					"when": "view == edgeWorkerDetails",
-					"group": "navigation"
-				}
-			],
-			"view/item/context": [
-				{
-					"command": "edgeworkers-vscode.downloadEdgeWorker",
-					"when": "viewItem == EdgeWorkerDetails",
-					"group": "inline"
-				},
-				{
-					"command": "edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
-					"when": "viewItem == EdgeWorkers",
-					"group": "inline"
-				}
-			],
-			"commandPalette": [
-				{
-					"command": "edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
-					"when": "false"
-				},
-				{
-					"command": "edgeworkers-vscode.downloadEdgeWorker",
-					"when": "false"
-				}
-			],
-			"explorer/context": [
-				{
-					"when": "resourceFilename =~ /bundle\\.(json)/",
-					"command": "edgeworkers-vscode.edgeworkerBundle",
-					"group": "bundle@1"
-				},
-				{
-					"when": "resourceFilename =~ /.*\\.(tgz)/",
-					"command": "edgeworkers-vscode.uploadEdgeWorker",
-					"group": "bundle@1"
-				},
-				{
-					"when": "resourceFilename =~ /.*\\.(tgz)/",
-					"command": "edgeworkers-vscode.uploadTarBallToSandBox",
-					"group": "edgeworkerCommands"
-				}
-			]
-		},
-		"configuration": {
-			"title": "Akamai Configuration",
-			"type": "object",
-			"properties": {
-				"edgeworkers-vscode.sectionName": {
-					"type": "string",
-					"default": "",
-					"description": "section name lookup in .edgerc file"
-				},
-				"edgeworkers-vscode.accountKey": {
-					"type": "string",
-					"default": "",
-					"description": "Account key only for internal users"
-				},
-				"edgeworkers-vscode.edgercFile": {
-					"type": "string",
-					"default": "",
-					"description": ".edgerc file path apart from home directory"
-				},
-				"edgeworkers-vscode.enableCLIStatistics": {
-					"type": "boolean",
-					"default": true,
-					"description": "Enable CLI Statistics for Akamai CLI"
-				},
-				"edgeworkers-vscode.enableUpdateCheck": {
-					"type": "boolean",
-					"default": false,
-					"description": "Enable Update Check for Akamai CLI"
-				},
-				"jsonOutline.autorefresh": {
-					"type": "boolean",
-					"default": false
-				}
-			}
-		}
-	},
-	"scripts": {
-		"vscode:prepublish": "webpack --mode production",
-		"webpack": "webpack --mode development",
-		"webpack-dev": "webpack --mode development --watch",
-		"test-compile": "tsc -p ./",
-		"lint": "eslint . --ext .ts,.tsx"
-	},
-	"devDependencies": {
-		"@types/chai": "^4.2.21",
-		"@types/chai-spies": "^1.0.3",
-		"@types/expect": "^24.3.0",
-		"@types/is-html": "^2.0.0",
-		"@types/sinon": "^10.0.2",
-		"@types/vscode": "^1.71.0",
-		"@types/which": "^2.0.0",
-		"@types/yargs-parser": "^21.0.0",
-		"chai": "^4.3.4",
-		"configparser": "^0.3.9",
-		"esbuild": "^0.15.9",
-		"eslint-import-resolver-node": "^0.3.6",
-		"mocha": "^10.0.0",
-		"ts-loader": "^9.4.0",
-		"typescript": "^4.3.2",
-		"vscode-extension-tester": "^4.1.2",
-		"vscode-test": "^1.5.2",
-		"webpack": "^5.74.0",
-		"webpack-cli": "^4.10.0"
-	},
-	"dependencies": {
-		"@types/glob": "^8.0.0",
-		"@types/mocha": "^9.1.1",
-		"@types/node": "^18.7.18",
-		"@typescript-eslint/eslint-plugin": "^5.37.0",
-		"@typescript-eslint/parser": "^5.37.0",
-		"assert": "^2.0.0",
-		"axios": "^0.27.2",
-		"chai-spies": "^1.0.0",
-		"child_process": "^1.0.2",
-		"cli-spinner": "^0.2.10",
-		"console": "^0.7.2",
-		"edgegrid-no-log4js": "^3.0.6",
-		"eslint": "^8.23.1",
-		"expect": "^29.0.3",
-		"extract-json-from-string": "^1.0.1",
-		"fs": "^0.0.1-security",
-		"glob": "^8.0.3",
-		"https": "^1.0.0",
-		"inquirer": "^9.1.1",
-		"is-html": "^3.0.0",
-		"net": "^1.0.2",
-		"npm": "^8.19.2",
-		"nyc": "^15.1.0",
-		"os": "^0.1.2",
-		"path": "^0.12.7",
-		"script-runner": "^0.1.8",
-		"sha256-file": "^1.0.0",
-		"sinon": "^14.0.0",
-		"stream": "^0.0.2",
-		"tar": "^6.1.11",
-		"untildify": "^4.0.0",
-		"url": "^0.11.0",
-		"vscode-uri": "^3.0.3"
-	}
+    "name": "akamai-edgeworkers-vscode-extension",
+    "displayName": "Akamai EdgeWorkers Toolkit",
+    "description": "Akamai EdgeWorkers Toolkit",
+    "publisher": "AkamaiEdgeWorker",
+    "version": "2.0.4",
+    "icon": "edgeworkers-icon.png",
+    "engines": {
+        "vscode": "^1.71.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/akamai/edgeworkers-vscode"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onCommand:edgeworkers-vscode.edgeworkerBundle",
+        "onCommand:edgeworkers-vscode.refreshEntry",
+        "onCommand:edgeworkers-vscode.downloadEdgeWorker",
+        "onCommand:edgeworkers-vscode.uploadEdgeWorker",
+        "onCommand:edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
+        "onCommand:edgeworkers-vscode.uploadTarBallToSandBox",
+        "onCommand:edgeworkers-vscode.registerEdgeWorker",
+        "onCommand:edgeworkers-vscode.activateEdgeWorker",
+        "onView:edgeWorkerDetails",
+        "onView:webview",
+        "*"
+    ],
+    "main": "./dist/extension",
+    "contributes": {
+        "viewsContainers": {
+            "panel": [
+                {
+                    "id": "myPanel",
+                    "title": "Akamai EdgeWorkers",
+                    "icon": "resources/edgeworkers-icon.png"
+                }
+            ],
+            "activitybar": [
+                {
+                    "id": "package-explorer",
+                    "title": "Akamai EdgeWorkers",
+                    "icon": "resources/edgeworkers-icon.png"
+                }
+            ]
+        },
+        "views": {
+            "myPanel": [
+                {
+                    "type": "webview",
+                    "id": "edgeworkers-vscode.fetchDataView",
+                    "name": "Code Profiler"
+                }
+            ],
+            "package-explorer": [
+                {
+                    "id": "edgeWorkerDetails",
+                    "name": "EdgeWorkers Details",
+                    "contextualTitle": "Details"
+                }
+            ],
+            "explorer": [
+                {
+                    "id": "jsonOutline",
+                    "name": "Json Outline",
+                    "when": "jsonOutlineEnabled"
+                }
+            ]
+        },
+        "commands": [
+            {
+                "command": "edgeworkers-vscode.edgeworkerBundle",
+                "title": "Create and Validate Bundle"
+            },
+            {
+                "command": "edgeworkers-vscode.refreshEntry",
+                "title": "Refresh",
+                "icon": {
+                    "light": "resources/light/refresh.svg",
+                    "dark": "resources/dark/refresh.svg"
+                }
+            },
+            {
+                "command": "edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
+                "title": "Upload EdgeWorker Version",
+                "icon": {
+                    "light": "resources/light/add.svg",
+                    "dark": "resources/dark/add.svg"
+                }
+            },
+            {
+                "command": "edgeworkers-vscode.uploadEdgeWorker",
+                "title": "Upload EdgeWorker Version",
+                "icon": {
+                    "light": "resources/light/add.svg",
+                    "dark": "resources/dark/add.svg"
+                }
+            },
+            {
+                "command": "edgeworkers-vscode.downloadEdgeWorker",
+                "title": "Download EdgeWorker",
+                "icon": {
+                    "light": "resources/light/download.svg",
+                    "dark": "resources/dark/download.svg"
+                }
+            },
+            {
+                "command": "edgeworkers-vscode.uploadTarBallToSandBox",
+                "title": "Test EdgeWorker in Sandbox"
+            },
+            {
+                "command": "edgeworkers-vscode.activateEdgeWorker",
+                "title": "Activate EdgeWorker",
+                "icon": {
+                    "light": "resources/light/activate.svg",
+                    "dark": "resources/dark/activate.svg"
+                }
+            },
+            {
+                "command": "edgeworkers-vscode.registerEdgeWorker",
+                "title": "Register EdgeWorker",
+                "icon": {
+                    "light": "resources/light/register.svg",
+                    "dark": "resources/dark/register.svg"
+                }
+            }
+        ],
+        "menus": {
+            "view/title": [
+                {
+                    "command": "edgeworkers-vscode.activateEdgeWorker",
+                    "when": "view == edgeWorkerDetails",
+                    "group": "navigation"
+                },
+                {
+                    "command": "edgeworkers-vscode.registerEdgeWorker",
+                    "when": "view == edgeWorkerDetails",
+                    "group": "navigation"
+                },
+                {
+                    "command": "edgeworkers-vscode.refreshEntry",
+                    "when": "view == edgeWorkerDetails",
+                    "group": "navigation"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "edgeworkers-vscode.downloadEdgeWorker",
+                    "when": "viewItem == EdgeWorkerDetails",
+                    "group": "inline"
+                },
+                {
+                    "command": "edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
+                    "when": "viewItem == EdgeWorkers",
+                    "group": "inline"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
+                    "when": "false"
+                },
+                {
+                    "command": "edgeworkers-vscode.downloadEdgeWorker",
+                    "when": "false"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "when": "resourceFilename =~ /bundle\\.(json)/",
+                    "command": "edgeworkers-vscode.edgeworkerBundle",
+                    "group": "bundle@1"
+                },
+                {
+                    "when": "resourceFilename =~ /.*\\.(tgz)/",
+                    "command": "edgeworkers-vscode.uploadEdgeWorker",
+                    "group": "bundle@1"
+                },
+                {
+                    "when": "resourceFilename =~ /.*\\.(tgz)/",
+                    "command": "edgeworkers-vscode.uploadTarBallToSandBox",
+                    "group": "edgeworkerCommands"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "Akamai Configuration",
+            "type": "object",
+            "properties": {
+                "edgeworkers-vscode.sectionName": {
+                    "type": "string",
+                    "default": "",
+                    "description": "section name lookup in .edgerc file"
+                },
+                "edgeworkers-vscode.accountKey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Account key only for internal users"
+                },
+                "edgeworkers-vscode.edgercFile": {
+                    "type": "string",
+                    "default": "",
+                    "description": ".edgerc file path apart from home directory"
+                },
+                "edgeworkers-vscode.enableUpdateCheck": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable Update Check for Akamai CLI"
+                },
+                "jsonOutline.autorefresh": {
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "webpack --mode production",
+        "webpack": "webpack --mode development",
+        "webpack-dev": "webpack --mode development --watch",
+        "test-compile": "tsc -p ./",
+        "lint": "eslint . --ext .ts,.tsx"
+    },
+    "devDependencies": {
+        "@types/chai": "^4.2.21",
+        "@types/chai-spies": "^1.0.3",
+        "@types/expect": "^24.3.0",
+        "@types/is-html": "^2.0.0",
+        "@types/sinon": "^10.0.2",
+        "@types/vscode": "^1.71.0",
+        "@types/which": "^2.0.0",
+        "@types/yargs-parser": "^21.0.0",
+        "chai": "^4.3.4",
+        "configparser": "^0.3.9",
+        "esbuild": "^0.15.9",
+        "eslint-import-resolver-node": "^0.3.6",
+        "mocha": "^10.0.0",
+        "ts-loader": "^9.4.0",
+        "typescript": "^4.3.2",
+        "vscode-extension-tester": "^4.1.2",
+        "vscode-test": "^1.5.2",
+        "webpack": "^5.74.0",
+        "webpack-cli": "^4.10.0"
+    },
+    "dependencies": {
+        "@types/glob": "^8.0.0",
+        "@types/mocha": "^9.1.1",
+        "@types/node": "^18.8.2",
+        "@typescript-eslint/eslint-plugin": "^5.39.0",
+        "@typescript-eslint/parser": "^5.39.0",
+        "assert": "^2.0.0",
+        "axios": "^0.27.2",
+        "chai-spies": "^1.0.0",
+        "child_process": "^1.0.2",
+        "cli-spinner": "^0.2.10",
+        "console": "^0.7.2",
+        "edgegrid-no-log4js": "^3.0.6",
+        "eslint": "^8.23.1",
+        "expect": "^29.1.2",
+        "extract-json-from-string": "^1.0.1",
+        "fs": "^0.0.2",
+        "glob": "^8.0.3",
+        "https": "^1.0.0",
+        "inquirer": "^9.1.1",
+        "is-html": "^3.0.0",
+        "net": "^1.0.2",
+        "npm": "^8.19.2",
+        "nyc": "^15.1.0",
+        "os": "^0.1.2",
+        "path": "^0.12.7",
+        "script-runner": "^0.1.8",
+        "sha256-file": "^1.0.0",
+        "sinon": "^14.0.1",
+        "stream": "^0.0.2",
+        "tar": "^6.1.11",
+        "untildify": "^4.0.0",
+        "url": "^0.11.0",
+        "vscode-uri": "^3.0.3"
+    }
 }

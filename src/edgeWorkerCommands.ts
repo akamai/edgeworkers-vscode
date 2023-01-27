@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as vscode from 'vscode';
 import {workspace}from 'vscode';
-import * as akamiCLICalls from './akamiCLICalls';
+import * as akamaiCLICalls from './akamaiCLICalls';
 import {getFilePathFromInput} from './extension';
 import {textForCmd,ErrorMessageExt,textForInfoMsg } from './textForCLIAndError';
 import * as os from 'os';
@@ -47,8 +47,8 @@ export const createEdgeWorkerBundle = async function(bundleFolder:string):Promis
                 );
                 if(resp === 'yes'){
                     // there might be an exception thrown below but if so it will bubble out to the calling function
-                    await akamiCLICalls.deleteOutput(bundlepath);
-                    const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(creatBundleFilePath, bundlepath,`${tarFileName}`);
+                    await akamaiCLICalls.deleteOutput(bundlepath);
+                    const createBundleCmd = await akamaiCLICalls.executeCLIOnlyForTarCmd(creatBundleFilePath, bundlepath,`${tarFileName}`);
                     vscode.window.showInformationMessage(createBundleCmd);
                     resolve (`${tarFileName}`);
                 }
@@ -57,7 +57,7 @@ export const createEdgeWorkerBundle = async function(bundleFolder:string):Promis
                 }
             } else {
                 // again there might be an exception thrown below but if so it will bubble out to the calling function
-                const createBundleCmd = await akamiCLICalls.executeCLIOnlyForTarCmd(creatBundleFilePath, bundlepath,`${tarFileName}`);
+                const createBundleCmd = await akamaiCLICalls.executeCLIOnlyForTarCmd(creatBundleFilePath, bundlepath,`${tarFileName}`);
                 vscode.window.showInformationMessage(createBundleCmd);
                 resolve (`${tarFileName}`);
             }
@@ -71,8 +71,9 @@ export const validateEdgeWorkerBundle = async function( work_space_folder:string
     return new Promise(async (resolve, reject) => {
         try{
             let tarFilePath = path.resolve(work_space_folder, `${tarfile}.tgz`);
-            const cmd = await akamiCLICalls.getEdgeWorkerValidateCmd("edgeworkers","validate",tarFilePath,path.resolve(os.tmpdir(),"akamaiCLIOutputValidate.json"));
-            const status = await akamiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),"akamaiCLIOutputValidate.json"),"msg");
+            const tempFile = `akamaiCLIOutputValidate-${Date.now()}.json`;
+            const cmd = await akamaiCLICalls.getEdgeWorkerValidateCmd("edgeworkers","validate",tarFilePath,path.resolve(os.tmpdir(),tempFile));
+            const status = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(cmd),path.resolve(os.tmpdir(),tempFile),"msg");
             resolve(textForInfoMsg.validate_bundle_success+`${tarfile}.tgz`);
         }catch(e:any){
             reject(ErrorMessageExt.validate_bundle_fail+`${tarfile}.tgz`+ErrorMessageExt.display_original_error+e.toString());
@@ -101,14 +102,6 @@ export const getSectionNameFromUserConfig= function():string{
 };
 export const getEdgercFilePathFromUserConfig= function():string{
     return(<string>workspace.getConfiguration('edgeworkers-vscode').get('edgercFile'));
-};
-export const getCLIStatisticsEnable = function():boolean{
-    if(workspace.getConfiguration('edgeworkers-vscode').get('enableCLIStatistics')){
-        return true;
-    }
-    else{
-        return false;
-    }
 };
 export const getCLIUpdateCheckEnable= function():boolean{
     if(workspace.getConfiguration('edgeworkers-vscode').get('enableUpdateCheck')){

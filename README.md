@@ -4,14 +4,14 @@
     
 1.  Install the latest [VS Code](https://code.visualstudio.com/)
 
-2. From the VS Code Extensions Marketplace, search for "EdgeWorkers" and hit the Install button.
+2.  Install the [Akamai EdgeWorkers Toolkit for VSCode](https://marketplace.visualstudio.com/items?itemName=akamaiEdgeworker.akamai-edgeworkers-vscode-extension) from the Visual Studio Code Marketplace
 
 
 ## Dependencies / Usage
 
 1.  The EdgeWorkers panel will be automatically added to the left side of the VSCode window.
     
-2.  The EdgeWorkers VSCode extension depends on the Akamai CLI, minimum version 1.3.0 with EdgeWorkers command minimum version 1.4.1. Many of our customers will already have this set up, but if not on first launch of the EdgeWorkers panel they will be prompted to install and set up OPEN API credentials in .edgerc [as outlined in the developer docs](https://developer.akamai.com/cli/docs/getting-started). Usage from here assumes you have completed this step.
+2.  The EdgeWorkers Toolkit for VSCode depends on the Akamai CLI, minimum version 1.3.0 with EdgeWorkers command minimum version 1.4.1. Many of our customers will already have this set up, but if not on first launch of the EdgeWorkers panel they will be prompted to install and set up OPEN API credentials in .edgerc [as outlined in the developer docs](https://developer.akamai.com/cli/docs/getting-started). Usage from here assumes you have completed this step.
     
 3.  Additional configuration is available in the VSCode preferences; most customers will not need to use this but if they use multiple .edgerc sections or a custom edgerc path they will, and Akamai internal users will likely need to fill in Account Key here:
     
@@ -57,7 +57,9 @@
 
 8.  As shown above the same tarball can also be uploaded to the EdgeWorkers Sandbox for testing.
     
-9.  Finally new EdgeWorker tarballs can be created + validated from source code by right-clicking on an EdgeWorker tarball.json in VS Code file explorer:
+9.  New EdgeWorker tarballs can be created + validated from source code by right-clicking on an EdgeWorker tarball.json in VS Code file explorer:
     
 
 <img src="https://lh3.googleusercontent.com/zyxQgxFybeyo6sM5ry0Kz_6wkAAmAZZvt7H_iJd4YaMmen3w73HLA_b7uAR-1EgqEkxwCMuSg_Y7V2LT5vs79vePGutJo1JIMGbSlUx-1wPso5cP3DWMXQ0UIUCrPue2i2mkjexi=s0" width="300px">
+
+10.  Code profiling is available by bringing up the bottom panel or terminal window. More info on profiling code with the EdgeWorkers Toolkit for VSCode, check out [Akamai Techdocs page on the EdgeWorkers Code Profiler](https://techdocs.akamai.com/edgeworkers/docs/edgeworkers-code-profiler).
