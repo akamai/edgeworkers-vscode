@@ -23,7 +23,7 @@ export const isAkamaiCLIInstalled = async function():Promise<boolean>{
     }
 };
 
-export const checkEnvBeforeEachCommand = async function():Promise<string>{
+export const checkEnv = async function():Promise<string>{
         if (!await isAkamaiCLIInstalled()) {
             const resp = await vscode.window.showErrorMessage(ErrorMessageExt.akamai_cli_not_installed, 'Install');
             if (resp === 'Install') {
@@ -40,17 +40,32 @@ export const checkEnvBeforeEachCommand = async function():Promise<string>{
             if (!await checkAndInstallAkamaiCommands(textForCmd.akamai_help,"edgeworkers")) {
                 const resp = await vscode.window.showErrorMessage(ErrorMessageExt.edgeWorkers_cli_to_install, 'Install');
                 if (resp === 'Install') {
-                if(!await checkAndInstallAkamaiCommands(textForCmd.install_akamai_edgeworkers,"install")){
-                    throw new Error(`Akamai EdgeWorkers command install failed! Install Akamai EdgeWorkers command from CLI using: ${ErrorMessageExt.edgeworker_download_URI}`);
-                }
+                    if(!await checkAndInstallAkamaiCommands(textForCmd.install_akamai_edgeworkers,"install")){
+                        throw new Error(`Akamai EdgeWorkers command install failed! Install Akamai EdgeWorkers command from CLI using: ${ErrorMessageExt.edgeworker_download_URI}`);
+                    }
                 }
                 else{
                     throw new Error(`Install Akamai Edgeworkers using the reference:${ErrorMessageExt.edgeworker_download_URI}`);
                 }
-            } 
+            } else {
+                callUpdate();
+            }
         }
         return('done');
 };
+
+let updateAttempted = false;
+
+export const callUpdate = async function() {
+    if (!updateAttempted) {
+        // call to update CLI silently
+        // this takes a few seconds and may delay first access to UI features but
+        // that should be mostly unnoticable
+        await executeCLICommandExceptTarCmd(textForCmd.update_akamai_edgeworkers);
+        updateAttempted = true;
+    }
+}
+
 export const executeCLICommandExceptTarCmd = function(cmd : string, jsonFile?:string) : Promise<string> {
     // wrap exec in a promise
     return new Promise(async (resolve, reject) => {
