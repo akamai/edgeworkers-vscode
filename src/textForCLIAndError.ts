@@ -4,6 +4,7 @@ export enum textForCmd{
     akamai_edgeWorker_version = "akamai edgeworkers --version",
     akamai_sandbox_version = "akamai sandbox --version",
     install_akamai_edgeworkers = "akamai install edgeworkers",
+    update_akamai_edgeworkers = "akamai update edgeworkers",
     install_akamai_sandbox = "akamai install sandbox",
     akamai_help = "akamai --help",
     

@@ -36,10 +36,20 @@ suite('testing create and validating EdgeWorker', () => {
             assert.match(err.toString(), /Failed to set config attributes/);
         }
     });
-    it('test if checkEnvBeforeEachCommand() when getDifference() function returns empty which means no difference ', async function(){
+
+    it('test if checkEnv() when getDifference() function returns empty which means no difference ', async function(){
         this.timeout(100000);
         sinon.stub(cliConfigChange, 'getDifference').returns([]);
-            assert.strictEqual('done',await akamaiCLICalls.checkEnvBeforeEachCommand());
+        assert.strictEqual('done',await akamaiCLICalls.checkEnv());
+    });
+
+    it('test that update to CLI is called when checkEnv() is invoked', async function(){
+        this.timeout(100000);
+        const cliSpy = sinon.spy(akamaiCLICalls);
+
+        await akamaiCLICalls.checkEnv()
+
+        assert.strictEqual(true, cliSpy.callUpdate.calledOnce);
     });
 });
 

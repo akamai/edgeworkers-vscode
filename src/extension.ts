@@ -23,7 +23,7 @@ import * as path from 'path';
 
 export const activate = async function(context: vscode.ExtensionContext){
     // management UI class initilization
-    akamaiCLICalls.checkEnvBeforeEachCommand().then(async ()=> {
+    akamaiCLICalls.checkEnv().then(async ()=> {
         const provider = new CodeProfilerPanel(context.extensionUri);
         context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(CodeProfilerPanel.viewType, provider));
@@ -31,7 +31,7 @@ export const activate = async function(context: vscode.ExtensionContext){
         vscode.window.showErrorMessage(err.toString());
     });
     
-    akamaiCLICalls.checkEnvBeforeEachCommand()
+    akamaiCLICalls.checkEnv()
     .then(async ()=> { 
         const listIds = managementUI.getListIds();
         const edgeWorkerDetailsProvider = new EdgeWorkerDetailsProvider(listIds);
@@ -50,7 +50,7 @@ export const activate = async function(context: vscode.ExtensionContext){
         
     //refresh the tree view in management UI
     context.subscriptions.push(vscode.commands.registerCommand('edgeworkers-vscode.refreshEntry', async function() {
-        akamaiCLICalls.checkEnvBeforeEachCommand()
+        akamaiCLICalls.checkEnv()
         .then(async ()=> {    
         await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
