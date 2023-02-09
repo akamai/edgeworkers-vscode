@@ -111,6 +111,20 @@ return `<!DOCTYPE html>
 </div>
 <div class="row">
    <div class="col-25">
+       <label for="profileType" class="required">Profile type </label>
+   </div>
+   <div class="col-75">
+       <div class="eventhandlerOptions">
+           <input type="radio" id="cpuProfile" name="profileType" value="cpu-profile" required checked="checked" />
+           <label for="cpuProfile">CPU Profile</label><br>
+           <input type="radio" id="memoryProfile" name="profileType" value="memory-profile" >
+           <label for="memoryProfile">Memory Profile</label><br> 
+       </div> 
+   </div>
+</div>
+
+<div class="row">
+   <div class="col-25">
    <label for="Path">File path</label>
    </div>
    <div class="col-75">
