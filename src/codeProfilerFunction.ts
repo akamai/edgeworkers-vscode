@@ -263,15 +263,15 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
             let boundary = response.headers['content-type'].split('; ')[1].split('boundary=')[1];
             let responseLines:string[] = response.data.split("\r\n");
 
-            let sectionIsCpuProfile = false;
+            let sectionIsProfile = false;
             let recordProfile = false;
             let profileString = '';
             for (const line of responseLines) {
 
                 // this will need to be updated to include memory profile when that's available
-                if (line.includes('content-disposition: form-data; name="cpu-profile"')) { 
-                    sectionIsCpuProfile = true;
-                } else if (line === '' && sectionIsCpuProfile) {
+                if (line.includes('content-disposition: form-data; name="cpu-profile"') || line.includes('content-disposition: form-data; name="memory-profile"')) { 
+                    sectionIsProfile = true;
+                } else if (line === '' && sectionIsProfile) {
                     // this is the break between header and body of the section
                     recordProfile = true;
                 } else if (recordProfile) {
@@ -306,43 +306,60 @@ export const callCodeProfiler = async function(url:URL,ipAddress:string,ewtrace:
         }
     }
 
-    let response;
-    try {
-        response = await axios.get(httpCallString,httpParams);
-    } catch(error:any) {
-        // axios treats non-200 responses by throwing an exception
-        // why is there no way to override this?
-        if (error.response) {
-            // there may be a usable profile present
-            response = error.response;
-        } else if (error.request) {
-            throw error;
-        } else {
+    // max 5 attempts in case we get back blank data due to memory profiler bug
+    // in most cases the first attempt has good data
+    let maxAttempts = 5;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        console.log(`Attempt ${attempt} to get profile data`);
+
+        let response;
+        try {
+            response = await axios.get(httpCallString,httpParams);
+        } catch(error:any) {
+            // axios treats non-200 responses by throwing an exception
+            // why is there no way to override this?
+            if (error.response) {
+                // there may be a usable profile present
+                response = error.response;
+            } else if (error.request) {
+                throw error;
+            } else {
+                throw (`Falied to generate ${fileName} due to - ${error}`);
+            }
+        }
+
+        try {
+            let profileStringResult = extractProfileFromBody(response);
+            if (typeof profileStringResult === 'object') {
+                profileStringResult = JSON.stringify(profileStringResult);
+            }
+            // there is a bug causing empty memory profile to come back in some cases
+            // this is usually resolved by re-attempting to get memory profile
+            // if this happens we can retry up to 5 times total
+            const emptyJson = '{"head":{"callFrame":{"functionName":"(root)","scriptId":"0","url":"","lineNumber":-1,"columnNumber":-1},"selfSize":0,"id":1,"children":[]},"samples":[]}';
+            
+            if (profileStringResult === '' || profileStringResult === '{}') {
+                throw noEventHandler;
+            } else if (profileStringResult == emptyJson) {
+                // wait 1 sec
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                if (attempt < maxAttempts - 1) {
+                    continue;   // attempt again
+                } else {
+                    throw ("Profiler came back with no data; please try again");
+                }
+            } else {
+                fs.writeFile(path.resolve(filepath,fileName), profileStringResult, 'utf8', function (err:any) {
+                    if (err) {
+                        throw err;
+                    }
+                });
+                break;
+            }
+        } catch(error:any) {
             throw (`Falied to generate ${fileName} due to - ${error}`);
         }
-    }
-
-    try {
-        let profileStringResult = extractProfileFromBody(response);
-
-        if (typeof profileStringResult === 'object'){
-            profileStringResult = JSON.stringify(profileStringResult);
-        }
-
-        
-        if (profileStringResult === '' || profileStringResult === '{}')
-        {
-            throw noEventHandler;
-        }
-        else {
-            fs.writeFile(path.resolve(filepath,fileName), profileStringResult, 'utf8', function (err:any) {
-                if (err) {
-                    throw err;
-                }
-            });
-        }
-    } catch(error:any) {
-        throw (`Falied to generate ${fileName} due to - ${error}`);
     }
 
     return `Successfully downloaded the ${fileName} at ${filepath}.`;

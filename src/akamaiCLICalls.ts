@@ -55,15 +55,25 @@ export const checkEnv = async function():Promise<string>{
 };
 
 let updateAttempted = false;
+const MIN_SUPPORTED_VER = '1.7.0';
 
 export const callUpdate = async function() {
-    if (!updateAttempted) {
-        // call to update CLI silently
-        // this takes a few seconds and may delay first access to UI features but
-        // that should be mostly unnoticable
-        await executeCLICommandExceptTarCmd(textForCmd.update_akamai_edgeworkers);
-        updateAttempted = true;
+    try {
+        if (!updateAttempted) {
+            let akamaiCmd:string[]= [`${textForCmd.akamai_edgeWorker_version}`];
+            let version = await (await executeCLICommandExceptTarCmd(generateCLICommand(akamaiCmd))).trim();
+            if (version < MIN_SUPPORTED_VER){
+                // call to update CLI silently
+                // this takes a few seconds and may delay first access to UI features but
+                // that should be mostly unnoticable
+                await executeCLICommandExceptTarCmd(textForCmd.update_akamai_edgeworkers);
+                updateAttempted = true;
+            }
+        }
+    } catch (e:any) {
+        // if the request above fails it's ok, we don't need to upgrade and can just ignore
     }
+    
 }
 
 export const executeCLICommandExceptTarCmd = function(cmd : string, jsonFile?:string) : Promise<string> {
