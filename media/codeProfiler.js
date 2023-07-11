@@ -51,38 +51,43 @@
         //get file name
         const fileName = document.getElementById("fileName").value;
         const codeProfvalueilerURL = document.getElementById("codeProfilerURL").value;
-        //get the radio btton event_handler value
-        var elements = document.getElementsByName('eventHandler');
-        var eventHandlerButton;
-        console.log(elements);
+        //get the radio button event_handler value
+        let elements = document.getElementsByName('eventHandler');
+        let eventHandlerButton;
         elements.forEach(e => {
             if (e.checked) {
                 //if radio button is checked, set sort style
                 eventHandlerButton = e.value;
             }
         });
+
+        let headers = [];
+
         //get the profileType radio button value
         elements = document.getElementsByName('profileType');
-        console.log(elements);
-        var headers = new Array;
         elements.forEach(e => {
             if (e.checked) {
                 //if radio button is checked, and it is for memory profile, add header
                 if (e.value === 'memory-profile') {
-                    headers[0] = ['x-ew-code-profile-memory', '1'];
+                    headers.push(['x-ew-code-profile-memory', '1']);
                 }
             }
         });
+
+        let forceColdStartElement = document.getElementById('forceColdStart');
+        if (forceColdStartElement.checked) {
+            headers.push(['x-ew-code-profile-during-cold-start', 'on']);
+        }
+        
+
         //pragma headers
         const pragmaHeaders = undefined;// document.getElementById("pragmaHeader").value;
         // get the other headers values
-        let index = headers.length;
-            document.getElementById("boxContainer").childNodes.forEach((item) => {
-                if(item.childNodes[0].value && item.childNodes[1].value){
-                    headers[index]= [`${item.childNodes[0].value}`, `${item.childNodes[1].value}`];
-                    index = index + 1;
-                }
-            });
+        document.getElementById("boxContainer").childNodes.forEach((item) => {
+            if(item.childNodes[0].value && item.childNodes[1].value){
+                headers.push([`${item.childNodes[0].value}`, `${item.childNodes[1].value}`]);
+            }
+        });
         if (codeProfvalueilerURL && eventHandlerButton ) {
             vscode.postMessage({
                 command: 'info',

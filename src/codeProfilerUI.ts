@@ -58,7 +58,6 @@ export class CodeProfilerPanel implements vscode.WebviewViewProvider {
        const scriptPathOnDisk = Utils.joinPath(this._extensionUri, 'media', 'codeProfiler.js');
        // And the uri we use to load this script in the webview
        const scriptUri =  webview.asWebviewUri(scriptPathOnDisk);
-       console.log("scriopt uri-----------------------------------" + `${scriptUri}`);
            // Local path to css styles
        const stylesPathMainPath =  Utils.joinPath(this._extensionUri, 'media', 'style.css');
        const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
@@ -119,6 +118,17 @@ return `<!DOCTYPE html>
            <label for="cpuProfile">CPU Profile</label><br>
            <input type="radio" id="memoryProfile" name="profileType" value="memory-profile" >
            <label for="memoryProfile">Memory Profile</label><br> 
+       </div> 
+   </div>
+</div>
+<div class="row">
+   <div class="col-25">
+       <label for="options">Options </label>
+   </div>
+   <div class="col-75">
+       <div class="eventhandlerOptions">
+           <input type="checkbox" id="forceColdStart" name="forceColdStart" value="forceColdStart" />
+           <label for="forceColdStart">Force Cold Start</label><br>
        </div> 
    </div>
 </div>
