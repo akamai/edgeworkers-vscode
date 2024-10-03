@@ -259,7 +259,7 @@
         "console": "^0.7.2",
         "akamai-edgegrid": "^3.4.1",
         "eslint": "^8.23.1",
-        "expect": "^29.1.2",
+        "expect": "^29.7.0",
         "extract-json-from-string": "^1.0.1",
         "fs": "^0.0.2",
         "glob": "^8.0.3",
