@@ -258,7 +258,7 @@
         "cli-spinner": "^0.2.10",
         "console": "^0.7.2",
         "akamai-edgegrid": "^3.4.1",
-        "eslint": "^8.23.1",
+        "eslint": "^8.57.0",
         "expect": "^29.1.2",
         "extract-json-from-string": "^1.0.1",
         "fs": "^0.0.2",
