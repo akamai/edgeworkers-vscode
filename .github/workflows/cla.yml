@@ -23,4 +23,4 @@ jobs:
           remote-organization-name: akamai
           remote-repository-name: cla-sign
           path-to-document: 'https://github.com/akamai/edgeworkers-vscode/blob/master/cla.md' # e.g. a CLA or a DCO document
-          allowlist: lperra,sbhuptan,kyleli-akamai,bmatthew
+          allowlist: lperra,sbhuptan,kyleli-akamai,bmatthew,dependabot
