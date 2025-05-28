@@ -249,7 +249,7 @@
         "@types/glob": "^8.0.0",
         "@types/mocha": "^9.1.1",
         "@types/node": "^18.19.71",
-        "@typescript-eslint/eslint-plugin": "^8.3.0",
+        "@typescript-eslint/eslint-plugin": "^8.32.0",
         "@typescript-eslint/parser": "^8.3.0",
         "akamai-edgegrid": "^3.5.1",
         "assert": "^2.0.0",
