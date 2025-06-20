@@ -262,7 +262,7 @@
         "expect": "^29.7.0",
         "extract-json-from-string": "^1.0.1",
         "fs": "^0.0.2",
-        "glob": "^8.0.3",
+        "glob": "^11.0.3",
         "https": "^1.0.0",
         "inquirer": "^9.3.7",
         "is-html": "^3.0.0",
