@@ -261,6 +261,7 @@
         "eslint": "^9.0.0",
         "expect": "^29.7.0",
         "extract-json-from-string": "^1.0.1",
+        "fix-path": "^4.0.0",
         "fs": "^0.0.2",
         "glob": "^8.0.3",
         "https": "^1.0.0",
@@ -278,5 +279,10 @@
         "untildify": "^4.0.0",
         "url": "^0.11.0",
         "vscode-uri": "^3.0.3"
+    },
+    "overrides": {
+        "external-editor": {
+            "tmp": "^0.2.4"
+        }
     }
 }

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import { Utils } from 'vscode-uri';
+import {Utils} from 'vscode-uri';
 import * as codeProfiler from './codeProfilerFunction';
+
 export class CodeProfilerPanel implements vscode.WebviewViewProvider {
     public static readonly viewType = 'edgeworkers-vscode.fetchDataView';
 
@@ -8,7 +9,8 @@ export class CodeProfilerPanel implements vscode.WebviewViewProvider {
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
-    ) { }
+    ) {
+    }
 
     public resolveWebviewView(
         webviewView: vscode.WebviewView,
@@ -31,15 +33,15 @@ export class CodeProfilerPanel implements vscode.WebviewViewProvider {
             switch (message.command) {
                 case 'info':
                     console.log(message.otherHeaders);
-                    try{
+                    try {
                         await vscode.window.withProgress({
                             location: vscode.ProgressLocation.Notification,
                             title: "Profiling EdgeWorker",
                             cancellable: false
-                            }, async () => {
+                        }, async () => {
                             await codeProfiler.getCodeProfilerFile(message.filePath, message.fileName, message.url, message.eventHandler, message.pragmaHeaders, message.otherHeaders);
                         });
-                    }catch(err:any){
+                    } catch (err: any) {
                         vscode.window.showErrorMessage(err.toString());
                     }
                     return;
@@ -54,14 +56,14 @@ export class CodeProfilerPanel implements vscode.WebviewViewProvider {
     }
 
     private _getHtmlForWebview(webview: vscode.Webview) {
-       // Local path to main script run in the webview
-       const scriptPathOnDisk = Utils.joinPath(this._extensionUri, 'media', 'codeProfiler.js');
-       // And the uri we use to load this script in the webview
-       const scriptUri =  webview.asWebviewUri(scriptPathOnDisk);
-           // Local path to css styles
-       const stylesPathMainPath =  Utils.joinPath(this._extensionUri, 'media', 'style.css');
-       const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
-return `<!DOCTYPE html>
+        // Local path to main script run in the webview
+        const scriptPathOnDisk = Utils.joinPath(this._extensionUri, 'media', 'codeProfiler.js');
+        // And the uri we use to load this script in the webview
+        const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
+        // Local path to css styles
+        const stylesPathMainPath = Utils.joinPath(this._extensionUri, 'media', 'style.css');
+        const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
+        return `<!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -174,5 +176,5 @@ return `<!DOCTYPE html>
 </script>
 </body>
 </html>`;
-};
+    };
 }
