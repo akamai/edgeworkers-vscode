@@ -3,7 +3,7 @@
     "displayName": "Akamai EdgeWorkers Toolkit",
     "description": "Akamai EdgeWorkers Toolkit",
     "publisher": "AkamaiEdgeWorker",
-    "version": "2.0.9",
+    "version": "2.1.0",
     "icon": "edgeworkers-icon.png",
     "engines": {
         "vscode": "^1.79.0"
@@ -261,6 +261,7 @@
         "eslint": "^9.0.0",
         "expect": "^29.7.0",
         "extract-json-from-string": "^1.0.1",
+        "fix-path": "^4.0.0",
         "fs": "^0.0.2",
         "glob": "^8.0.3",
         "https": "^1.0.0",
@@ -278,5 +279,10 @@
         "untildify": "^4.0.0",
         "url": "^0.11.0",
         "vscode-uri": "^3.0.3"
+    },
+    "overrides": {
+        "external-editor": {
+            "tmp": "^0.2.4"
+        }
     }
 }

@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 'use strict';
 import * as vscode from 'vscode';
-import { Utils } from 'vscode-uri';
+import {Utils} from 'vscode-uri';
 
-export function getWebviewContent(context:vscode.ExtensionContext,webview: vscode.Webview,groupIds:string){
+export function getWebviewContent(context: vscode.ExtensionContext, webview: vscode.Webview, groupIds: string) {
     // Local path to main script run in the webview
-        const scriptPathOnDisk = Utils.joinPath(context.extensionUri, 'media', 'registerUI.js');
-        // And the uri we use to load this script in the webview
-        const scriptUri =  webview.asWebviewUri(scriptPathOnDisk);
-            // Local path to css styles
-        const stylesPathMainPath =  Utils.joinPath(context.extensionUri, 'media', 'style.css');
-        const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
-return `<!DOCTYPE html>
+    const scriptPathOnDisk = Utils.joinPath(context.extensionUri, 'media', 'registerUI.js');
+    // And the uri we use to load this script in the webview
+    const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
+    // Local path to css styles
+    const stylesPathMainPath = Utils.joinPath(context.extensionUri, 'media', 'style.css');
+    const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
+    return `<!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -64,11 +64,11 @@ return `<!DOCTYPE html>
 </form>
 </div>
 <script >
-groupId = `+JSON.stringify(groupIds)+`
+groupId = ` + JSON.stringify(groupIds) + `
 </script>
 <script src = "${scriptUri}">
 </script>
 </body>
 </html>`;
-};
+}
 
