@@ -253,7 +253,7 @@
         "@typescript-eslint/parser": "^8.3.0",
         "akamai-edgegrid": "^3.5.1",
         "assert": "^2.0.0",
-        "axios": "^1.8.3",
+        "axios": "^1.12.0",
         "chai-spies": "^1.0.0",
         "child_process": "^1.0.2",
         "cli-spinner": "^0.2.10",
