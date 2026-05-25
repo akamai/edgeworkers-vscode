@@ -10,7 +10,7 @@ on:
     paths:
       - 'package-lock.json'
   schedule:
-    - cron: '*/10 * * * *' #change to 0 9 * * 1 after testing on main
+    - cron: '0 9 * * 1'
   workflow_dispatch:
 
 permissions:
