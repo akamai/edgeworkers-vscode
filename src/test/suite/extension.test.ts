@@ -14,8 +14,6 @@ suite('testing edgeworker vscode extension', () => {
         if (folder) {
             let dirpath = path.resolve(__dirname, '../../../src/test/testSpace');
             console.log("the path is " + dirpath);
-            const path1 = '/Users/hkambham/edgeworker-code-final-vscode/edgeworker-vscode/edgeworkers-vscode/src/test/testSpace';
-            console.log(path1);
             assert.strictEqual(folder, dirpath);
         }
     });
