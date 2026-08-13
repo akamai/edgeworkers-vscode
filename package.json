@@ -3,7 +3,7 @@
     "displayName": "Akamai EdgeWorkers Toolkit",
     "description": "Akamai EdgeWorkers Toolkit",
     "publisher": "AkamaiEdgeWorker",
-    "version": "2.2.0",
+    "version": "2.3.0",
     "icon": "edgeworkers-icon.png",
     "engines": {
         "vscode": "^1.79.0"
@@ -237,12 +237,12 @@
         "configparser": "^0.3.9",
         "esbuild": "^0.25.3",
         "eslint-import-resolver-node": "^0.3.6",
-        "mocha": "^10.0.0",
-        "sinon": "^19.0.0",
+        "mocha": "^11.8.0",
         "parse-version-string": "^1.0.1",
+        "sinon": "^22.1.0",
         "ts-loader": "^9.4.0",
         "typescript": "^4.3.2",
-        "vscode-extension-tester": "^5.8.0",
+        "vscode-extension-tester": "^8.24.0",
         "webpack": "^5.104.1",
         "webpack-cli": "^4.10.0"
     },
@@ -268,7 +268,7 @@
         "inquirer": "^9.3.7",
         "is-html": "^3.0.0",
         "net": "^1.0.2",
-        "nyc": "^17.0.0",
+        "nyc": "^18.0.0",
         "os": "^0.1.2",
         "path": "^0.12.7",
         "script-runner": "^0.1.8",
@@ -288,6 +288,10 @@
         "underscore": "^1.13.8",
         "path-to-regexp": "^8.4.0",
         "picomatch": "^2.3.2",
-        "http-proxy-agent": "^7.0.2"
+        "http-proxy-agent": "^7.0.2",
+        "mocha": {
+            "diff": "^8.0.3",
+            "serialize-javascript": "^7.0.5"
+        }
     }
 }
