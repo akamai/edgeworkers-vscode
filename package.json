@@ -251,7 +251,7 @@
         "@types/mocha": "^9.1.1",
         "@types/node": "^18.19.71",
         "@typescript-eslint/eslint-plugin": "^8.3.0",
-        "@typescript-eslint/parser": "^8.3.0",
+        "@typescript-eslint/parser": "^8.46.1",
         "akamai-edgegrid": "^3.5.1",
         "assert": "^2.0.0",
         "axios": "^1.15.0",
