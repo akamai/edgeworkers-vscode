@@ -259,7 +259,7 @@
         "child_process": "^1.0.2",
         "cli-spinner": "^0.2.10",
         "console": "^0.7.2",
-        "eslint": "^9.0.0",
+        "eslint": "^9.36.0",
         "expect": "^29.7.0",
         "extract-json-from-string": "^1.0.1",
         "fix-path": "^4.0.0",
