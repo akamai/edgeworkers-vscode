@@ -16,15 +16,6 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:edgeworkers-vscode.edgeworkerBundle",
-        "onCommand:edgeworkers-vscode.refreshEntry",
-        "onCommand:edgeworkers-vscode.downloadEdgeWorker",
-        "onCommand:edgeworkers-vscode.uploadEdgeWorker",
-        "onCommand:edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
-        "onCommand:edgeworkers-vscode.uploadTarBallToSandBox",
-        "onCommand:edgeworkers-vscode.registerEdgeWorker",
-        "onCommand:edgeworkers-vscode.activateEdgeWorker",
-        "onView:edgeWorkerDetails",
         "onView:webview",
         "*"
     ],
@@ -269,7 +260,6 @@
         "is-html": "^3.0.0",
         "net": "^1.0.2",
         "os": "^0.1.2",
-        "path": "^0.12.7",
         "script-runner": "^0.1.8",
         "sha256-file": "^1.0.0",
         "stream": "^0.0.2",
