@@ -1,4 +1,3 @@
-import { Workbench, EditorView, WebView, By } from 'vscode-extension-tester';
 import * as sinon from 'sinon';
 import { afterEach, before, describe, it } from "mocha";
 import * as extension from '../../extension';
@@ -42,5 +41,4 @@ suite('WebView', () => {
         assert.match(status.toString(),/Error Registering Edgeowrker/);
     });
 });
-
 

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { promise } from 'selenium-webdriver';
 import * as vscode from 'vscode';
 import * as edgeWorkerCommands from './edgeWorkerCommands';
 import * as akamaiCLIConfig from './cliConfigChange';
@@ -360,5 +359,4 @@ export const executeAkamaiEdgeWorkerCLICmds = function(cmd : string, jsonFilePat
         });
     });
 };
-
 
