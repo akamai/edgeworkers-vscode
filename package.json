@@ -3,7 +3,7 @@
     "displayName": "Akamai EdgeWorkers Toolkit",
     "description": "Akamai EdgeWorkers Toolkit",
     "publisher": "AkamaiEdgeWorker",
-    "version": "2.3.0",
+    "version": "2.4.0",
     "icon": "edgeworkers-icon.png",
     "engines": {
         "vscode": "^1.79.0"
