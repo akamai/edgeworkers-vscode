@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 'use strict';
 import * as vscode from 'vscode';
-import { Utils } from 'vscode-uri';
+import {Utils} from 'vscode-uri';
 
-export function getWebviewContent(context:vscode.ExtensionContext,webview: vscode.Webview,listIds:string,versionIds:string){
+export function getWebviewContent(context: vscode.ExtensionContext, webview: vscode.Webview, listIds: string, versionIds: string) {
     // Local path to main script run in the webview
-        const scriptPathOnDisk = Utils.joinPath(context.extensionUri, 'media', 'activateEW.js');
-        // And the uri we use to load this script in the webview
-        const scriptUri =  webview.asWebviewUri(scriptPathOnDisk);
-            // Local path to css styles
-        const stylesPathMainPath =  Utils.joinPath(context.extensionUri, 'media', 'style.css');
-        const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
-return `<!DOCTYPE html>
+    const scriptPathOnDisk = Utils.joinPath(context.extensionUri, 'media', 'activateEW.js');
+    // And the uri we use to load this script in the webview
+    const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
+    // Local path to css styles
+    const stylesPathMainPath = Utils.joinPath(context.extensionUri, 'media', 'style.css');
+    const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
+    return `<!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -67,12 +67,12 @@ return `<!DOCTYPE html>
 </form>
 </div>
 <script >
-arrayList = `+JSON.stringify(listIds)+`
-arrayListVersion = `+JSON.stringify(versionIds)+`
+arrayList = ` + JSON.stringify(listIds) + `
+arrayListVersion = ` + JSON.stringify(versionIds) + `
 </script>
 <script src = "${scriptUri}">
 </script>
 </body>
 </html>`;
-};
+}
 
