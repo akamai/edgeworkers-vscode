@@ -5,6 +5,8 @@ import config from './config.json';
 import * as os from 'os';
 import * as path from 'path';
 
+const edgeWorkerOutput = vscode.window.createOutputChannel('Akamai EdgeWorkers');
+
 export class EdgeWorkerDetailsProvider implements vscode.TreeDataProvider<EdgeWorkers | string | Promise<string>> {
     public edgeWorkerJsonArray = {};
     public listIds: Promise<string>;
@@ -184,17 +186,29 @@ export const getVersionsById = async function (ewId: string): Promise<any[]> {
     }
 }
 
-export const getListIds = function (): Promise<string> {
-    return new Promise<string>(async (resolve, reject) => {
-        try {
-            const tempFile = `akamaiCLIOutput-${Date.now()}.json`;
-            const listIdsCmd = await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers", "list-ids", path.resolve(os.tmpdir(), tempFile));
-            const listIds = await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(listIdsCmd), path.resolve(os.tmpdir(), tempFile), "data");
-            resolve(listIds);
-        } catch (e: any) {
-            reject(`Cannot fetch EdgeWorker Details due to ` + e.toString());
+export const getListIds = async function (): Promise<string> {
+    try {
+        const tempFile = `akamaiCLIOutput-${Date.now()}.json`;
+        const listIdsCmd = await akamaiCLICalls.getEdgeWorkerListIds("edgeworkers", "list-ids", path.resolve(os.tmpdir(), tempFile));
+        return await akamaiCLICalls.executeAkamaiEdgeWorkerCLICmds(akamaiCLICalls.generateCLICommand(listIdsCmd), path.resolve(os.tmpdir(), tempFile), "data");
+    } catch (e: any) {
+        const details = e instanceof Error ? e.stack || e.message : String(e);
+        edgeWorkerOutput.appendLine(`[${new Date().toISOString()}] Failed to fetch EdgeWorker details`);
+        edgeWorkerOutput.appendLine(details);
+
+        const message = details.includes("Cannot find module './bin/src/edgeworkers/ew-cli-main.js'")
+            ? 'The Akamai EdgeWorkers CLI installation appears incomplete. Update or reinstall the EdgeWorkers command, then refresh.'
+            : details.includes('ENOBUFS')
+                ? 'The Akamai CLI produced more output than the extension could capture. See the Akamai EdgeWorkers output for details.'
+                : details.includes('ETIMEDOUT') || details.includes('timed out')
+                    ? 'The Akamai CLI request timed out. Check connectivity and try refreshing again.'
+            : 'Could not fetch EdgeWorker details. Check the Akamai CLI, credentials, and network connection.';
+        const action = await vscode.window.showErrorMessage(message, 'Show Details');
+        if (action === 'Show Details') {
+            edgeWorkerOutput.show(true);
         }
-    });
+        return '';
+    }
 };
 
 // this function is very slow and should only be used for the activation UI
@@ -234,8 +248,8 @@ export const getListIdsAndVersions = async function (): Promise<string> {
 
 export class EdgeWorkers extends vscode.TreeItem {
     iconPath = {
-        light: path.join(__filename, '..', '..', 'resources', 'light', 'EdgeWorkers.svg'),
-        dark: path.join(__filename, '..', '..', 'resources', 'dark', 'EdgeWorkers.svg')
+        light: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'light', 'EdgeWorkers.svg')),
+        dark: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'dark', 'EdgeWorkers.svg'))
     };
     contextValue = 'EdgeWorkers';
 
@@ -253,8 +267,8 @@ export class EdgeWorkers extends vscode.TreeItem {
 
 export class EdgeWorkerDetails extends vscode.TreeItem {
     iconPath = {
-        light: path.join(__filename, '..', '..', 'resources', 'light', 'EdgeWorkers.svg'),
-        dark: path.join(__filename, '..', '..', 'resources', 'dark', 'EdgeWorkers.svg')
+        light: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'light', 'EdgeWorkers.svg')),
+        dark: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'dark', 'EdgeWorkers.svg'))
     };
     contextValue = 'EdgeWorkerDetails';
 
@@ -272,8 +286,8 @@ export class EdgeWorkerDetails extends vscode.TreeItem {
 
 export class EdgeWorkerFiles extends vscode.TreeItem {
     iconPath = {
-        light: path.join(__filename, '..', '..', 'resources', 'light', 'EdgeWorkers.svg'),
-        dark: path.join(__filename, '..', '..', 'resources', 'dark', 'EdgeWorkers.svg')
+        light: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'light', 'EdgeWorkers.svg')),
+        dark: vscode.Uri.file(path.join(__dirname, '..', 'resources', 'dark', 'EdgeWorkers.svg'))
     };
     contextValue = 'EdgeWorkerFiles';
 
