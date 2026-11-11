@@ -286,7 +286,8 @@ export const generateCLICommand = function (cmdArgs: string[]): string {
     let command: string = '';
     if (typeof cmdArgs !== 'undefined' && cmdArgs.length > 0) {
         command = cmdArgs.join(" ").toString();
-        console.log("command: " + command);
+        const safeArgs = cmdArgs.map((arg, index) => cmdArgs[index - 1] === '--accountkey' ? '[REDACTED]' : arg);
+        console.log("command: " + safeArgs.join(" "));
     }
     return command;
 };
@@ -354,23 +355,46 @@ export const parseJsonToGetResultAkamaiCLI = function (filePathForJson: string, 
     }
     throw new Error("Error: Failed to execute The command");
 };
+
+const redactAccountKey = function (output: string): string {
+    return output.replace(/(--accountkey\s+)(\S+)/gi, '$1[REDACTED]');
+};
+
+const formatCLIOutput = function (output: string): string {
+    return output
+        .replace(/\u001b\[[0-?]*[ -/]*[@-~]/g, '')
+        .replace(/\u001b\][^\u0007]*(?:\u0007|\u001b\\)/g, '')
+        .replace(/\r/g, '\n')
+        .trim();
+};
+
 export const executeAkamaiEdgeWorkerCLICmds = function (cmd: string, jsonFilePath: string, msg: string): Promise<string> {
     return new Promise((resolve, reject) => {
-        exec(cmd, (error: Error, stdout: string, stderr: string) => {
+        // CLI progress indicators may emit repeated terminal-control output. Allow
+        // more than exec's 1 MiB default so verbose progress doesn't truncate a scan.
+        exec(cmd, {maxBuffer: 10 * 1024 * 1024}, (error: NodeJS.ErrnoException | null, stdout: string, stderr: string) => {
             if (error) {
-                if (stderr) {
-                    if (stderr.toString().toLowerCase().includes("command not found")) {
-                        reject(stderr.toString() + `.Install or Check if Akamai CLI is installed properly from link:${ErrorMessageExt.akamai_download_URI}`);
-                    }
-                    reject(stderr);
-                } else {
-                    reject(error);
-                }
-            } else if (stdout) {
+                const output = [
+                    stdout && `stdout:\n${formatCLIOutput(stdout)}`,
+                    stderr && `stderr:\n${formatCLIOutput(stderr)}`
+                ].filter(Boolean).join('\n\n');
+                const errorSignal = (error as NodeJS.ErrnoException & {signal?: string}).signal;
+                const failure = new Error([
+                    redactAccountKey(`Akamai CLI failed${error.code ? ` (code: ${error.code})` : ''}${errorSignal ? ` (signal: ${errorSignal})` : ''}: ${error.message}`),
+                    redactAccountKey(output),
+                    fs.existsSync(jsonFilePath)
+                        ? `CLI JSON output (${jsonFilePath}):\n${redactAccountKey(formatCLIOutput(fs.readFileSync(jsonFilePath, 'utf8')))}`
+                        : `CLI JSON output file was not created: ${jsonFilePath}`
+                ].filter(Boolean).join('\n\n'));
+                reject(failure);
+                return;
+            }
+
+            try {
                 resolve(parseJsonToGetResultAkamaiCLI(jsonFilePath, msg));
+            } catch (e) {
+                reject(e);
             }
         });
     });
 };
-
-

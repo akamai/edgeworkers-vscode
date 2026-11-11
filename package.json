@@ -3,7 +3,7 @@
     "displayName": "Akamai EdgeWorkers Toolkit",
     "description": "Akamai EdgeWorkers Toolkit",
     "publisher": "AkamaiEdgeWorker",
-    "version": "2.3.0",
+    "version": "2.4.0",
     "icon": "edgeworkers-icon.png",
     "engines": {
         "vscode": "^1.79.0"
@@ -16,15 +16,6 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:edgeworkers-vscode.edgeworkerBundle",
-        "onCommand:edgeworkers-vscode.refreshEntry",
-        "onCommand:edgeworkers-vscode.downloadEdgeWorker",
-        "onCommand:edgeworkers-vscode.uploadEdgeWorker",
-        "onCommand:edgeworkers-vscode.uploadEdgeWorkerFromMangementUI",
-        "onCommand:edgeworkers-vscode.uploadTarBallToSandBox",
-        "onCommand:edgeworkers-vscode.registerEdgeWorker",
-        "onCommand:edgeworkers-vscode.activateEdgeWorker",
-        "onView:edgeWorkerDetails",
         "onView:webview",
         "*"
     ],
@@ -235,15 +226,15 @@
         "@vscode/test-electron": "^2.5.2",
         "chai": "^4.3.4",
         "configparser": "^0.3.9",
-        "esbuild": "^0.25.3",
+        "esbuild": "^0.28.2",
         "eslint-import-resolver-node": "^0.3.6",
-        "mocha": "^11.8.0",
+        "mocha": "^12.0.3",
+        "nyc": "^18.0.0",
         "parse-version-string": "^1.0.1",
         "sinon": "^22.1.0",
         "ts-loader": "^9.4.0",
         "typescript": "^4.3.2",
-        "vscode-extension-tester": "^8.24.0",
-        "webpack": "^5.104.1",
+        "webpack": "^5.112.2",
         "webpack-cli": "^4.10.0"
     },
     "dependencies": {
@@ -254,7 +245,7 @@
         "@typescript-eslint/parser": "^8.3.0",
         "akamai-edgegrid": "^3.5.1",
         "assert": "^2.0.0",
-        "axios": "^1.15.0",
+        "axios": "^1.21.0",
         "chai-spies": "^1.0.0",
         "child_process": "^1.0.2",
         "cli-spinner": "^0.2.10",
@@ -263,23 +254,23 @@
         "expect": "^29.7.0",
         "extract-json-from-string": "^1.0.1",
         "fix-path": "^4.0.0",
-        "glob": "^8.0.3",
+        "glob": "^14.0.4",
         "https": "^1.0.0",
         "inquirer": "^9.3.7",
         "is-html": "^3.0.0",
         "net": "^1.0.2",
-        "nyc": "^18.0.0",
         "os": "^0.1.2",
-        "path": "^0.12.7",
         "script-runner": "^0.1.8",
         "sha256-file": "^1.0.0",
         "stream": "^0.0.2",
-        "tar": "^7.5.13",
+        "tar": "^7.5.22",
         "untildify": "^4.0.0",
         "url": "^0.11.0",
         "vscode-uri": "^3.0.3"
     },
     "overrides": {
+        "minimatch": "11.0.1",
+        "glob": "$glob",
         "external-editor": {
             "tmp": "^0.2.4"
         },
